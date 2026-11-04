@@ -1,0 +1,86 @@
+#!/usr/bin/env node
+// agent-workflow-kit — PreToolUse gate: Korean text needs the Korean skill loaded. System-owned.
+//
+// "Use ko-writing for Korean docs" in AGENTS.md is advisory. Worse, after a context
+// compaction Claude Code re-sends the tool and agent listings but not the skill listing,
+// so a skill that was never invoked before the compaction is simply unknown afterwards
+// (rack-tracker #413). This hook is the deterministic layer:
+//   - on a `Skill` call it records "<skill> was loaded in this session" (marker file + TTL);
+//   - on Write/Edit/MultiEdit/NotebookEdit whose NEW text carries Hangul above a threshold,
+//     it finds the rule whose path glob matches and DENIES the edit unless that rule's
+//     skill has a fresh marker.
+// Deny goes to the model, not the user: the model invokes the skill and retries the edit.
+// Config is repo-owned: .claude/require-skill.json (seeded once by install.mjs). No config,
+// no gate. Env overrides for tests: REQUIRE_SKILL_CONFIG, REQUIRE_SKILL_STATE_DIR.
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { isAbsolute, join, relative } from 'node:path';
+
+let input;
+try { input = JSON.parse(readFileSync(0, 'utf8')); } catch { process.exit(0); }
+const tool = input.tool_name;
+const ti = input.tool_input || {};
+const sid = String(input.session_id || 'nosession');
+const cwd = input.cwd || process.cwd();
+
+const cfgPath = process.env.REQUIRE_SKILL_CONFIG || join(cwd, '.claude', 'require-skill.json');
+if (!existsSync(cfgPath)) process.exit(0);
+let cfg;
+try { cfg = JSON.parse(readFileSync(cfgPath, 'utf8')); } catch { process.exit(0); }
+const rules = cfg.rules || [];
+const minHangul = cfg.minHangul ?? 20;
+const ttlHours = cfg.ttlHours ?? 2;
+const exclude = cfg.exclude || [];
+const stateDir = process.env.REQUIRE_SKILL_STATE_DIR || join(tmpdir(), 'claude-require-skill');
+const marker = (skill) => join(stateDir, `${sid}-${skill}`.replace(/[^A-Za-z0-9._-]/g, '_'));
+
+// glob → regex. `**/` = any directory prefix, `**` = anything, `*` = within one segment.
+// Placeholders keep the expansion of one token from being re-expanded by the next.
+const globRe = (g) => {
+  const esc = g.replace(/[.+^${}()|[\]\\]/g, '\\$&')
+    .replace(/\*\*\//g, '\u0000').replace(/\*\*/g, '\u0001').replace(/\*/g, '[^/]*')
+    .replace(/\u0000/g, '(?:.*/)?').replace(/\u0001/g, '.*');
+  return new RegExp('^' + esc + '$');
+};
+const matches = (rel, g) => globRe(g).test(rel);
+const relPath = (p) => {
+  if (!p) return '';
+  const r = isAbsolute(p) ? relative(cwd, p) : p;
+  return r.replace(/\\/g, '/');
+};
+
+// A Skill call is the only evidence the hook can see that the skill's instructions are in context.
+if (tool === 'Skill') {
+  const name = String(ti.skill || '').split(':').pop();
+  if (rules.some((r) => r.skill === name)) {
+    mkdirSync(stateDir, { recursive: true });
+    writeFileSync(marker(name), String(Date.now()));
+  }
+  process.exit(0);
+}
+
+const EDIT_TOOLS = new Set(['Write', 'Edit', 'MultiEdit', 'NotebookEdit']);
+if (!EDIT_TOOLS.has(tool)) process.exit(0);
+
+const text = [ti.content, ti.new_string, ti.new_source, ...(ti.edits || []).map((e) => e && e.new_string)]
+  .filter(Boolean).join('\n');
+const hangul = (text.match(/[가-힣ᄀ-ᇿ㄰-㆏]/g) || []).length;
+if (hangul < minHangul) process.exit(0);
+
+const file = relPath(ti.file_path || ti.notebook_path);
+// Outside the repo (session memory, scratchpad) is not this repo's concern.
+if (!file || file.startsWith('../') || isAbsolute(file)) process.exit(0);
+if (exclude.some((g) => matches(file, g))) process.exit(0);
+const rule = rules.find((r) => (r.paths || []).some((g) => matches(file, g)));
+if (!rule) process.exit(0);
+
+let fresh = false;
+try { fresh = Date.now() - statSync(marker(rule.skill)).mtimeMs < ttlHours * 3600e3; } catch {}
+if (fresh) process.exit(0);
+
+const reason = `[agent-kit] ${file}: this edit writes ${hangul} Hangul characters, but the \`${rule.skill}\` skill `
+  + `has not been loaded in this session (or its ${ttlHours}h window passed — a context compaction drops it). `
+  + `Invoke Skill(${rule.skill}) first, then redo this edit.`;
+process.stdout.write(JSON.stringify({
+  hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny', permissionDecisionReason: reason },
+}));
