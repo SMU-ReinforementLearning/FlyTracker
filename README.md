@@ -62,6 +62,19 @@ uv run tensorboard --logdir runs
 
 보상 가중치와 초파리 비행 값은 출발점으로 잡은 값이다. `flytracker/env.py`의 `RewardWeights`, `flytracker/fly.py`의 `FlyParams`에서 바꾼다.
 
+## viewer
+
+Node 20 이상이 필요하다. 개발 서버가 `runs/`를 그대로 읽으므로 따로 백엔드가 없다.
+
+```sh
+npm install --prefix viewer
+npm run dev --prefix viewer
+```
+
+브라우저에서 http://localhost:5180 을 연다. 왼쪽에서 실행과 에피소드를 고르면 3인칭 장면, 조준기 화면, 현재 상태, 누적 보상과 조준 오차 그래프가 나온다. 스페이스로 재생하고 멈추며, 화살표 키로 한 프레임씩 옮긴다. 그래프를 누르면 그 시각으로 간다.
+
+조준기 화면 위의 사각형은 Python이 기록한 화면 좌표다. 3D로 그린 초파리와 사각형이 어긋나면 Python의 투영 계산과 viewer 중 한쪽이 틀린 것이다.
+
 ## 폴더
 
 | 경로 | 내용 |
@@ -69,4 +82,5 @@ uv run tensorboard --logdir runs
 | `flytracker/` | 환경, 카메라 모델, 조준기, 초파리, wrapper, 기록 저장, 기준선 |
 | `scripts/` | 기준선 기록, 학습 |
 | `tests/` | pytest |
+| `viewer/` | 에피소드 viewer. Vite, React, React Three Fiber |
 | `runs/` | 실행 결과. git에 올리지 않는다 |

@@ -32,13 +32,13 @@ Builds the first runnable skeleton of the project: a Gymnasium environment in wh
 - [x] `uv run pytest` passes (camera projection, aimer kinematics, env checker, recording, baseline) (2026-11-04 10:52)
 - [x] `scripts/record_baseline.py` writes episodes under `runs/` with `index.json` and a per-run manifest (2026-11-04 10:52)
 - [x] `scripts/train.py` finishes a short SAC and DQN smoke run and records evaluation episodes (2026-11-04 10:52)
-- [ ] The viewer lists runs and episodes and replays one episode in both views, with the recorded `uv` point over the first-person view
-- [ ] Viewer design follows `ui-text.config.md` (Apple style, no filler subtitles or captions); screenshots as evidence
+- [x] The viewer lists runs and episodes and replays one episode in both views, with the recorded `uv` point over the first-person view (2026-11-04 11:08)
+- [x] Viewer design follows `ui-text.config.md` (Apple style, no filler subtitles or captions); screenshots as evidence (2026-11-04 11:08)
 
 ## Current State
-- Python side is complete for this issue (environment, baseline, recording, training script, tests, README).
+- Python side and the viewer are both in place; every Done Criteria item is ticked.
 - Baseline capture rate, 40 episodes each, seeds 0-39: moving aimer free 28/40, evade 13/40; fixed aimer (aim-only capture) 32/40 in both modes, because the fly reacts only within 1 m and a fixed aimer captures from farther.
-- Next: the React viewer under `viewer/`, reading `runs/` from the Vite dev server.
+- Next: user review of the viewer commit, then the `AGENTS.md` pointer removal as the branch's last commit before the PR.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -74,6 +74,40 @@ Builds the first runnable skeleton of the project: a Gymnasium environment in wh
 - `train.py --algo sac --steps 3000` and `--algo dqn --steps 3000 --fly-mode evade`: both finish and save 3 evaluation sets of 2 episodes plus checkpoints; no captures, as expected for 3k steps.
 #### Notes
 - Fly flight parameters (0.5 m/s, 60-120 deg saccades in 50 ms) are starting values, not checked against literature.
+
+### feat: 에피소드 viewer (#1)
+> why: the second half of the skeleton — replay what Python recorded, in both views, with no game rules in JavaScript
+#### Scope
+- `viewer/` (Vite 8, React 19, React Three Fiber 9, drei 10, three 0.187), `ui-evidence.config.json`, `ui-text.glossary.md`, README viewer section, `.gitignore`.
+#### Changes
+- `vite.config.js`: dev-server middleware serves `../runs` at `/runs` (JSON only), port 5180; no backend.
+- `src/data/`: `api.js` fetches `runs/index.json`, `<run>/episodes.json` and episode files; `episode.js` turns columnar frames into typed arrays, cumulative return and `sample(ep, t)` interpolation; `labels.js` maps codes to the glossary wording.
+- `src/playback/clock.js`: module-level playback clock driven by rAF; `useClock(hz)` re-renders text at 15-20 Hz, scene objects read the clock inside `useFrame`.
+- `src/scene/`: `Room` (wireframe box, floor grid, axes), `FlyMarker` (point + trail, evade colour), `AimerRig` (body, frustum drawn to the capture range, aim line clipped at the room wall), `ThirdPersonView` (OrbitControls), `FirstPersonView` (camera follows the recorded pose; the recorded `uv` is drawn as a focus square over the 3D fly; capture ring sized from `capture_angle_deg`), `FrameCounter` (`window.__frames` for screenshot readiness).
+- `src/components/`: `Sidebar` (runs, episodes grouped by tag), `Transport` (play/pause, frame step, scrubber, speed), `Readouts` (state, aim error, distance, capture progress, fly state, frame), `LineChart` (single series, crosshair tooltip, click to seek, keyboard).
+- `styles.css`: Apple-style tokens for light and dark, Pretendard; stacked layout under 1080 px and 760 px.
+- Keyboard: space toggles playback, arrow keys step one frame.
+#### Verification
+- `npm run build --prefix viewer`: builds; one 1.17 MB chunk (three.js), size warning only.
+- `uv run pytest`: 21 passed (Python unchanged, re-run).
+- ko-writing `check.py README.md`: nothing in sections 1-8.
+- dataviz `validate_palette.js`: light `#0071e3,#eb6834,#1baf7a` on `#f5f5f7` PASS with a contrast WARN relieved by the `Readouts` text; dark `#3987e5,#d95926,#199e70` on `#1c1c1e` PASS.
+- UI evidence: `node .claude/skills/ui-evidence/scripts/shot.mjs --name after` with `ui-evidence.config.json`.
+  - Commit: dd84acc (dirty, this change) · Chrome: 156.0.8078.74
+  - Ready: `window.__frames > 10 && document.fonts.status === 'loaded'`, settle 800 ms, reduced motion on, SwiftShader flags
+
+| page | viewport | file | overflow | probes | console |
+| --- | --- | --- | --- | --- | --- |
+| / | 1600x900 | `.ui-evidence/after-1600x900.png` | none | body font "Pretendard Variable"; canvases 2; title baseline-evade | 1 error (favicon 404), THREE.Clock deprecation warning from R3F |
+| / | 390x844 (mobile, dpr 2) | `.ui-evidence/after-390x844.png` | none | same | 0 errors, THREE.Clock warning |
+
+  - Desktop: sidebar with four runs and five baseline episodes; third-person room with aimer frustum, aim line and fly trail; first-person view with the recorded focus square sitting on the 3D fly; readouts; transport; two charts. Dark scheme (headless default).
+  - Phone: sidebar stacks on top at 40vh and scrolls, then the toolbar and the scene; no horizontal overflow.
+  - Captures stay in `.ui-evidence/` (ignored); the table is the durable record.
+#### Notes
+- The first capture showed the aim line running 6 m past the room; it is now clipped at the wall (`distanceToWall`).
+- Vite binds `localhost` only, so the evidence config uses `http://localhost:5180` rather than `127.0.0.1`.
+- The favicon 404 is a missing icon, left for a later issue.
 
 ## Management Notes
 ### Follow-up Candidates

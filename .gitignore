@@ -5,3 +5,4 @@ __pycache__/
 runs/
 viewer/node_modules/
 viewer/dist/
+.ui-evidence/

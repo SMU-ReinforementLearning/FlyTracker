@@ -1,0 +1,594 @@
+/* Apple 스타일. 위계는 여백과 글자 크기로 만들고, 강조색은 하나(파랑)만 쓴다. */
+
+:root {
+  color-scheme: light;
+  --font: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', 'Malgun Gothic', sans-serif;
+  --window: #ffffff;
+  --sidebar: #f2f2f5;
+  --stage: #f5f5f7;
+  --text: #1d1d1f;
+  --text-2: #6e6e73;
+  --text-3: #86868b;
+  --separator: rgba(0, 0, 0, 0.08);
+  --fill: rgba(0, 0, 0, 0.05);
+  --fill-strong: rgba(0, 0, 0, 0.08);
+  --accent: #0071e3;
+  --on-accent: #ffffff;
+  --capture: #1a8a62;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
+  --radius-l: 14px;
+  --radius-m: 10px;
+  --radius-s: 7px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --window: #1c1c1e;
+    --sidebar: #232325;
+    --stage: #1c1c1e;
+    --text: #f5f5f7;
+    --text-2: #a1a1a6;
+    --text-3: #8e8e93;
+    --separator: rgba(255, 255, 255, 0.1);
+    --fill: rgba(255, 255, 255, 0.06);
+    --fill-strong: rgba(255, 255, 255, 0.1);
+    --accent: #0a84ff;
+    --capture: #30d158;
+    --shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font: 13px/1.45 var(--font);
+  color: var(--text);
+  background: var(--window);
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.005em;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+code {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+
+/* 창 구조 */
+
+.app {
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr);
+  height: 100%;
+}
+
+.sidebar {
+  background: var(--sidebar);
+  border-right: 1px solid var(--separator);
+  padding: 18px 10px 24px;
+  overflow-y: auto;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 52px;
+  padding: 0 16px 0 24px;
+  border-bottom: 1px solid var(--separator);
+}
+
+.toolbar-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stage {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'scene inspector'
+    'dock inspector';
+  gap: 16px;
+  padding: 16px;
+  background: var(--stage);
+}
+
+.scene {
+  grid-area: scene;
+  min-height: 320px;
+  border-radius: var(--radius-l);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.inspector {
+  grid-area: inspector;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.dock {
+  grid-area: dock;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.empty {
+  margin: auto;
+  color: var(--text-2);
+  font-size: 15px;
+}
+
+/* 사이드바 목록 */
+
+.sidebar-title {
+  margin: 0 0 6px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.sidebar-title:not(:first-child) {
+  margin-top: 22px;
+}
+
+.group-title {
+  margin: 12px 0 4px;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+}
+
+.sidebar-note {
+  margin: 4px 10px;
+  color: var(--text-2);
+}
+
+.source-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  display: block;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: var(--radius-s);
+  background: none;
+  text-align: left;
+  cursor: default;
+}
+
+.row:hover {
+  background: var(--fill);
+}
+
+.row[aria-current='true'] {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.row-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.row-title {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.row-aside,
+.row-sub {
+  color: var(--text-2);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.row[aria-current='true'] .row-aside,
+.row[aria-current='true'] .row-sub {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.outcome-capture::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin: 0 6px 1px 0;
+  border-radius: 50%;
+  background: var(--capture);
+}
+
+.row[aria-current='true'] .outcome-capture::before {
+  background: currentColor;
+}
+
+/* 1인칭 뷰파인더 */
+
+.viewfinder {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-m);
+  overflow: hidden;
+  background: #000;
+  box-shadow: var(--shadow);
+}
+
+.viewfinder canvas {
+  display: block;
+}
+
+.vf-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* iPhone 카메라의 초점 사각형. 변 가운데의 짧은 눈금까지 같은 모양이다. */
+.vf-focus {
+  --c: #ffd60a;
+  position: absolute;
+  width: 46px;
+  height: 46px;
+  transform: translate(-50%, -50%);
+  border: 1.5px solid var(--c);
+  pointer-events: none;
+  opacity: 0;
+  background:
+    linear-gradient(var(--c), var(--c)) top center / 1.5px 6px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom center / 1.5px 6px no-repeat,
+    linear-gradient(var(--c), var(--c)) left center / 6px 1.5px no-repeat,
+    linear-gradient(var(--c), var(--c)) right center / 6px 1.5px no-repeat;
+}
+
+.vf-focus[data-capture='true'] {
+  --c: #30d158;
+}
+
+/* 현재 상태 */
+
+.readouts {
+  margin: 0;
+  padding: 4px 16px;
+  background: var(--window);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow);
+}
+
+.readout {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 10px 0;
+}
+
+.readout + .readout {
+  border-top: 1px solid var(--separator);
+}
+
+.readout dt {
+  color: var(--text-2);
+}
+
+.readout dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 7px;
+  border-radius: 50%;
+  vertical-align: 1px;
+}
+
+/* 재생 조작 */
+
+.transport {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  background: var(--window);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow);
+}
+
+.transport-buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.icon-button,
+.play-button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: none;
+  color: var(--text);
+  border-radius: 50%;
+}
+
+.icon-button {
+  width: 30px;
+  height: 30px;
+  color: var(--text-2);
+}
+
+.icon-button:hover {
+  background: var(--fill);
+  color: var(--text);
+}
+
+.play-button {
+  width: 36px;
+  height: 36px;
+  background: var(--text);
+  color: var(--window);
+}
+
+.scrubber {
+  flex: 1;
+  min-width: 80px;
+  height: 20px;
+  margin: 0;
+  appearance: none;
+  background: transparent;
+}
+
+.scrubber::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(var(--accent), var(--accent)) 0 / var(--progress) 100% no-repeat, var(--fill-strong);
+}
+
+.scrubber::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--fill-strong);
+}
+
+.scrubber::-moz-range-progress {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.scrubber::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.scrubber::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.time {
+  min-width: 96px;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.segmented {
+  display: flex;
+  padding: 2px;
+  border-radius: 8px;
+  background: var(--fill);
+}
+
+.segmented button {
+  min-width: 42px;
+  padding: 3px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--text-2);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.segmented button[aria-checked='true'] {
+  background: var(--window);
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+/* 그래프 */
+
+.charts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.chart {
+  position: relative;
+  margin: 0;
+  padding: 10px 12px 6px;
+  background: var(--window);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow);
+}
+
+.chart-label {
+  position: absolute;
+  top: 10px;
+  left: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.chart svg {
+  display: block;
+  overflow: visible;
+}
+
+.chart .grid {
+  stroke: var(--separator);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.chart .tick {
+  fill: var(--text-3);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart .series {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.chart .playhead {
+  stroke: var(--text);
+  stroke-width: 1;
+  opacity: 0.5;
+}
+
+.chart .crosshair line {
+  stroke: var(--text-3);
+  stroke-width: 1;
+}
+
+.chart .crosshair circle {
+  fill: var(--accent);
+  stroke: var(--window);
+  stroke-width: 2;
+}
+
+.tooltip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  padding: 5px 9px;
+  border-radius: 8px;
+  background: var(--window);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.16);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.tooltip strong {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tooltip span {
+  color: var(--text-2);
+  font-size: 11px;
+}
+
+/* 좁은 화면에서는 위에서 아래로 쌓는다 */
+
+@media (max-width: 1080px) {
+  .stage {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    grid-template-areas: 'scene' 'inspector' 'dock';
+    overflow-y: auto;
+  }
+  .scene {
+    height: 56vh;
+  }
+}
+
+@media (max-width: 760px) {
+  .app {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    height: auto;
+    min-height: 100%;
+  }
+  .sidebar {
+    max-height: 40vh;
+    border-right: 0;
+    border-bottom: 1px solid var(--separator);
+  }
+  .charts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .transport {
+    flex-wrap: wrap;
+  }
+  .segmented {
+    margin-left: auto;
+  }
+}
