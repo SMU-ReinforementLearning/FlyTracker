@@ -1,0 +1,21 @@
+{
+  "//": "ui-evidence overlay — read by .claude/skills/ui-evidence/scripts/shot.mjs",
+  "base": "http://localhost:5180",
+  "paths": ["/"],
+  "viewports": ["1600x900", "390x844"],
+  "ready": "window.__frames > 10 && document.fonts.status === 'loaded'",
+  "readyTimeout": 30000,
+  "settle": 800,
+  "timeout": 45000,
+  "probes": [
+    "getComputedStyle(document.body).fontFamily.split(',')[0]",
+    "document.querySelectorAll('canvas').length",
+    "document.querySelector('.toolbar-title')?.textContent"
+  ],
+  "serveCheck": "document.title === 'FlyTracker'",
+  "flags": ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--use-gl=angle", "--ignore-gpu-blocklist"],
+  "reducedMotion": true,
+  "overflow": true,
+  "console": true,
+  "out": ".ui-evidence"
+}
