@@ -29,16 +29,16 @@ Builds the first runnable skeleton of the project: a Gymnasium environment in wh
 - Episode comparison mode in the viewer (planned, not in this skeleton).
 
 ## Done Criteria
-- [ ] `uv run pytest` passes (camera projection, aimer kinematics, env checker, recording, baseline)
-- [ ] `scripts/record_baseline.py` writes episodes under `runs/` with `index.json` and a per-run manifest
-- [ ] `scripts/train.py` finishes a short SAC and DQN smoke run and records evaluation episodes
+- [x] `uv run pytest` passes (camera projection, aimer kinematics, env checker, recording, baseline) (2026-11-04 10:52)
+- [x] `scripts/record_baseline.py` writes episodes under `runs/` with `index.json` and a per-run manifest (2026-11-04 10:52)
+- [x] `scripts/train.py` finishes a short SAC and DQN smoke run and records evaluation episodes (2026-11-04 10:52)
 - [ ] The viewer lists runs and episodes and replays one episode in both views, with the recorded `uv` point over the first-person view
 - [ ] Viewer design follows `ui-text.config.md` (Apple style, no filler subtitles or captions); screenshots as evidence
 
 ## Current State
-- Python skeleton was drafted in the main checkout before the kit was installed and moved here untracked; 21 tests passed there. Not yet committed.
-- Baseline capture rate (40 episodes, moving aimer): free 28/40, evade 29/40 — the evade trigger is still too weak; next step is to add an aim-based trigger.
-- Viewer not started.
+- Python side is complete for this issue (environment, baseline, recording, training script, tests, README).
+- Baseline capture rate, 40 episodes each, seeds 0-39: moving aimer free 28/40, evade 13/40; fixed aimer (aim-only capture) 32/40 in both modes, because the fly reacts only within 1 m and a fixed aimer captures from farther.
+- Next: the React viewer under `viewer/`, reading `runs/` from the Vite dev server.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -54,6 +54,26 @@ Builds the first runnable skeleton of the project: a Gymnasium environment in wh
 - `issue-start` dry run, then the real run: issue #1, branch from `origin/main` @ 52f6632.
 #### Notes
 - No umbrella issue yet, so `--parent` was not passed.
+
+### feat: 조준기 추적 환경, 기준선, 학습 스크립트 (#1)
+> why: the Python half of the skeleton — everything the viewer will replay comes from here
+#### Scope
+- `flytracker/` package, `scripts/`, `tests/`, `pyproject.toml` + `uv.lock`, README run instructions.
+#### Changes
+- `world.py`, `geometry.py`, `camera.py`: room box in the RackTracker convention, look direction from yaw/pitch (yaw 0 looks along -z like a three.js camera), pinhole projection to NDC-style `uv`, plus `K`, OpenCV `R, t` and pixel projection.
+- `aimer.py`: 5-D action, velocity and angular-rate targets followed under acceleration limits, wall clamp reports collision, `can_move=False` for a turret.
+- `fly.py`: free flight with random saccades and wall avoidance; evade mode reacts (after 60 ms) when the aim line points within 10 deg, when looming rate exceeds 1/s, or when closer than 0.35 m.
+- `env.py`: `FlyChaseEnv`, 19-D observation (`OBS` slices), shaped reward with all tracking terms negative so delaying capture never pays, capture = 3 deg / 0.5 m held 0.2 s, `snapshot()` for recording only.
+- `wrappers.py`: `DiscreteActions` (11 one-axis actions), `make_env` with optional frame stack.
+- `record.py`: `EpisodeRecorder` wrapper (columnar frames per agent step), `RunStore` writing `runs/index.json`, `<run>/config.json`, `<run>/episodes.json`; atomic writes with a retry for Windows file locks.
+- `baseline.py`: `RuleAimer` working from observations only.
+- `scripts/record_baseline.py`, `scripts/train.py` (SB3 SAC/TD3/PPO/DQN, evaluation episodes with fixed seeds at start, every N steps and at the end, checkpoints, TensorBoard when installed).
+#### Verification
+- `uv run pytest`: 21 passed.
+- Baseline, 40 episodes per row: moving free 28/40, moving evade 13/40, fixed free 32/40, fixed evade 32/40.
+- `train.py --algo sac --steps 3000` and `--algo dqn --steps 3000 --fly-mode evade`: both finish and save 3 evaluation sets of 2 episodes plus checkpoints; no captures, as expected for 3k steps.
+#### Notes
+- Fly flight parameters (0.5 m/s, 60-120 deg saccades in 50 ms) are starting values, not checked against literature.
 
 ## Management Notes
 ### Follow-up Candidates
