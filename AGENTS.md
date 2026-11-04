@@ -62,7 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `1-feature-env-viewer-skeleton` — `docs/issues/feature/1-feature-env-viewer-skeleton.md` — 강화학습 환경과 에피소드 viewer 뼈대
+- (none)
 
 ## Environment (repo slot)
 

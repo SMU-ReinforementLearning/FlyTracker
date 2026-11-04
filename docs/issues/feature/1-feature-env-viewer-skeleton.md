@@ -4,7 +4,7 @@
 - Issue: #1
 - Branch: `1-feature-env-viewer-skeleton`
 - Umbrella: (none) — no umbrella issue exists yet
-- Status: in progress
+- Status: done
 
 ## Summary
 Builds the first runnable skeleton of the project: a Gymnasium environment in which a limited-FOV aimer chases a fruit fly inside a room, a rule-based baseline aimer, episode recording under `runs/`, a Stable-Baselines3 training script, and a React viewer that replays recorded episodes in third person and from the aimer's own camera.
@@ -108,6 +108,18 @@ Builds the first runnable skeleton of the project: a Gymnasium environment in wh
 - The first capture showed the aim line running 6 m past the room; it is now clipped at the wall (`distanceToWall`).
 - Vite binds `localhost` only, so the evidence config uses `http://localhost:5180` rather than `127.0.0.1`.
 - The favicon 404 is a missing icon, left for a later issue.
+
+### chore: 작업 마무리와 AGENTS.md 포인터 제거 (#1)
+> why: the branch's last commit before the PR; `main` takes PRs only, so the pointer must go now
+#### Scope
+- `AGENTS.md`, this doc's Status, the registry row.
+#### Changes
+- `AGENTS.md` Recent Active Context: pointer line removed, `- (none)` placeholder restored.
+- Status: in progress → done, here and in `docs/issues/README.md`.
+#### Verification
+- `grep -c 1-feature-env-viewer-skeleton AGENTS.md` prints 0.
+#### Notes
+- The user confirmed the scene holds one fly and one aimer, so no second-aimer issue follows from this one.
 
 ## Management Notes
 ### Follow-up Candidates
