@@ -1,0 +1,13 @@
+fruitfly.glb is derived from the flybody fruit fly body model:
+https://github.com/TuragaLab/flybody (commit d015e9bfe441bd90ae431bac24c55cb74bdbce26, 2025-07-30),
+licensed under the Apache License, Version 2.0. A copy of the license is in fruitfly.LICENSE.txt.
+
+Changes made for FlyTracker by scripts/build_fly_model.py:
+- posed at the model's default joint configuration (qpos0) with MuJoCo; the wings are spread sideways in this pose
+- welded and simplified each visual mesh (272,550 to about 91,000 triangles in total) and merged them by material
+- converted units from cm to m and axes from MuJoCo (head +x, up +z) to the viewer (head -z, up +y)
+- converted material colours from sRGB to linear and exported the result as binary glTF
+
+Citation:
+Vaxenburg, R., Siwanowicz, I., Merel, J., et al. Whole-body physics simulation of fruit fly locomotion.
+Nature 643, 1312-1320 (2025). https://doi.org/10.1038/s41586-025-09029-4

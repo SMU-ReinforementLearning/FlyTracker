@@ -28,6 +28,7 @@ function FollowAimer({ ep }) {
  * 조준기 카메라 화면. 3D 로 그린 초파리 위에 Python 이 기록한 화면 좌표(uv)를 초점 사각형으로 겹친다.
  * 두 위치가 어긋나면 Python 의 투영 계산과 viewer 중 한쪽이 틀린 것이다.
  * 가운데 원은 포획 각도 범위다.
+ * 초파리는 실제 크기로 그린다. 멀리 있으면 화소 하나보다 작아서, 위치는 초점 사각형으로 본다.
  */
 export function FirstPersonView({ ep }) {
   const focus = useRef(null)
@@ -52,7 +53,7 @@ export function FirstPersonView({ ep }) {
       <Canvas dpr={[1, 2]} camera={{ fov: ep.meta.fovV }}>
         <color attach="background" args={[vf.background]} />
         <Room size={ep.meta.room} colors={{ grid: vf.grid, room: vf.room }} showAxes={false} />
-        <FlyMarker ep={ep} color={vf.fly} alarmColor={vf.fly} radius={0.012} />
+        <FlyMarker ep={ep} />
         <FollowAimer ep={ep} />
         <FrameCounter />
       </Canvas>
