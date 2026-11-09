@@ -152,7 +152,7 @@ class FlyChaseEnv(gym.Env):
         collided = False
         for _ in range(cfg.frame_skip):
             collided |= self.aimer.step(a, cfg.dt, cfg.room)
-            self.fly.step(cfg.dt, cfg.room, self.aimer.pos, self.aimer.look)
+            self.fly.step(cfg.dt, cfg.room, self.aimer.pos)
             self.t += cfg.dt
             self._update_vision()
             if self._capture_timer >= cfg.capture_hold - 1e-9:
@@ -180,7 +180,7 @@ class FlyChaseEnv(gym.Env):
             "uv": proj.uv.tolist() if proj.in_front else [0.0, 0.0],
             "angleErrDeg": math.degrees(proj.angle_error),
             "distance": proj.distance,
-            "evading": self.fly.evading,
+            "alarmed": self.fly.alarmed,
             "captureProgress": min(self._capture_timer / self.config.capture_hold, 1.0),
             "collided": self.collided,
         }
@@ -249,5 +249,5 @@ class FlyChaseEnv(gym.Env):
             "distance": proj.distance,
             "captured": self.captured,
             "collided": self.collided,
-            "fly_evading": self.fly.evading,
+            "fly_alarmed": self.fly.alarmed,
         }

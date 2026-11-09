@@ -14,7 +14,7 @@ export const SCENE = {
     idle: '#8e8e93',
     visible: '#0071e3',
     capture: '#1baf7a',
-    evade: '#eb6834',
+    alarm: '#eb6834',
   },
   dark: {
     background: '#1c1c1e',
@@ -26,7 +26,7 @@ export const SCENE = {
     idle: '#8e8e93',
     visible: '#3987e5',
     capture: '#199e70',
-    evade: '#d95926',
+    alarm: '#d95926',
   },
 }
 

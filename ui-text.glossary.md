@@ -11,12 +11,11 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 | timeout | 시간 초과 | 타임아웃 | 에피소드가 끝난 이유 |
 | fly inside the view | 보임 | 가시, 감지 | 반대는 안 보임 |
 | capture hold in progress | 포획 중 | 포획 진행 중 | 상태 |
-| fly evading | 회피 중 | 도망 중 | 반대는 비행 중 |
+| fly alarmed (threat perceived) | 비상시 | 회피 중, 도망 중 | 반대는 평시 |
 | rule-based aimer | 기준선 | 베이스라인, 룰 기반 | 에피소드 그룹 이름 |
 | evaluation before training | 학습 전 | 초기 | 평가 tag `initial` |
 | aim error | 조준 오차 | 각도 오차, 에러 | 그래프 제목 |
 | cumulative reward | 누적 보상 | 리턴, 리워드 | 그래프 제목 |
-| fly mode free / evade | 자유비행 / 회피 | 프리, 이베이드 | 실행 목록 부제 |
 
 ## 상태값 매핑
 코드 상태값과 화면 표기의 대응. 영어 대문자는 화면에 나오지 않는다.
@@ -27,12 +26,12 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 | `result: timeout` | 시간 초과 |
 | `visible: 1` / `0` | 보임 / 안 보임 |
 | `captureProgress > 0` | 포획 중 |
-| `evading: 1` / `0` | 회피 중 / 비행 중 |
+| `alarmed: 1` / `0` | 비상시 / 평시 |
 | tag `baseline` | 기준선 |
 | tag `initial` | 학습 전 |
 | tag `step_N` | N step |
 | algo `rule-baseline` | 기준선 |
-| fly mode `free` / `evade` | 자유비행 / 회피 |
 
 ## 갱신 이력
 - 2026-11-04: 최초 작성. viewer 용어 12개
+- 2026-11-09: 초파리 상태를 평시와 비상시로 바꾸고 초파리 모드(자유비행, 회피)를 없앰

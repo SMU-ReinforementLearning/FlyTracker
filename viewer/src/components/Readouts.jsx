@@ -10,7 +10,7 @@ export function Readouts({ ep, scheme }) {
   const colors = SCENE[scheme]
   const visible = ep.visible[i] === 1
   const capture = ep.capture[i]
-  const evading = ep.evading[i] === 1
+  const alarmed = ep.alarmed[i] === 1
 
   const state = capture > 0 ? ['포획 중', colors.capture] : visible ? ['보임', colors.visible] : ['안 보임', colors.idle]
   const rows = [
@@ -18,7 +18,7 @@ export function Readouts({ ep, scheme }) {
     ['조준 오차', `${ep.angle[i].toFixed(1)}°`],
     ['거리', `${ep.distance[i].toFixed(2)}m`],
     ['포획 진행', `${Math.round(capture * 100)}%`],
-    ['초파리', evading ? '회피 중' : '비행 중', evading ? colors.evade : null],
+    ['초파리', alarmed ? '비상시' : '평시', alarmed ? colors.alarm : null],
     ['프레임', `${i + 1} / ${ep.n}`],
   ]
   return (

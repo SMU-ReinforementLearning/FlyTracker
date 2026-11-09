@@ -37,7 +37,7 @@ def test_recorder_writes_run_files(tmp_path):
 
 
 def test_config_roundtrip():
-    cfg = EnvConfig(fly=FlyParams(mode="evade"))
+    cfg = EnvConfig(fly=FlyParams(cruise_speed=0.3))
     assert EnvConfig.from_dict(json.loads(json.dumps(cfg.to_dict()))) == cfg
 
 
