@@ -176,6 +176,7 @@ class FlyChaseEnv(gym.Env):
         return {
             "t": self.t,
             "fly": self.fly.pos.tolist(),
+            "flyHeading": self.fly.heading.tolist(),  # viewer 가 초파리 모델을 진행 방향으로 돌린다
             "aimerC": self.aimer.pos.tolist(),
             "aimerLook": self.aimer.look.tolist(),
             "visible": proj.visible,

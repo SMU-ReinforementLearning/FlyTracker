@@ -7,6 +7,23 @@ function flat3(rows) {
   return out
 }
 
+/** 초파리 진행 방향. 기록에 없으면(flyHeading 이 생기기 전 기록) 위치 차이로 만든다. */
+function headings(f) {
+  if (f.flyHeading) return flat3(f.flyHeading)
+  const n = f.fly.length
+  const out = new Float32Array(n * 3)
+  let prev = [0, 0, -1]
+  for (let i = 0; i < n; i++) {
+    const a = f.fly[Math.max(i - 1, 0)]
+    const b = f.fly[Math.min(i + 1, n - 1)]
+    const d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]]
+    const len = Math.hypot(d[0], d[1], d[2])
+    if (len > 1e-6) prev = [d[0] / len, d[1] / len, d[2] / len]
+    out.set(prev, i * 3)
+  }
+  return out
+}
+
 export function prepareEpisode(raw) {
   const f = raw.frames
   const n = f.t.length
@@ -25,6 +42,7 @@ export function prepareEpisode(raw) {
     duration: f.t[n - 1],
     t: Float64Array.from(f.t),
     fly: flat3(f.fly),
+    heading: headings(f),
     C: flat3(f.aimerC),
     look: flat3(f.aimerLook),
     uv,
@@ -64,6 +82,11 @@ export function sample(ep, t, out) {
   const span = ep.t[j] - ep.t[i]
   const s = span > 0 ? Math.min(Math.max((t - ep.t[i]) / span, 0), 1) : 0
   lerp3(ep.fly, i, j, s, out.fly)
+  lerp3(ep.heading, i, j, s, out.heading)
+  const hl = Math.hypot(out.heading[0], out.heading[1], out.heading[2]) || 1
+  out.heading[0] /= hl
+  out.heading[1] /= hl
+  out.heading[2] /= hl
   lerp3(ep.C, i, j, s, out.C)
   lerp3(ep.look, i, j, s, out.look)
   const len = Math.hypot(out.look[0], out.look[1], out.look[2]) || 1
@@ -80,5 +103,5 @@ export function sample(ep, t, out) {
 }
 
 export function newSample() {
-  return { fly: [0, 0, 0], C: [0, 0, 0], look: [0, 0, -1], i: 0, visible: false, alarmed: false, capture: 0, u: 0, v: 0 }
+  return { fly: [0, 0, 0], heading: [0, 0, -1], C: [0, 0, 0], look: [0, 0, -1], i: 0, visible: false, alarmed: false, capture: 0, u: 0, v: 0 }
 }

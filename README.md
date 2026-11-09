@@ -74,7 +74,9 @@ npm run dev --prefix viewer
 
 브라우저에서 http://localhost:5180 을 연다. 왼쪽에서 실행과 에피소드를 고르면 3인칭 장면, 조준기 화면, 현재 상태, 누적 보상과 조준 오차 그래프가 나온다. 스페이스로 재생하고 멈추며, 화살표 키로 한 프레임씩 옮긴다. 그래프를 누르면 그 시각으로 간다.
 
-조준기 화면 위의 사각형은 Python이 기록한 화면 좌표다. 3D로 그린 초파리와 사각형이 어긋나면 Python의 투영 계산과 viewer 중 한쪽이 틀린 것이다.
+초파리는 두 화면 모두 실제 모양과 크기(몸 길이 약 3mm)로 그린다. 모델은 [flybody](https://github.com/TuragaLab/flybody)(Apache-2.0)의 메시를 줄여 만들었고, 만드는 법은 `scripts/build_fly_model.py`, 출처는 `viewer/public/models/fruitfly.NOTICE.txt`에 있다. 실제 크기로는 화소 하나보다 작아서, 3인칭 장면에서는 지나온 궤적으로 위치를 본다.
+
+조준기 화면 위의 사각형은 Python이 기록한 화면 좌표다. 초파리가 멀리 있으면 보이지 않으므로 위치는 이 사각형으로 본다. 3D로 그린 초파리와 사각형이 어긋나면 Python의 투영 계산과 viewer 중 한쪽이 틀린 것이다.
 
 ## 폴더
 
