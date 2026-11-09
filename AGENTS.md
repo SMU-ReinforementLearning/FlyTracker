@@ -62,7 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- (none)
+- `4-feature-fly-alarm-state` — `docs/issues/feature/4-feature-fly-alarm-state.md` — 초파리 행동을 평시와 비상시로 나누기
 
 ## Environment (repo slot)
 
