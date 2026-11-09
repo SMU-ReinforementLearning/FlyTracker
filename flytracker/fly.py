@@ -64,7 +64,7 @@ class FlyParams:
     evade_looming_rate: float = 1.0  # 1/s. 줄어드는 속도 / 거리가 이 값을 넘으면 위협 (가정)
     evade_proximity: float = 0.35  # m. 이보다 가까우면 줄어드는 속도와 관계없이 위협 (가정)
     evade_reaction: float = 0.06  # s. 시각 위협에서 회피까지의 감각-운동 지연 약 60ms (Muijres 2014 를 인용한 2차 자료)
-    escape_turn_duration: float = 0.025  # s. 회피 선회. 기울였다 되돌리기까지 약 25ms (Muijres 2014 를 인용한 2차 자료)
+    escape_turn_duration: float = 0.025  # s. 회피 선회. 기울였다 되돌리기까지 약 25ms (Dickinson & Muijres 2016)
     evade_cooldown: float = 0.4  # s (가정)
     evade_speed_gain: float = 1.6  # 회피 직후 속도 배율 (가정)
     evade_boost_time: float = 0.3  # s (가정)

@@ -78,6 +78,19 @@ Replaces the large sphere that stood for the fly in the viewer with a real fruit
 #### Notes
 - Two intermediate versions were dropped at the user's request: a 20x / 40 px enlarged fly, then a fixed-pixel location ring.
 
+### docs: 초파리 비행 근거 원문 확인 반영 (#11)
+> why: after #9 merged, two values listed as secondary or unverified were read in the original texts
+#### Scope
+- `docs/issues/feature/9-feature-fly-realism-search/fly-flight-and-search-model.md`, `flytracker/fly.py` (comment only), this doc.
+#### Changes
+- Saccade rate 1.37/s: now cited with the verbatim basis in Censi et al. 2013 (88 flies, 6,613 saccades in the 4,814 s flown faster than 5 cm/s); the "unverified" note is removed.
+- Escape turn 25 ms: evidence level secondary → original, citing Dickinson & Muijres 2016 ("approximately 25 ms (or five wingbeats)" between the initial bank and counter-bank of an escape manoeuvre); reference added; `FlyParams.escape_turn_duration` comment updated.
+- The 60 ms reaction delay stays secondary (Muijres 2014 full text still unreachable: HTTP 403).
+#### Verification
+- ko-writing `check.py` on the note: sections 1-8 clean. `uv run pytest`: 28 passed (comment-only code change).
+#### Notes
+- Censi 2013 read from PMC (Results verbatim up to about half the page); Dickinson & Muijres 2016 read from PMC (first ~40k characters verbatim).
+
 ## Management Notes
 ### Follow-up Candidates
 - Wing flapping and banked turns in the viewer (would need Python to record roll).

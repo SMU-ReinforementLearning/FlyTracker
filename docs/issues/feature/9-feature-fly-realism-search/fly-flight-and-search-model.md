@@ -29,7 +29,7 @@
 | 급선회 중 속도 | 25% 떨어졌다가 0.1 s 시간 상수로 회복 | 떨어졌다 오른다는 사실만 원문(Muijres et al. 2015, Reynolds & Frye 2007). 크기는 가정 | 가정 |
 | 같은 방향으로 도는 확률 | 0.8 | Reynolds & Frye 2007: 4번 넘게 같은 방향. 확률은 가정 | 가정 |
 | 반응 지연 | 60 ms | Muijres et al. 2014를 인용한 연구에서 감각-운동 지연 약 60 ms | 2차 자료 |
-| 회피 선회 시간 | 25 ms | Muijres et al. 2014를 인용한 글에서 기울였다 되돌리기까지 약 25 ms(날갯짓 5번) | 2차 자료 |
+| 회피 선회 시간 | 25 ms | Dickinson & Muijres 2016 총설: 회피 기동에서 기울였다 되돌리기까지 약 25 ms(날갯짓 5번) | 원문 |
 | 위협 문턱, 회피 가속 | 1 m 안에서 거리 감소율 1/s, 0.35 m, 1.6배 0.3 s | 찾지 못함 | 가정 |
 | 고도 변화 | 급선회마다 진행 방향 y 성분에 표준편차 0.2 잡음, 0.4에서 자름 | 찾지 못함 | 가정 |
 
@@ -42,7 +42,7 @@ Muijres 2014와 2015는 *D. hydei*를, Reynolds & Frye 2007은 *D. melanogaster*
 | 항목 | 모델 | 문헌 |
 |---|---|---|
 | 속도 | 평균 0.273 m/s, 표준편차 0.164 | 구간 시작 속도 0.285~0.356 m/s, 표준편차 약 0.19 (Reynolds & Frye 2007) |
-| 급선회 빈도 | 1.53회/s | 1.37회/s (Censi et al. 2013, 2 m 경기장. 요약에서 읽은 값이라 미확인) |
+| 급선회 빈도 | 1.53회/s | 1.37회/s (Censi et al. 2013, 2 m 경기장, 초파리 88마리, 5 cm/s 넘게 난 4,814초 동안 6,613번) |
 | 급선회 각도 | 98 ± 31° | 93 ± 27° (Muijres et al. 2015) |
 | 급선회 시간 | 55 ± 18 ms (10 ms 단위로 잼) | 49 ± 18 ms (Muijres et al. 2015) |
 | 최대 각속도 | 중앙값 3,670°/s | 1,000°/s 넘음 (Frye & Dickinson 2004 총설, 검색 요약) |
@@ -73,8 +73,7 @@ Muijres 2014와 2015는 *D. hydei*를, Reynolds & Frye 2007은 *D. melanogaster*
 
 아직 확인하지 못한 것이 있다.
 
-- 급선회 빈도 1.37회/s는 Censi et al. 2013 본문이 아니라 요약에서 읽은 값이다.
-- 반응 지연과 회피 선회 시간은 Muijres et al. 2014 원문을 읽지 못해 그 논문을 인용한 글에서 가져왔다. 회피할 때의 가속과 위협 문턱은 문헌값이 없다.
+- 반응 지연 60 ms는 Muijres et al. 2014 원문을 읽지 못해 그 논문을 인용한 글에서 가져왔다. 회피할 때의 가속과 위협 문턱은 문헌값이 없다.
 - 고도 변화 통계를 찾지 못했다.
 
 이번 변경 범위 밖에 남은 것도 있다.
@@ -87,6 +86,7 @@ Muijres 2014와 2015는 *D. hydei*를, Reynolds & Frye 2007은 *D. melanogaster*
 - Muijres, F. T., Elzinga, M. J., Iwasaki, N. A., Dickinson, M. H. (2015). Body saccades of *Drosophila* consist of stereotyped banked turns. *J. Exp. Biol.* 218: 864–875. https://resolver.caltech.edu/CaltechAUTHORS:20150217-123946070
 - Muijres, F. T., Elzinga, M. J., Melis, J. M., Dickinson, M. H. (2014). Flies evade looming targets by executing rapid visually directed banked turns. *Science* 344: 172–177. https://authors.library.caltech.edu/records/fgsdt-n4t54
 - Censi, A., Straw, A. D., Sayaman, R. W., Murray, R. M., Dickinson, M. H. (2013). Discriminating external and internal causes for heading changes in freely flying *Drosophila*. *PLoS Comput. Biol.* 9: e1002891. https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1002891
+- Dickinson, M. H., Muijres, F. T. (2016). The aerodynamics and control of free flight manoeuvres in *Drosophila*. *Phil. Trans. R. Soc. B* 371: 20150388. https://pmc.ncbi.nlm.nih.gov/articles/PMC4992712/
 - Maximally efficient prediction in the early fly visual system may support evasive flight maneuvers (2021). *PLoS Comput. Biol.* https://journals.plos.org/ploscompbiol/article?id=10.1371%2Fjournal.pcbi.1008965
 - Koopman, B. O. (1956). The theory of search. I. Kinematic bases. *Operations Research* 4: 324–346. III. The optimum distribution of searching effort (1957). *Operations Research* 5: 613–626.
 - IMO/ICAO. *IAMSAR Manual*, Volume II: Mission co-ordination. 확장 사각형, 섹터, 평행 탐색 패턴.
