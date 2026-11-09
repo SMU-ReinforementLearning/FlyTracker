@@ -23,7 +23,7 @@ def main() -> None:
     args = p.parse_args()
 
     cfg = config_from_args(args)
-    policy = RuleAimer(max_pitch_deg=cfg.aimer.max_pitch_deg, can_move=cfg.aimer.can_move)
+    policy = RuleAimer(max_pitch_deg=cfg.aimer.max_pitch_deg)
     env = EpisodeRecorder(make_env(cfg), meta={"policy": "rule-baseline"})
     run = None
     if not args.no_save:

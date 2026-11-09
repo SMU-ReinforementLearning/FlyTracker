@@ -3,7 +3,7 @@
 예: python scripts/train.py --algo sac --steps 200000 --eval-every 20000
     python scripts/train.py --algo dqn --steps 200000
 
-DQN 은 이산 행동 11개, 나머지는 연속 행동 5차원으로 학습한다.
+DQN 은 이산 행동 5개, 나머지는 연속 행동 2차원으로 학습한다.
 학습 곡선은 runs/<run_id>/tb 의 TensorBoard 기록으로 본다.
 """
 
@@ -77,7 +77,7 @@ def main() -> None:
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--eval-seed", type=int, default=10_000)
     p.add_argument("--device", default="cpu", help="작은 MLP 는 대개 CPU 가 빠르다")
-    p.add_argument("--name", default=None, help="실행 이름. 없으면 <algo>-<파리 모드>")
+    p.add_argument("--name", default=None, help="실행 이름. 없으면 <algo>")
     p.add_argument("--notes", default="")
     p.add_argument("--runs-dir", default="runs")
     args = p.parse_args()

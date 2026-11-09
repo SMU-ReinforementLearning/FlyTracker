@@ -10,7 +10,7 @@ import { Room } from './Room.jsx'
 export function ThirdPersonView({ ep, scheme }) {
   const c = SCENE[scheme]
   const [w, h, d] = ep.meta.room
-  const depth = Math.min(ep.meta.captureRange, 0.8)
+  const depth = Math.min(ep.meta.captureRange ?? 0.8, 0.8) // captureRange 가 null 이면 포획에 거리 조건이 없다
   return (
     <Canvas dpr={[1, 2]} camera={{ position: [w * 0.85, h * 1.25, d * 1.35], fov: 36, near: 0.05, far: 100 }}>
       <color attach="background" args={[c.background]} />
