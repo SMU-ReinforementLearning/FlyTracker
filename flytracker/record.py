@@ -28,7 +28,7 @@ EPISODE_FORMAT = "flytracker.episode/1"
 INDEX_FORMAT = "flytracker.runs/1"
 
 # 항목별 배열로 저장한다. 프레임마다 객체를 두는 것보다 파일이 작다.
-FRAME_KEYS = ("t", "fly", "aimerC", "aimerLook", "visible", "uv", "angleErrDeg", "distance", "evading", "captureProgress", "collided")
+FRAME_KEYS = ("t", "fly", "aimerC", "aimerLook", "visible", "uv", "angleErrDeg", "distance", "alarmed", "captureProgress", "collided")
 
 
 def _round(v, nd: int = 4):
@@ -113,7 +113,6 @@ class EpisodeRecorder(gym.Wrapper):
             "aspect": cfg.camera.aspect,
             "captureAngleDeg": cfg.capture_angle_deg,
             "captureRange": cfg.capture_range,
-            "flyMode": cfg.fly.mode,
             "seed": self._seed,
             **self.extra_meta,
         }
@@ -168,7 +167,6 @@ class RunStore:
                 "createdAt": now.isoformat(timespec="seconds"),
                 "algo": algo,
                 "actionMode": action_mode,
-                "flyMode": config.get("env", {}).get("fly", {}).get("mode"),
                 "notes": notes,
                 "episodeCount": 0,
             }

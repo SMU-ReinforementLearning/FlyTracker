@@ -1,4 +1,4 @@
-import { algoLabel, flyModeLabel, seconds, shortDate, signed, tagLabel } from '../data/labels.js'
+import { algoLabel, seconds, shortDate, signed, tagLabel } from '../data/labels.js'
 
 function RunList({ runs, error, selectedId, onSelect }) {
   if (error) {
@@ -22,9 +22,7 @@ function RunList({ runs, error, selectedId, onSelect }) {
               <span className="row-aside">{shortDate(run.createdAt)}</span>
             </span>
             <span className="row-line row-sub">
-              <span>
-                {algoLabel(run.algo)}, {flyModeLabel(run.flyMode)}
-              </span>
+              <span>{algoLabel(run.algo)}</span>
             </span>
           </button>
         </li>

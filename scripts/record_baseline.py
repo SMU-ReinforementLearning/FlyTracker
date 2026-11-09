@@ -1,6 +1,6 @@
 """규칙 기반 조준기로 에피소드를 돌려 runs/ 에 저장한다.
 
-예: python scripts/record_baseline.py --episodes 5 --fly-mode evade
+예: python scripts/record_baseline.py --episodes 5
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ def main() -> None:
     add_env_args(p)
     p.add_argument("--episodes", type=int, default=5)
     p.add_argument("--seed", type=int, default=0, help="에피소드 i 는 seed + i 로 시작한다")
-    p.add_argument("--name", default=None, help="실행 이름. 없으면 baseline-<파리 모드>")
+    p.add_argument("--name", default=None, help="실행 이름. 없으면 baseline")
     p.add_argument("--runs-dir", default="runs")
     p.add_argument("--no-save", action="store_true", help="저장하지 않고 요약만 출력한다")
     args = p.parse_args()
@@ -27,7 +27,7 @@ def main() -> None:
     env = EpisodeRecorder(make_env(cfg), meta={"policy": "rule-baseline"})
     run = None
     if not args.no_save:
-        name = args.name or f"baseline-{args.fly_mode}"
+        name = args.name or "baseline"
         run = RunStore(args.runs_dir).create_run(name, "rule-baseline", "continuous", {"env": cfg.to_dict(), "algo": {"name": "rule-baseline"}})
 
     episodes = []

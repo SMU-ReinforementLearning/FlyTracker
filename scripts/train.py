@@ -1,7 +1,7 @@
 """Stable-Baselines3 로 조준기를 학습하고, 일정 step 마다 평가 에피소드를 runs/ 에 저장한다.
 
 예: python scripts/train.py --algo sac --steps 200000 --eval-every 20000
-    python scripts/train.py --algo dqn --steps 200000 --fly-mode evade
+    python scripts/train.py --algo dqn --steps 200000
 
 DQN 은 이산 행동 11개, 나머지는 연속 행동 5차원으로 학습한다.
 학습 곡선은 runs/<run_id>/tb 의 TensorBoard 기록으로 본다.
@@ -84,7 +84,7 @@ def main() -> None:
 
     cfg = config_from_args(args)
     action_mode = "discrete" if args.algo == "dqn" else "continuous"
-    name = args.name or f"{args.algo}-{args.fly_mode}"
+    name = args.name or args.algo
     algo_cfg = {"name": args.algo, "steps": args.steps, "seed": args.seed, "frameStack": args.frame_stack}
     run = RunStore(args.runs_dir).create_run(name, args.algo, action_mode, {"env": cfg.to_dict(), "algo": algo_cfg}, notes=args.notes)
 

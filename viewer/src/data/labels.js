@@ -1,10 +1,8 @@
 // 화면 표기. ui-text.glossary.md 와 같은 표기를 쓴다.
 
 const ALGO = { sac: 'SAC', td3: 'TD3', ppo: 'PPO', dqn: 'DQN', 'rule-baseline': '기준선' }
-const FLY_MODE = { free: '자유비행', evade: '회피' }
 
 export const algoLabel = (algo) => ALGO[algo] ?? algo
-export const flyModeLabel = (mode) => FLY_MODE[mode] ?? mode ?? ''
 
 export function tagLabel(tag) {
   if (tag === 'baseline') return '기준선'

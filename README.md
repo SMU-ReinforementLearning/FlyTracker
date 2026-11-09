@@ -28,7 +28,7 @@ uv run pytest
 규칙 기반 조준기(기준선)로 에피소드를 만든다. 결과는 `runs/`에 쌓인다.
 
 ```sh
-uv run python scripts/record_baseline.py --episodes 5 --fly-mode evade
+uv run python scripts/record_baseline.py --episodes 5
 ```
 
 학습은 `scripts/train.py`로 한다. `--algo`는 `sac`, `td3`, `ppo`, `dqn` 중 하나다. DQN은 이산 행동 11개, 나머지는 연속 행동 5차원으로 학습한다. `--eval-every` step마다 같은 seed로 평가 에피소드를 저장하므로 체크포인트끼리 같은 상황에서 비교할 수 있다.
@@ -42,7 +42,6 @@ uv run tensorboard --logdir runs
 
 | 옵션 | 뜻 |
 |---|---|
-| `--fly-mode free` / `evade` | 자유비행, 또는 조준선이 향하거나 다가오면 피하는 초파리 |
 | `--fixed-aimer` | 조준기를 제자리에 두고 회전만 한다. 포획에 거리 조건이 없어진다 |
 | `--fov` | 세로 시야각(도). 기본 40 |
 | `--capture-range` | 포획 거리(m). 기본 0.5 |
@@ -56,6 +55,7 @@ uv run tensorboard --logdir runs
 |---|---|
 | 행동 | −1~1 범위 5차원. 앞뒤, 좌우, 상하 이동 속도와 yaw, pitch 각속도. 실제 속도는 가속도 제한 안에서 따라간다 |
 | 관측 | 19차원. 초파리가 보이는지, 화면 좌표, 가까운 정도, 마지막으로 본 방향, 놓친 뒤 지난 시간, 조준기 자신의 위치, 속도, 방향 |
+| 초파리 | 평시에는 직진하다 급선회한다. 조준기가 1m 안에서 빠르게 다가오거나 0.35m 안에 들어오면 비상시로 바뀌어, 60ms 뒤 옆으로 피하며 잠깐 빨라진다. 조준선이 자기를 겨누는지는 모른다 |
 | 포획 | 초파리가 조준 중심 3° 안, 0.5m 안에 0.2초 머무르면 성공하고 에피소드가 끝난다 |
 | 보상 | step마다 시간 벌점, 보일 때는 조준 오차와 거리 벌점, 놓쳤을 때 고정 벌점, 충돌과 행동 변화 벌점, 포획 보상 10 |
 | 시간 | 물리 step 10ms, 행동 하나를 2 step 유지, 에피소드 최대 10초 |

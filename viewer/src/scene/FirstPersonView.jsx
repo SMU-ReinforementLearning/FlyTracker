@@ -52,7 +52,7 @@ export function FirstPersonView({ ep }) {
       <Canvas dpr={[1, 2]} camera={{ fov: ep.meta.fovV }}>
         <color attach="background" args={[vf.background]} />
         <Room size={ep.meta.room} colors={{ grid: vf.grid, room: vf.room }} showAxes={false} />
-        <FlyMarker ep={ep} color={vf.fly} evadeColor={vf.fly} radius={0.012} />
+        <FlyMarker ep={ep} color={vf.fly} alarmColor={vf.fly} radius={0.012} />
         <FollowAimer ep={ep} />
         <FrameCounter />
       </Canvas>

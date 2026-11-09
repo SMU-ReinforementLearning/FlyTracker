@@ -29,7 +29,7 @@ export function prepareEpisode(raw) {
     look: flat3(f.aimerLook),
     uv,
     visible: Uint8Array.from(f.visible, Number),
-    evading: Uint8Array.from(f.evading, Number),
+    alarmed: Uint8Array.from(f.alarmed ?? f.evading, Number), // evading 은 이 필드가 생기기 전 기록
     capture: Float32Array.from(f.captureProgress),
     angle: Float32Array.from(f.angleErrDeg),
     distance: Float32Array.from(f.distance),
@@ -72,7 +72,7 @@ export function sample(ep, t, out) {
   out.look[2] /= len
   out.i = i
   out.visible = ep.visible[i] === 1
-  out.evading = ep.evading[i] === 1
+  out.alarmed = ep.alarmed[i] === 1
   out.capture = ep.capture[i]
   out.u = ep.uv[i * 2]
   out.v = ep.uv[i * 2 + 1]
@@ -80,5 +80,5 @@ export function sample(ep, t, out) {
 }
 
 export function newSample() {
-  return { fly: [0, 0, 0], C: [0, 0, 0], look: [0, 0, -1], i: 0, visible: false, evading: false, capture: 0, u: 0, v: 0 }
+  return { fly: [0, 0, 0], C: [0, 0, 0], look: [0, 0, -1], i: 0, visible: false, alarmed: false, capture: 0, u: 0, v: 0 }
 }

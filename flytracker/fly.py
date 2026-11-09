@@ -1,10 +1,12 @@
 """초파리. 규칙대로 움직이는 상대다.
 
-두 가지 모드가 있다.
-- free: 직선으로 날다가 무작위로 급선회(saccade)한다. 벽이 가까우면 방 안쪽으로 꺾는다.
-- evade: free 에 더해, 조준기가 다가오면 반응 지연 뒤 옆으로 급선회하고 잠깐 빨라진다.
-  세 가지 중 하나면 회피한다. 조준선이 자기를 향하거나, 접근 속도 / 거리(겉보기 크기가
-  커지는 빠르기)가 문턱을 넘거나, 거리가 아주 가깝다.
+행동은 평시와 비상시 두 가지 상태를 오간다.
+- 평시: 직선으로 날다가 무작위로 급선회(saccade)한다. 벽이 가까우면 방 안쪽으로 꺾는다.
+- 비상시: 위협을 느낀 때부터 반응 지연 뒤 옆으로 급선회하고 잠깐 빨라졌다가 평시로 돌아간다.
+
+위협은 초파리가 감각으로 알 수 있는 것만 센다. 조준기가 빠르게 다가오거나(접근 속도 / 거리,
+곧 겉보기 크기가 커지는 빠르기가 문턱을 넘음) 아주 가까우면 위협으로 느낀다.
+조준선이 자기를 겨누는지는 초파리가 알 수 없으므로 세지 않는다.
 
 초파리는 거의 모든 방향을 본다고 두어서 조준기 위치를 늘 안다.
 기본값은 출발점으로 잡은 값이다. 실제 초파리 비행 문헌값과 대조하지 않았다.
@@ -17,15 +19,12 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .geometry import angle_between, rotate_about_y, slerp, unit
+from .geometry import rotate_about_y, slerp, unit
 from .world import Room
-
-FLY_MODES = ("free", "evade")
 
 
 @dataclass(frozen=True)
 class FlyParams:
-    mode: str = "free"
     cruise_speed: float = 0.5  # m/s
     speed_jitter: float = 0.2  # 급선회마다 속도를 cruise × (1 ± jitter) 안에서 다시 고른다
     saccade_rate: float = 1.0  # 1초당 평균 급선회 횟수
@@ -35,10 +34,9 @@ class FlyParams:
     max_climb: float = 0.4  # 진행 방향의 y 성분 상한
     wall_lookahead: float = 0.3  # m
     wall_margin: float = 0.15  # m
-    evade_radius: float = 1.0  # m. 이 거리 안에서만 조준선과 다가옴에 반응한다
-    evade_aim_angle_deg: float = 10.0  # 조준선과 자기 방향 사이 각이 이보다 작으면 회피
-    evade_looming_rate: float = 1.0  # 1/s. 접근 속도 / 거리가 이 값을 넘으면 회피
-    evade_proximity: float = 0.35  # m. 이보다 가까우면 접근 속도와 관계없이 회피
+    evade_radius: float = 1.0  # m. 이 거리 안에서만 다가옴을 위협으로 느낀다
+    evade_looming_rate: float = 1.0  # 1/s. 접근 속도 / 거리가 이 값을 넘으면 위협
+    evade_proximity: float = 0.35  # m. 이보다 가까우면 접근 속도와 관계없이 위협
     evade_reaction: float = 0.06  # s
     evade_cooldown: float = 0.4  # s
     evade_speed_gain: float = 1.6  # 회피 직후 속도 배율
@@ -47,8 +45,6 @@ class FlyParams:
 
 class Fly:
     def __init__(self, params: FlyParams, rng: np.random.Generator):
-        if params.mode not in FLY_MODES:
-            raise ValueError(f"fly mode must be one of {FLY_MODES}, got {params.mode!r}")
         self.p = params
         self.rng = rng
         self.pos = np.zeros(3)
@@ -61,8 +57,9 @@ class Fly:
         self._prev_aimer_dist: float | None = None
 
     @property
-    def evading(self) -> bool:
-        return self._boost_left > 0.0
+    def alarmed(self) -> bool:
+        """비상시면 True. 위협을 느낀 때부터 반응 지연과 회피 가속이 끝날 때까지다."""
+        return self._react_in is not None or self._boost_left > 0.0
 
     def reset(self, pos: np.ndarray, heading: np.ndarray) -> None:
         self.pos = np.asarray(pos, dtype=float).copy()
@@ -74,13 +71,11 @@ class Fly:
         self._boost_left = 0.0
         self._prev_aimer_dist = None
 
-    def step(self, dt: float, room: Room, aimer_pos: np.ndarray, aimer_look: np.ndarray) -> None:
+    def step(self, dt: float, room: Room, aimer_pos: np.ndarray) -> None:
         p = self.p
         self._cooldown = max(0.0, self._cooldown - dt)
         self._boost_left = max(0.0, self._boost_left - dt)
-
-        if p.mode == "evade":
-            self._update_evade(dt, room, aimer_pos, aimer_look)
+        self._update_threat(dt, room, aimer_pos)
 
         if self._turn is None:
             ahead = self.pos + self.heading * p.wall_lookahead
@@ -96,7 +91,7 @@ class Fly:
             self.heading = slerp(start, target, s)
             self._turn = None if s >= 1.0 else (start, target, elapsed, duration)
 
-        speed = self.speed * (p.evade_speed_gain if self.evading else 1.0)
+        speed = self.speed * (p.evade_speed_gain if self._boost_left > 0.0 else 1.0)
         new_pos = self.pos + self.heading * speed * dt
         self.pos, hit = room.clamp(new_pos, margin=0.02)
         if hit.any():  # 안전장치. 벽 회피가 늦었으면 부딪힌 축의 방향을 뒤집는다
@@ -134,7 +129,7 @@ class Fly:
         inner = room.center + self.rng.uniform(-0.5, 0.5, size=3) * room.size / 2
         return unit(inner - self.pos)
 
-    def _update_evade(self, dt: float, room: Room, aimer_pos: np.ndarray, aimer_look: np.ndarray) -> None:
+    def _update_threat(self, dt: float, room: Room, aimer_pos: np.ndarray) -> None:
         p = self.p
         dist = float(np.linalg.norm(self.pos - aimer_pos))
         prev = self._prev_aimer_dist
@@ -150,10 +145,8 @@ class Fly:
         if prev is None or self._cooldown > 0.0:
             return
         closing = (prev - dist) / dt
-        near = dist < p.evade_radius
-        aimed = near and angle_between(aimer_look, self.pos - aimer_pos) < math.radians(p.evade_aim_angle_deg)
-        looming = near and closing / max(dist, 1e-6) > p.evade_looming_rate
-        if aimed or looming or dist < p.evade_proximity:
+        looming = dist < p.evade_radius and closing / max(dist, 1e-6) > p.evade_looming_rate
+        if looming or dist < p.evade_proximity:
             self._react_in = p.evade_reaction
 
     def _escape_dir(self, room: Room, aimer_pos: np.ndarray) -> np.ndarray:

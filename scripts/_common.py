@@ -9,7 +9,6 @@ from dataclasses import replace
 from flytracker import EnvConfig, EpisodeRecorder
 from flytracker.aimer import AimerLimits
 from flytracker.camera import CameraIntrinsics
-from flytracker.fly import FLY_MODES, FlyParams
 
 # Windows 콘솔이 cp949 여도 한국어 출력이 깨지지 않게 한다
 if hasattr(sys.stdout, "reconfigure"):
@@ -18,7 +17,6 @@ if hasattr(sys.stdout, "reconfigure"):
 
 def add_env_args(p: argparse.ArgumentParser) -> None:
     g = p.add_argument_group("환경")
-    g.add_argument("--fly-mode", choices=FLY_MODES, default="free")
     g.add_argument("--fixed-aimer", action="store_true", help="조준기를 제자리에 두고 회전만 하게 한다")
     g.add_argument("--fov", type=float, default=CameraIntrinsics.fov_v_deg, help="세로 시야각 (도)")
     g.add_argument(
@@ -39,7 +37,6 @@ def config_from_args(args: argparse.Namespace) -> EnvConfig:
     return replace(
         base,
         capture_range=capture_range,
-        fly=FlyParams(mode=args.fly_mode),
         aimer=AimerLimits(can_move=not args.fixed_aimer),
         camera=CameraIntrinsics(fov_v_deg=args.fov),
         max_seconds=args.max_seconds,

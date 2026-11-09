@@ -23,7 +23,7 @@ def test_discrete_actions_drive_one_axis():
 
 def test_same_seed_same_episode():
     def rollout():
-        env = FlyChaseEnv(EnvConfig(fly=FlyParams(mode="evade")))
+        env = FlyChaseEnv(EnvConfig())
         obs, _ = env.reset(seed=123)
         rng = np.random.default_rng(0)
         seq = [obs]

@@ -34,8 +34,9 @@ Splits the fly's behaviour into two states, normal and alarm, and drops the aim-
 - [x] `npm run build --prefix viewer` builds; UI evidence at 1600x900 and 390x844 shows the new readout and run subtitle without overflow. (2026-11-09)
 
 ## Current State
-- Code, tests, viewer, README and glossary changed in the worktree; awaiting the user's review before the feature commit.
-- The fly is now much easier for the baseline: moving aimer 29/40 (old evade 13/40, old free 28/40). Threshold tuning is a follow-up decision for the user.
+- Feature committed: two states, aim-line trigger and free mode removed.
+- The fly is now much easier for the moving-aimer baseline: 29/40 (old evade 13/40, old free 28/40).
+- The user corrected the aimer model (2026-11-09): a turret at a user-set position that only turns. A turret never approaches the fly, so the approach trigger rarely fires (fixed aimer: 0 alarm onsets in 40 episodes). The user chose to keep this change and re-decide the threat rule after the turret work.
 - Before a PR: remove the `AGENTS.md` pointer as the branch's last commit.
 
 ## Work Log
@@ -52,6 +53,43 @@ Splits the fly's behaviour into two states, normal and alarm, and drops the aim-
 - `issue-start` dry run, then the real run: issue #4, branch from `origin/main` @ 46e141e.
 #### Notes
 - No umbrella issue yet, so `--parent` was not passed.
+
+### feat: 초파리 평시와 비상시 상태 (#4)
+> why: a real fly cannot know where the aimer points; the fly should react only to what it can sense, and every fly should be able to react
+#### Scope
+- `flytracker/fly.py`, `flytracker/env.py`, `flytracker/record.py`, `scripts/_common.py`, `scripts/record_baseline.py`, `scripts/train.py`, `tests/test_fly.py` (new), `tests/test_env.py`, `tests/test_record_and_baseline.py`, `viewer/src/` (episode, labels, Readouts, Sidebar, FlyMarker, both views, theme), `README.md`, `ui-text.glossary.md`, this doc.
+#### Changes
+- `fly.py`: `mode`, `FLY_MODES`, `evade_aim_angle_deg` and the aim-line check removed; `step(dt, room, aimer_pos)`; `_update_threat` alarms on looming (closing / distance > 1/s within 1 m) or distance < 0.35 m; `alarmed` is true from the perceived threat through the reaction delay and the escape boost.
+- `env.py`: snapshot key `alarmed`, info key `fly_alarmed`. `record.py`: frame key `alarmed`; `flyMode` dropped from episode meta and the run index.
+- Scripts: `--fly-mode` removed; default run names `baseline` and `<algo>`.
+- Tests: `test_fly.py` (still aimer at 0.8 m does not alarm; 1.5 m/s approach alarms and returns to normal; aimer at 0.3 m alarms); `mode="evade"` uses replaced.
+- Viewer: `alarmed` per frame with a fallback to `evading` for older runs; readout 초파리 평시 / 비상시; colour token `evade` → `alarm`; run subtitle shows the algorithm only. Glossary: 비상시 / 평시 replaces 회피 중 / 비행 중; fly-mode rows removed.
+- README: `--fly-mode` row and example removed; environment table gains a 초파리 row.
+#### Verification
+- `uv run pytest`: 24 passed (21 before + 3 new). Before the change: 21 passed.
+- Baseline capture, `RuleAimer`, seeds 0-39 (scratchpad script, same seeds as #1):
+
+| aimer | old free | old evade | this change |
+| --- | --- | --- | --- |
+| moving | 28/40 | 13/40 | 29/40 (74 alarm onsets) |
+| fixed | 32/40 | 32/40 | 32/40 (0 alarm onsets) |
+
+- `npm run build --prefix viewer`: builds (chunk-size warning only, as before).
+- ko-writing `check.py README.md`: sections 1-8 clean.
+- UI evidence: `node .claude/skills/ui-evidence/scripts/shot.mjs --base http://localhost:5181 --name after` with the repo overlay (port 5180 was held by another node process, PID 41864, not started here).
+  - Commit: 46e141e (dirty, this change) · Chrome: 156.0.8078.74
+  - Serve check: `document.title === 'FlyTracker' && /평시|비상시/.test(document.body.innerText)`; the served `runs/index.json` listed only this worktree's `baseline` run.
+
+| page | viewport | file | overflow | probes | console |
+| --- | --- | --- | --- | --- | --- |
+| / | 1600x900 | `after-1600x900.png` (scratchpad) | none | readouts: 상태 보임 \| 조준 오차 1.4° \| 거리 1.22m \| 포획 진행 0% \| 초파리 평시 \| 프레임 120 / 215; run subtitle: 기준선 | favicon 404, THREE.Clock deprecation, GL ReadPixels perf warnings |
+| / | 390x844 (mobile, dpr 2) | `after-390x844.png` (scratchpad) | none | readouts: … 초파리 평시 …; run subtitle: 기준선 | THREE.Clock deprecation only |
+
+  - Desktop: run row shows 기준선 only; readouts show 초파리 평시. Phone: sidebar stacks above the scene, no horizontal overflow.
+  - The recorded episodes contain alarm frames (18-54 of 215-469 per episode), so the 비상시 colour path has data.
+#### Notes
+- Dropping the aim-line trigger made the fly about as easy as the old free mode for the moving baseline; most of the old evade difficulty came from the aim-line trigger.
+- Older `runs/` still carry `evading` and `flyMode`; the viewer reads `evading` as a fallback and ignores `flyMode`.
 
 ## Management Notes
 ### Follow-up Candidates

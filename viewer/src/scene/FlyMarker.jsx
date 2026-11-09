@@ -4,8 +4,8 @@ import * as THREE from 'three'
 import { frameAt, newSample, sample } from '../data/episode.js'
 import { clock } from '../playback/clock.js'
 
-/** 초파리 점과 지나온 궤적. 회피 중이면 evadeColor 로 칠한다. */
-export function FlyMarker({ ep, color, evadeColor, trailColor, radius = 0.025, trailSeconds = 1.5 }) {
+/** 초파리 점과 지나온 궤적. 비상시면 alarmColor 로 칠한다. */
+export function FlyMarker({ ep, color, alarmColor, trailColor, radius = 0.025, trailSeconds = 1.5 }) {
   const mesh = useRef()
   const mat = useRef()
   const s = useMemo(newSample, [])
@@ -27,7 +27,7 @@ export function FlyMarker({ ep, color, evadeColor, trailColor, radius = 0.025, t
   useFrame(() => {
     sample(ep, clock.t, s)
     mesh.current.position.set(s.fly[0], s.fly[1], s.fly[2])
-    mat.current.color.set(s.evading ? evadeColor : color)
+    mat.current.color.set(s.alarmed ? alarmColor : color)
     if (!trail) return
     const pos = trail.geometry.attributes.position.array
     const start = Math.max(frameAt(ep, clock.t - trailSeconds), s.i - (maxPts - 2))
