@@ -37,7 +37,8 @@ Replaces the environment's perfect fly detection with a detection model: each fr
 - Issue, branch and worktree created from `origin/main` @ 3f3a7e2. The user approved the recommended plan (2026-11-09): 1080 px height, drop distance from the observation, split the work into this issue (model) and a later measurement issue, documentation first.
 - Design note committed: `docs/issues/feature/13-feature-detection-model/detection-model.md`, numbers from `detection_curve.py` in the same folder.
 - The user decided (2026-11-09) to merge the design note now and to decide the implementation with the team in a meeting. Issue #13 stays open; the PR references it without closing it.
-- To resume: after the meeting, run `issue-start --issue 13` to cut a new branch and worktree from `origin/main`, then continue from the open Done Criteria (implementation, baseline comparison, viewer, README). If the team drops or changes the plan, update the design note first.
+- Explainer for deep-learning detectors (ViT, video transformers, candidate-crop design) added for the team meeting: `docs/issues/feature/13-feature-detection-model/deep-learning-detector.md`.
+- To resume: `issue-start` refuses because this management doc already exists, so cut the branch by hand from the remote base: `git fetch --prune`, then `git worktree add ../FlyTracker-13 -b 13-feature-detection-model origin/main`, then `EnterWorktree`. Continue from the open Done Criteria (implementation, baseline comparison, viewer, README). If the team drops or changes the plan, update the design note first.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -82,6 +83,23 @@ Replaces the environment's perfect fly detection with a detection model: each fr
 - `grep -c 13-feature-detection-model AGENTS.md` prints 0.
 #### Notes
 - The PR body uses `Refs #13`, not `Closes #13`, so the merge does not close the issue.
+
+### docs: 딥러닝 검출기 방식 설명 (#13)
+> why: the user asked how a (vision) transformer would detect the fly and asked to document it for the team meeting
+#### Scope
+- `docs/issues/feature/13-feature-detection-model/deep-learning-detector.md` (new), one link sentence in `detection-model.md`, this doc's Current State.
+#### Changes
+- Explainer (Korean): background (turret, frame, apparent size, detection model and its two settings, motion detection), ViT structure (patches, tokens, attention), per-patch detection output (probability and in-patch position), time axis (TimeSformer, ViViT), why a full 1440 × 1080 frame is unsuitable (fly 1.48-4.45 px against 16 px patches; 6,120 tokens per frame, 30,600 for 5 frames, about 9.4 × 10^8 comparisons), the candidate-crop design (motion detection, 64 × 64 px × 5 frames, 320 tokens, about 1.0 × 10^5 comparisons per candidate), and its place in the measurement work (motion only, plus CNN, plus transformer; selection rule and how `n50_cycles` and `noise_px` are read off).
+- `detection-model.md`: measurement step 3 links the explainer.
+- Current State: resume instruction corrected. `issue-start --issue 13` fails because this management doc already exists; the branch is cut by hand from `origin/main`, as this resumption did.
+#### Verification
+- Token counts recomputed: 1440 / 16 = 90, 1080 / 16 = 67.5 → 90 × 68 = 6,120; × 5 = 30,600; 30,600² = 936,360,000; 64 × 5 = 320; 320² = 102,400; ratio about 9,100.
+- ko-writing `check.py` with a glossary: sections 1-10 clean; section 11 flags two words in the opening summary ("조각", "작은 신경망") that are used there with their plain meaning spelled out, so they stay.
+- One cold-reader review by a fresh subagent. It found missing context (turret, detection model, motion detection undefined in this file), an unexplained rounding (6,100 × 5 ≠ 30,600), "후보" and "모델" each used for two things, and a weak argument for CNN; the explainer was rewritten with a background section and fixed numbers. A second review was not run.
+#### Notes
+- Resumed on a branch cut by hand from `origin/main` @ 25b05d1 after the first branch was cleaned up.
+- Status stays paused. The branch merges in the same session, so no `AGENTS.md` pointer was added and none needs removing.
+- The cited papers (ViT, DETR, TimeSformer, ViViT) were not re-read in this work; the explainer says so.
 
 ## Management Notes
 ### Follow-up Candidates
