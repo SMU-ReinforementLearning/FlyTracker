@@ -5,7 +5,7 @@
 - Branch: `7-feature-fixed-turret`
 - Umbrella: (none) — no umbrella issue exists yet
 - Related: #1 (built the flying aimer), #3 (projectile note), #4 (fly threat rule)
-- Status: in progress
+- Status: done
 
 ## Summary
 Turns the aimer into what the user meant from the start: a turret at a user-set position that only turns its aim, like an anti-aircraft gun. Issue #1 had built a camera that flies around the room; the move axes, the moving-aimer option, the position and velocity observations, and the distance and collision rewards are removed.
@@ -39,7 +39,7 @@ Turns the aimer into what the user meant from the start: a turret at a user-set 
 - [x] `npm run build --prefix viewer` builds; UI evidence shows the turret at its position without overflow. (2026-11-09)
 
 ## Current State
-- Change complete in the worktree.
+- Change committed and PR opened; the `AGENTS.md` pointer was removed in the branch's last commit.
 - The task became easy for the rule baseline: 40/40 captures, mean 1.92 s to capture, capture distance 0.71-2.62 m, no alarm onsets. A fixed turret with no distance condition only needs to keep a 0.5 m/s fly inside 3 deg for 0.2 s. How to make it harder (capture by projectile per #3, longer hold, narrower FOV, faster or evasive fly, a turret-appropriate threat rule) is the user's next decision.
 
 ## Work Log
@@ -82,6 +82,18 @@ Turns the aimer into what the user meant from the start: a turret at a user-set 
   - Desktop: the turret body sits in front of the +z wall and its frustum (0.8 m deep) points into the room at the fly 2.59 m away.
 #### Notes
 - The `captureRange` meta is now `null` by default; the viewer falls back to a 0.8 m frustum.
+
+### chore: 작업 마무리와 AGENTS.md 포인터 제거 (#7)
+> why: the branch's last commit before the PR; `main` takes PRs only, so the pointer must go now
+#### Scope
+- `AGENTS.md`, this doc's Status and Current State, the registry row.
+#### Changes
+- `AGENTS.md` Recent Active Context: pointer line removed, `- (none)` placeholder restored.
+- Status: in progress → done, here and in `docs/issues/README.md`.
+#### Verification
+- `grep -c 7-feature-fixed-turret AGENTS.md` prints 0.
+#### Notes
+- The user asked to merge when done and to show a local preview afterwards.
 
 ## Management Notes
 ### Follow-up Candidates
