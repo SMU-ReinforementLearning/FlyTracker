@@ -4,7 +4,7 @@
 - Issue: #15
 - Branch: `15-docs-readme-structure-episode`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 Adds plain-language README sections that explain how the repo's parts connect, what the environment takes from Gymnasium, and what one episode is and what it leaves on disk. The user asked for these after a Q&A session (2026-11-09) in which the same three questions had no answer in the README.
@@ -28,7 +28,7 @@ Adds plain-language README sections that explain how the repo's parts connect, w
 
 ## Current State
 - README sections committed; a cold-reader review was applied to the new sections.
-- Next: remove the `AGENTS.md` pointer as the last commit, open the PR and squash-merge it (the user asked to merge).
+- `AGENTS.md` pointer removed in the branch's last commit; PR opened and squash-merged at the user's request.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -62,6 +62,18 @@ Adds plain-language README sections that explain how the repo's parts connect, w
 - Cold-reader subagent (README only): fixed step's two meanings, frame count 500 vs 501, eval seeds, 기준선 used before its definition, how the dev server hands files to the viewer, `aimerC`, frame-stack shape.
 #### Notes
 - Cold-reader items in pre-existing README text were left alone (out of scope): the screen rectangle introduced without a lead-in, `hook` and `RackTracker` undefined, "위협" and "평시" undefined, the `−z` default facing next to "z 정면", the "각각" mapping in the reward/fly paragraph, the heading `## 실행` versus the glossary term 실행 (= run). Listed under Follow-up Candidates.
+
+### chore: 작업 마무리와 AGENTS.md 포인터 제거 (#15)
+> why: the branch's last commit before the PR; `main` takes PRs only, so the pointer must go now
+#### Scope
+- `AGENTS.md`, this doc's Status and Current State, the registry row.
+#### Changes
+- `AGENTS.md` Recent Active Context: pointer line removed, `- (none)` placeholder restored.
+- Status: in progress → done, here and in `docs/issues/README.md`.
+#### Verification
+- `grep -c 15-docs-readme-structure-episode AGENTS.md` prints 0.
+#### Notes
+- The user said "머지해" while the cold-reader fixes were being applied.
 
 ## Management Notes
 ### Follow-up Candidates
