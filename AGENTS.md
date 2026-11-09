@@ -62,7 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `13-feature-detection-model` — `docs/issues/feature/13-feature-detection-model.md` — 조준기 관측에 초파리 검출 모델 넣기
+- (none)
 
 ## Environment (repo slot)
 

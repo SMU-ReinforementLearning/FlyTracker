@@ -5,7 +5,7 @@
 - Branch: `13-feature-detection-model`
 - Umbrella: (none) — no umbrella issue exists yet
 - Related: #3 (aim point; may need distance later), #9 (fly flight model, baseline search), #11 (real-size fly model used for the body length)
-- Status: in progress
+- Status: paused — design merged; implementation waits for the team meeting
 
 ## Summary
 Replaces the environment's perfect fly detection with a detection model: each frame the fly is detected with a probability set by its size on screen, and a detected position carries a small pixel error. Today any fly inside the camera frustum is known exactly, although a 3 mm fly is only 1-9 px on a 1080 px image at room distances.
@@ -36,7 +36,8 @@ Replaces the environment's perfect fly detection with a detection model: each fr
 ## Current State
 - Issue, branch and worktree created from `origin/main` @ 3f3a7e2. The user approved the recommended plan (2026-11-09): 1080 px height, drop distance from the observation, split the work into this issue (model) and a later measurement issue, documentation first.
 - Design note committed: `docs/issues/feature/13-feature-detection-model/detection-model.md`, numbers from `detection_curve.py` in the same folder.
-- Next: implementation (`flytracker/detection.py`, `env.py`, `baseline.py`, tests), then the baseline comparison, then viewer and README.
+- The user decided (2026-11-09) to merge the design note now and to decide the implementation with the team in a meeting. Issue #13 stays open; the PR references it without closing it.
+- To resume: after the meeting, run `issue-start --issue 13` to cut a new branch and worktree from `origin/main`, then continue from the open Done Criteria (implementation, baseline comparison, viewer, README). If the team drops or changes the plan, update the design note first.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -69,6 +70,18 @@ Replaces the environment's perfect fly detection with a detection model: each fr
 #### Notes
 - Johnson criterion (1.0 cycle) and the TTPF formula were confirmed only from web search summaries, not the original texts; the note labels both "검색 요약". The criterion comes from human observers, so its fit to an automated detector is an assumption.
 - Earlier in the conversation the per-distance pixel table used a 2.5 mm body and listed 5.6 m (room diagonal); the note uses 3.0 mm and the real farthest distance from the turret, 3.47 m.
+
+### chore: 설계 문서 merge와 AGENTS.md 포인터 제거 (#13)
+> why: the user asked to merge the design note now and decide the implementation with the team; `main` takes PRs only, so the pointer goes in the branch's last commit
+#### Scope
+- `AGENTS.md`, `docs/issues/README.md`, this doc's Status and Current State.
+#### Changes
+- `AGENTS.md` Recent Active Context: pointer line removed, `- (none)` restored.
+- Status: in progress → paused, here and in the registry row. Issue #13 stays open as the record of the pending implementation.
+#### Verification
+- `grep -c 13-feature-detection-model AGENTS.md` prints 0.
+#### Notes
+- The PR body uses `Refs #13`, not `Closes #13`, so the merge does not close the issue.
 
 ## Management Notes
 ### Follow-up Candidates
