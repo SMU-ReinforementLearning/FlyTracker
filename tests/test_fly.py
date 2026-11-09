@@ -4,7 +4,7 @@ from flytracker.fly import Fly, FlyParams
 from flytracker.world import Room
 
 DT = 0.01
-HOVER = FlyParams(cruise_speed=0.0, speed_jitter=0.0, saccade_rate=0.0)
+HOVER = FlyParams.hovering()
 
 
 def hovering_fly(pos=(0.0, 1.2, 0.0)) -> Fly:

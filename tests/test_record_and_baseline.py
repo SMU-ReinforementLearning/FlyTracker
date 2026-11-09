@@ -7,6 +7,7 @@ from flytracker.record import FRAME_KEYS
 
 
 def run_episode(env, policy, seed):
+    policy.reset()
     obs, _ = env.reset(seed=seed)
     done = False
     while not done:
@@ -37,12 +38,12 @@ def test_recorder_writes_run_files(tmp_path):
 
 
 def test_config_roundtrip():
-    cfg = EnvConfig(fly=FlyParams(cruise_speed=0.3))
+    cfg = EnvConfig(fly=FlyParams(speed_long=0.4))
     assert EnvConfig.from_dict(json.loads(json.dumps(cfg.to_dict()))) == cfg
 
 
 def test_baseline_catches_hovering_fly():
-    fly = FlyParams(cruise_speed=0.0, speed_jitter=0.0, saccade_rate=0.0)
+    fly = FlyParams.hovering()
     cfg = EnvConfig(fly=fly, start_facing_fly=True)
     env = EpisodeRecorder(make_env(cfg))
     caught = sum(run_episode(env, RuleAimer(), seed=s)["summary"]["captured"] for s in range(5))
