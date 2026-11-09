@@ -8,3 +8,4 @@ One row per management document, added in the same commit that creates the doc.
 | #3 | docs/issues/docs/3-docs-aim-point-ballistics.md | done | 조준점 계산과 탄속 가정 정리 |
 | #4 | docs/issues/feature/4-feature-fly-alarm-state.md | done | 초파리 행동을 평시와 비상시로 나누기 |
 | #7 | docs/issues/feature/7-feature-fixed-turret.md | done | 조준기를 위치가 고정된 포대로 바꾸기 |
+| #9 | docs/issues/feature/9-feature-fly-realism-search.md | in progress | 초파리 비행을 문헌값에 맞추고 조준기 탐색 넣기 |
