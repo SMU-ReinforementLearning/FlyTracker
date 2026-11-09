@@ -5,7 +5,7 @@
 - Branch: `9-feature-fly-realism-search`
 - Umbrella: (none) — no umbrella issue exists yet
 - Related: #4 (fly states), #7 (fixed turret)
-- Status: in progress
+- Status: done
 
 ## Summary
 Makes the fly move like a real fruit fly using published free-flight measurements, moves the turret to the floor centre, and gives the rule-based baseline a search pattern for when it has lost the fly. The search lives only in the baseline; the environment's observation, reward and action are unchanged, so the RL agent still has to learn its own search.
@@ -30,7 +30,7 @@ Makes the fly move like a real fruit fly using published free-flight measurement
 - [x] Baseline compared with the old spin search on seeds 0-39 at the new turret position. (2026-11-09)
 
 ## Current State
-- Code, tests, README and design note done in the worktree.
+- Committed and PR opened; the `AGENTS.md` pointer was removed in the branch's last commit.
 - The user decided (2026-11-09) that the search stays in the baseline only, and that band order must not use the simulator's knowledge of where flies are (geometry-only bands 10°, 45°, 80°).
 
 ## Work Log
@@ -78,6 +78,18 @@ Makes the fly move like a real fruit fly using published free-flight measurement
 - Every number in the note's model column matches the `fly_stats.py` output above.
 #### Notes
 - Sources actually read: Reynolds & Frye 2007 (PMC full text) and Muijres et al. 2015 (PDF text). Muijres 2014, Censi 2013 Results and the escape numbers come from secondary sources and are labelled so.
+
+### chore: 작업 마무리와 AGENTS.md 포인터 제거 (#9)
+> why: the branch's last commit before the PR; `main` takes PRs only, so the pointer must go now
+#### Scope
+- `AGENTS.md`, this doc's Status and Current State, the registry row.
+#### Changes
+- `AGENTS.md` Recent Active Context: pointer line removed, `- (none)` placeholder restored.
+- Status: in progress → done, here and in `docs/issues/README.md`.
+#### Verification
+- `grep -c 9-feature-fly-realism-search AGENTS.md` prints 0.
+#### Notes
+- The user asked earlier to merge when work is done and show a local preview.
 
 ## Management Notes
 ### Follow-up Candidates

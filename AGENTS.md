@@ -62,7 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `9-feature-fly-realism-search` — `docs/issues/feature/9-feature-fly-realism-search.md` — 초파리 비행을 문헌값에 맞추고 조준기 탐색 넣기
+- (none)
 
 ## Environment (repo slot)
 
