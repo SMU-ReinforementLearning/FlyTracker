@@ -5,7 +5,7 @@
 - Branch: `11-feature-fly-model`
 - Umbrella: (none) — no umbrella issue exists yet
 - Related: #9 (fly flight model; its design note gets two evidence upgrades here)
-- Status: in progress
+- Status: done
 
 ## Summary
 Replaces the large sphere that stood for the fly in the viewer with a real fruit fly model at real size (body about 3 mm), built from the flybody MuJoCo model (TuragaLab, Apache-2.0). Both views draw the fly at real size; the third-person view relies on the trail to show where it is, as the user asked.
@@ -34,7 +34,7 @@ Replaces the large sphere that stood for the fly in the viewer with a real fruit
 - [x] UI evidence at 1600x900 and 390x844 shows the model loaded, no sphere, no ring, no overflow. (2026-11-09)
 
 ## Current State
-- Implemented and verified in the worktree; ready to commit, PR and merge.
+- Committed and PR opened; the `AGENTS.md` pointer was removed in the branch's last commit.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -90,6 +90,18 @@ Replaces the large sphere that stood for the fly in the viewer with a real fruit
 - ko-writing `check.py` on the note: sections 1-8 clean. `uv run pytest`: 28 passed (comment-only code change).
 #### Notes
 - Censi 2013 read from PMC (Results verbatim up to about half the page); Dickinson & Muijres 2016 read from PMC (first ~40k characters verbatim).
+
+### chore: 작업 마무리와 AGENTS.md 포인터 제거 (#11)
+> why: the branch's last commit before the PR; `main` takes PRs only, so the pointer must go now
+#### Scope
+- `AGENTS.md`, this doc's Status and Current State, the registry row.
+#### Changes
+- `AGENTS.md` Recent Active Context: pointer line removed, `- (none)` placeholder restored.
+- Status: in progress → done, here and in `docs/issues/README.md`.
+#### Verification
+- `grep -c 11-feature-fly-model AGENTS.md` prints 0.
+#### Notes
+- The user asked to merge when work is done.
 
 ## Management Notes
 ### Follow-up Candidates
