@@ -48,6 +48,23 @@ Makes the fly move like a real fruit fly using published free-flight measurement
 #### Notes
 - No umbrella issue yet, so `--parent` was not passed.
 
+### feat: 초파리 비행을 문헌값에 맞추고 조준기 탐색 넣기 (#9)
+> why: the fly moved at a constant 0.5 m/s with uniform 60-120° turns once a second; the user wanted it to fly like a real fruit fly, the turret at the floor centre, and a published search pattern when the baseline loses the fly
+#### Scope
+- `flytracker/fly.py`, `flytracker/env.py`, `flytracker/baseline.py`, `scripts/_common.py`, `tests/test_env.py`, `tests/test_fly.py`, `tests/test_record_and_baseline.py`, `tests/test_baseline_search.py` (new), this doc.
+#### Changes
+- `fly.py`: straight segments with power-law length (exponent 1.3, 0.01-2 m) counted only between turns; per-segment speed N(0.285 or 0.356, 0.19) m/s clipped to 0.05-1.0, approached with a 0.1 s time constant; saccades 93 ± 27° (20-180°) over 49 ± 18 ms with a bell-shaped angular-velocity profile; 25% speed dip while turning; 0.8 probability of keeping the previous turn direction; escape turn 25 ms after a 60 ms delay. `FlyParams.hovering()` for tests; `Fly.turning`.
+- `env.py`: `turret_pos` default `(0, 0.1, 0)`; the start aim faces -z when the turret is directly under the room centre.
+- `baseline.py`: local search (slew to the last-seen direction, then a figure-eight Lissajous 1:2 around it, period 1.6 s, yaw amplitude 15° growing 15° per cycle to 45°) and global search (yaw at 90% of max rate, pitch bands from the floor up spaced by the vertical FOV minus 5° overlap: 10°, 45°, 80°); `reset()` per episode; `scripts/_common.py` calls it.
+- Tests: hovering fly via `FlyParams.hovering()`; new search tests.
+#### Verification
+- `uv run pytest`: 28 passed (26 before + 2 search tests).
+- `fly_stats.py` (200 flies × 10 s, no threat): speed 0.273 ± 0.164 m/s; 1.53 saccades/s; 98 ± 31°; 55 ± 18 ms; peak yaw rate median 3,670°/s; inter-saccade distance slope -1.23 over 10-100 mm; same-direction runs mean 3.2. Literature targets in the design note.
+- Baseline vs the old spin search, seeds 0-39, turret at the floor centre (scratchpad script): new 40/40, first sight 3.69 s, capture 4.37 s, visible 18%; old 0/40, never saw the fly. 0 alarm onsets in both.
+#### Notes
+- A first version ordered the bands by the fly's elevation distribution (50°, 80°, 20°; first sight 1.41 s). The user pointed out that this uses simulator knowledge the agent does not have; the bands are now geometry-only.
+- The user confirmed the search stays in the baseline only; the environment gives the agent no search help.
+
 ## Management Notes
 ### Follow-up Candidates
 - Threat rule a fly could perceive from a fixed turret.

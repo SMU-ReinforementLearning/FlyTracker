@@ -22,7 +22,7 @@ def add_env_args(p: argparse.ArgumentParser) -> None:
         nargs=3,
         metavar=("X", "Y", "Z"),
         default=EnvConfig.turret_pos,
-        help="조준기 자리 (m). 기본은 +z 벽 앞 가운데, 높이 1.2",
+        help="조준기 자리 (m). 기본은 바닥 정가운데, 회전축 높이 0.1",
     )
     g.add_argument("--fov", type=float, default=CameraIntrinsics.fov_v_deg, help="세로 시야각 (도)")
     g.add_argument(
@@ -48,6 +48,8 @@ def config_from_args(args: argparse.Namespace) -> EnvConfig:
 
 def run_episode(env: EpisodeRecorder, policy, seed: int) -> dict:
     """policy 는 predict(obs, deterministic=True) 를 가진 객체 (SB3 모델 또는 RuleAimer)."""
+    if hasattr(policy, "reset"):  # RuleAimer 는 탐색 상태를 에피소드마다 지운다
+        policy.reset()
     obs, _ = env.reset(seed=seed)
     done = False
     while not done:

@@ -44,12 +44,12 @@ class EnvConfig:
     dt: float = 0.01  # 물리 step (s)
     frame_skip: int = 2  # 행동 하나를 몇 물리 step 동안 유지하나
     max_seconds: float = 10.0
-    turret_pos: tuple[float, float, float] = (0.0, 1.2, 1.4)  # m. 조준기 자리. 기본은 +z 벽 앞 가운데
+    turret_pos: tuple[float, float, float] = (0.0, 0.1, 0.0)  # m. 조준기 자리. 기본은 바닥 정가운데, 회전축 높이 0.1m
     capture_angle_deg: float = 3.0
     capture_range: float | None = None  # m. None 이면 거리 조건 없음
     capture_hold: float = 0.2  # s. 이 시간 동안 조건을 이어서 지키면 포획
     min_start_distance: float = 1.5  # m. 시작할 때 초파리와 조준기 사이 최소 거리
-    start_facing_fly: bool = False  # True 면 초파리를, False 면 방 가운데를 바라보며 시작한다
+    start_facing_fly: bool = False  # True 면 초파리를, False 면 방 가운데 쪽(바로 아래면 −z)을 수평으로 바라보며 시작한다
     memory_horizon: float = 2.0  # s. 놓친 뒤 지난 시간을 이 값으로 나눈다
 
     def to_dict(self) -> dict:
@@ -134,9 +134,10 @@ class FlyChaseEnv(gym.Env):
             d = unit(fly_pos - aimer_pos)
             yaw = math.atan2(-d[0], -d[2])
             pitch = float(np.clip(math.asin(d[1]), -math.radians(cfg.aimer.max_pitch_deg), math.radians(cfg.aimer.max_pitch_deg)))
-        else:  # 방 가운데를 수평으로 바라본다
+        else:  # 방 가운데 쪽을 수평으로 바라본다. 방 가운데 바로 아래면 −z 를 본다
             d = room.center - aimer_pos
-            yaw, pitch = math.atan2(-d[0], -d[2]), 0.0
+            yaw = math.atan2(-d[0], -d[2]) if math.hypot(d[0], d[2]) > 1e-6 else 0.0
+            pitch = 0.0
         self.aimer.reset(aimer_pos, yaw, pitch)
 
         self.t = 0.0

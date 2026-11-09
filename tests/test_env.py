@@ -36,7 +36,7 @@ def test_same_seed_same_episode():
 
 
 def static_fly_config(**kw) -> EnvConfig:
-    fly = FlyParams(cruise_speed=0.0, speed_jitter=0.0, saccade_rate=0.0)
+    fly = FlyParams.hovering()
     return replace(EnvConfig(fly=fly), **kw)
 
 
