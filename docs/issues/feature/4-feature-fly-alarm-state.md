@@ -5,7 +5,7 @@
 - Branch: `4-feature-fly-alarm-state`
 - Umbrella: (none) — no umbrella issue exists yet
 - Related: #3 (design note that raised the aim-line question)
-- Status: in progress
+- Status: done
 
 ## Summary
 Splits the fly's behaviour into two states, normal and alarm, and drops the aim-line trigger because a real fly cannot know where the aimer points. The fly now enters the alarm state only on what it can sense (a fast approach within 1 m, or the aimer closer than 0.35 m), and the free/evade mode switch is removed so every fly can be alarmed.
@@ -37,7 +37,8 @@ Splits the fly's behaviour into two states, normal and alarm, and drops the aim-
 - Feature committed: two states, aim-line trigger and free mode removed.
 - The fly is now much easier for the moving-aimer baseline: 29/40 (old evade 13/40, old free 28/40).
 - The user corrected the aimer model (2026-11-09): a turret at a user-set position that only turns. A turret never approaches the fly, so the approach trigger rarely fires (fixed aimer: 0 alarm onsets in 40 episodes). The user chose to keep this change and re-decide the threat rule after the turret work.
-- Before a PR: remove the `AGENTS.md` pointer as the branch's last commit.
+- PR opened; the `AGENTS.md` pointer was removed in the branch's last commit.
+- Next (separate issue, after this PR and #3 merge): make the aimer a fixed turret, then re-decide the fly's threat rule for it.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -90,6 +91,18 @@ Splits the fly's behaviour into two states, normal and alarm, and drops the aim-
 #### Notes
 - Dropping the aim-line trigger made the fly about as easy as the old free mode for the moving baseline; most of the old evade difficulty came from the aim-line trigger.
 - Older `runs/` still carry `evading` and `flyMode`; the viewer reads `evading` as a fallback and ignores `flyMode`.
+
+### chore: 작업 마무리와 AGENTS.md 포인터 제거 (#4)
+> why: the branch's last commit before the PR; `main` takes PRs only, so the pointer must go now
+#### Scope
+- `AGENTS.md`, this doc's Status and Current State, the registry row.
+#### Changes
+- `AGENTS.md` Recent Active Context: pointer line removed, `- (none)` placeholder restored.
+- Status: in progress → done, here and in `docs/issues/README.md`.
+#### Verification
+- `grep -c 4-feature-fly-alarm-state AGENTS.md` prints 0.
+#### Notes
+- The registry row will conflict with #3's row if both PRs are squash-merged in turn; resolve by keeping both rows.
 
 ## Management Notes
 ### Follow-up Candidates
