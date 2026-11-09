@@ -65,6 +65,20 @@ Makes the fly move like a real fruit fly using published free-flight measurement
 - A first version ordered the bands by the fly's elevation distribution (50°, 80°, 20°; first sight 1.41 s). The user pointed out that this uses simulator knowledge the agent does not have; the bands are now geometry-only.
 - The user confirmed the search stays in the baseline only; the environment gives the agent no search help.
 
+### docs: 초파리 비행과 기준선 탐색 근거 문서 (#9)
+> why: teammates need to see which fly values come from papers, which are secondary or assumed, and that the baseline search is not part of the environment
+#### Scope
+- `docs/issues/feature/9-feature-fly-realism-search/fly-flight-and-search-model.md`, `docs/issues/feature/9-feature-fly-realism-search/fly_stats.py`, `README.md`, this doc.
+#### Changes
+- Design note (Korean): parameter table with source and evidence level (original text / secondary / assumed), model-vs-literature table, baseline search description and comparison, limits, references.
+- `fly_stats.py`: measures the fly model's flight statistics.
+- README: fly row rewritten, turret default `0 0.1 0`, baseline search sentence that states the environment has no search, link to the note.
+#### Verification
+- ko-writing `check.py` on the note and README: sections 1-8 clean.
+- Every number in the note's model column matches the `fly_stats.py` output above.
+#### Notes
+- Sources actually read: Reynolds & Frye 2007 (PMC full text) and Muijres et al. 2015 (PDF text). Muijres 2014, Censi 2013 Results and the escape numbers come from secondary sources and are labelled so.
+
 ## Management Notes
 ### Follow-up Candidates
 - Threat rule a fly could perceive from a fixed turret.
