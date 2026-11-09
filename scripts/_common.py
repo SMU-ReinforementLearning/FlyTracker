@@ -7,7 +7,6 @@ import sys
 from dataclasses import replace
 
 from flytracker import EnvConfig, EpisodeRecorder
-from flytracker.aimer import AimerLimits
 from flytracker.camera import CameraIntrinsics
 
 # Windows 콘솔이 cp949 여도 한국어 출력이 깨지지 않게 한다
@@ -17,27 +16,30 @@ if hasattr(sys.stdout, "reconfigure"):
 
 def add_env_args(p: argparse.ArgumentParser) -> None:
     g = p.add_argument_group("환경")
-    g.add_argument("--fixed-aimer", action="store_true", help="조준기를 제자리에 두고 회전만 하게 한다")
+    g.add_argument(
+        "--turret-pos",
+        type=float,
+        nargs=3,
+        metavar=("X", "Y", "Z"),
+        default=EnvConfig.turret_pos,
+        help="조준기 자리 (m). 기본은 +z 벽 앞 가운데, 높이 1.2",
+    )
     g.add_argument("--fov", type=float, default=CameraIntrinsics.fov_v_deg, help="세로 시야각 (도)")
     g.add_argument(
         "--capture-range",
         type=float,
         default=None,
-        help="포획 거리 (m). 없으면 0.5, --fixed-aimer 이면 방 대각선(거리 조건 없음)",
+        help="포획 거리 (m). 없으면 거리 조건 없음",
     )
     g.add_argument("--max-seconds", type=float, default=EnvConfig.max_seconds)
-    g.add_argument("--start-facing-fly", action="store_true", help="시작할 때 파리를 바라보게 한다")
+    g.add_argument("--start-facing-fly", action="store_true", help="시작할 때 파리를 바라보게 한다. 없으면 방 가운데를 본다")
 
 
 def config_from_args(args: argparse.Namespace) -> EnvConfig:
-    base = EnvConfig()
-    capture_range = args.capture_range
-    if capture_range is None:
-        capture_range = base.room.diagonal if args.fixed_aimer else base.capture_range
     return replace(
-        base,
-        capture_range=capture_range,
-        aimer=AimerLimits(can_move=not args.fixed_aimer),
+        EnvConfig(),
+        turret_pos=tuple(args.turret_pos),
+        capture_range=args.capture_range,
         camera=CameraIntrinsics(fov_v_deg=args.fov),
         max_seconds=args.max_seconds,
         start_facing_fly=args.start_facing_fly,

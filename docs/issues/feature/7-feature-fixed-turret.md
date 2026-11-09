@@ -57,6 +57,32 @@ Turns the aimer into what the user meant from the start: a turret at a user-set 
 #### Notes
 - No umbrella issue yet, so `--parent` was not passed.
 
+### feat: 조준기를 고정 포대로 바꾸기 (#7)
+> why: the user's aimer is a turret at a fixed position that only turns; the flying aimer from #1 was a misunderstanding
+#### Scope
+- `flytracker/` (aimer, env, wrappers, baseline, record, fly docstring), `scripts/`, `tests/test_aimer.py`, `tests/test_env.py`, `viewer/src/scene/ThirdPersonView.jsx`, `README.md`, this doc.
+#### Changes
+- As listed under Scope above: 2-D action, fixed `turret_pos` (default `(0, 1.2, 1.4)`), no distance condition by default, 13-D observation, reward without distance and collision terms, 5 discrete actions, rotate-only baseline, `--turret-pos` replaces `--fixed-aimer`.
+#### Verification
+- `uv run pytest`: 26 passed (24 before; the 5 movement tests in `test_aimer.py` replaced by 4, plus 3 new env tests).
+- Baseline, `RuleAimer`, seeds 0-39, default turret: 40/40 captured, mean 1.92 s, capture distance 0.71-2.62 m, 0 alarm onsets. For comparison, the old fixed-aimer option (random position per episode) captured 32/40.
+- `scripts/record_baseline.py --episodes 5`: 5/5; `--turret-pos 1.5 0.5 -1.2 --capture-range 0.8 --episodes 3 --no-save`: 0/3 (the fly rarely comes within 0.8 m), both run.
+- `scripts/train.py --algo sac --steps 2000 --eval-every 1000 --eval-episodes 2` and the same with `--algo dqn`: both finish and save 3 evaluation sets (runs written to the scratchpad).
+- `npm run build --prefix viewer`: builds (chunk-size warning only).
+- ko-writing `check.py README.md`: sections 1-8 clean.
+- UI evidence: `node .claude/skills/ui-evidence/scripts/shot.mjs --name after` with the repo overlay (`http://localhost:5180`, served from this worktree).
+  - Commit: ce79745 (dirty, this change) · Chrome: 156.0.8078.74
+  - Serve check: `document.title === 'FlyTracker' && document.body.innerText.includes('10:19')` (the only run in this worktree's `runs/` was recorded at 10:19)
+
+| page | viewport | file | overflow | probes | console |
+| --- | --- | --- | --- | --- | --- |
+| / | 1600x900 | `after-1600x900.png` (scratchpad) | none | readouts: 상태 포획 중, 조준 오차 0.6°, 거리 2.59m, 포획 진행 100%, 초파리 평시, 프레임 46 / 46 | favicon 404, THREE.Clock deprecation, GL ReadPixels perf warnings |
+| / | 390x844 (mobile, dpr 2) | `after-390x844.png` (scratchpad) | none | same readouts | THREE.Clock deprecation only |
+
+  - Desktop: the turret body sits in front of the +z wall and its frustum (0.8 m deep) points into the room at the fly 2.59 m away.
+#### Notes
+- The `captureRange` meta is now `null` by default; the viewer falls back to a 0.8 m frustum.
+
 ## Management Notes
 ### Follow-up Candidates
 - Difficulty for the turret task (see Current State).

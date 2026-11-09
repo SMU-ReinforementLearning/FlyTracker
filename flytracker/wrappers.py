@@ -16,19 +16,13 @@ def _axis(i: int, sign: float) -> np.ndarray:
     return v
 
 
-# 한 step 에 축 하나만 움직이는 이산 행동 11개. 순서가 행동 번호다.
+# 한 step 에 축 하나만 돌리는 이산 행동 5개. 순서가 행동 번호다.
 DISCRETE_ACTIONS: tuple[tuple[str, np.ndarray], ...] = (
     ("idle", np.zeros(ACTION_DIM, dtype=np.float32)),
-    ("yaw_left", _axis(3, 1.0)),
-    ("yaw_right", _axis(3, -1.0)),
-    ("pitch_up", _axis(4, 1.0)),
-    ("pitch_down", _axis(4, -1.0)),
-    ("forward", _axis(0, 1.0)),
-    ("back", _axis(0, -1.0)),
-    ("right", _axis(1, 1.0)),
-    ("left", _axis(1, -1.0)),
-    ("up", _axis(2, 1.0)),
-    ("down", _axis(2, -1.0)),
+    ("yaw_left", _axis(0, 1.0)),
+    ("yaw_right", _axis(0, -1.0)),
+    ("pitch_up", _axis(1, 1.0)),
+    ("pitch_down", _axis(1, -1.0)),
 )
 
 
