@@ -4,7 +4,7 @@
 - Issue: #3
 - Branch: `3-docs-aim-point-ballistics`
 - Umbrella: (none) — no umbrella issue exists yet
-- Status: in progress
+- Status: done
 
 ## Summary
 Records, as a design note, where the aimer should point if it ever fires a real projectile at the fly: projectile choice, an assumed muzzle speed, the intercept calculation, and why the best aim point is the one that maximises hit probability rather than the mean predicted position. Firing is not implemented; the environment still captures by holding the aim (3 deg, 0.5 m, 0.2 s).
@@ -32,7 +32,7 @@ Records, as a design note, where the aimer should point if it ever fires a real 
 - Note and script committed.
 - The user decided (2026-11-09) that the fly cannot know where the aim line points, so its behaviour splits into two states, normal and alarm (threat perceived), with no free mode. The note records the decision; the code change is issue #4 (`4-feature-fly-alarm-state`).
 - The user corrected the aimer model (2026-11-09): a turret at a user-set position that only turns, like an AA gun. The note now says so; the 1 m range and the fly's threat rule are to be revisited after the turret change.
-- Before a PR: remove the `AGENTS.md` pointer as the branch's last commit.
+- PR opened; the `AGENTS.md` pointer was removed in the branch's last commit.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -77,6 +77,18 @@ Records, as a design note, where the aimer should point if it ever fires a real 
 - ko-writing `check.py` on the note: sections 1-8 clean (the first draft had an 8-sentence paragraph; split in two).
 #### Notes
 - Cold-reader review not re-run for these paragraphs (the user stopped the review loop).
+
+### chore: 작업 마무리와 AGENTS.md 포인터 제거 (#3)
+> why: the branch's last commit before the PR; `main` takes PRs only, so the pointer must go now
+#### Scope
+- `AGENTS.md`, this doc's Status and Current State, the registry row.
+#### Changes
+- `AGENTS.md` Recent Active Context: pointer line removed, `- (none)` placeholder restored.
+- Status: in progress → done, here and in `docs/issues/README.md`.
+#### Verification
+- `grep -c 3-docs-aim-point-ballistics AGENTS.md` prints 0.
+#### Notes
+- The registry row will conflict with #4's row if both PRs are squash-merged in turn; resolve by keeping both rows.
 
 ## Management Notes
 ### Follow-up Candidates

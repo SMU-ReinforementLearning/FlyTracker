@@ -62,7 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `3-docs-aim-point-ballistics` — `docs/issues/docs/3-docs-aim-point-ballistics.md` — 조준점 계산과 탄속 가정 정리
+- (none)
 
 ## Environment (repo slot)
 
