@@ -10,3 +10,4 @@ One row per management document, added in the same commit that creates the doc.
 | #7 | docs/issues/feature/7-feature-fixed-turret.md | done | 조준기를 위치가 고정된 포대로 바꾸기 |
 | #9 | docs/issues/feature/9-feature-fly-realism-search.md | done | 초파리 비행을 문헌값에 맞추고 조준기 탐색 넣기 |
 | #11 | docs/issues/feature/11-feature-fly-model.md | done | viewer에서 초파리를 실제 모양으로 그리기 |
+| #13 | docs/issues/feature/13-feature-detection-model.md | in progress | 조준기 관측에 초파리 검출 모델 넣기 |
