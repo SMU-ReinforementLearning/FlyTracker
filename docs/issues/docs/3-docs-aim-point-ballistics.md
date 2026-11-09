@@ -30,7 +30,8 @@ Records, as a design note, where the aimer should point if it ever fires a real 
 
 ## Current State
 - Note and script committed.
-- The user decided (2026-11-09) that the fly cannot know where the aim line points, so its behaviour should split into two states: normal and emergency (threat perceived). The note still describes the current code (evade triggered by the aim line) and lists the rule as an open question; whether to record the decision here or change `flytracker/fly.py` under a new issue is pending.
+- The user decided (2026-11-09) that the fly cannot know where the aim line points, so its behaviour splits into two states, normal and alarm (threat perceived), with no free mode. The note records the decision; the code change is issue #4 (`4-feature-fly-alarm-state`).
+- The user corrected the aimer model (2026-11-09): a turret at a user-set position that only turns, like an AA gun. The note now says so; the 1 m range and the fly's threat rule are to be revisited after the turret change.
 - Before a PR: remove the `AGENTS.md` pointer as the branch's last commit.
 
 ## Work Log
@@ -62,6 +63,20 @@ Records, as a design note, where the aimer should point if it ever fires a real 
 #### Notes
 - All numbers are calculations; system latency, salt C_d, real muzzle speed and lethal arrival speed are unmeasured.
 - Fly mass (~1 mg), fly speed and the Korean toy-gun energy limit were not checked against sources.
+
+### docs: 초파리 평시와 비상시 결정 기록 (#3)
+> why: the user decided the fly cannot sense the aim line, and corrected the aimer model: a fixed turret (like an AA gun) that only turns
+#### Scope
+- `docs/issues/docs/3-docs-aim-point-ballistics/aim-point-and-projectile-speed.md` (scope, range and current-environment sections), this doc's Current State.
+#### Changes
+- Scope: the aimer is a turret at a user-set position that only turns; the code at writing time wrongly flies it, to be fixed separately.
+- Range: a fixed turret can fire only when the fly comes within 1 m; whether 1 m is enough in a 4 m x 3 m room is revisited once the turret position is set.
+- Current environment: free/evade described as the state at writing time; the decision (normal and alarm states, aim-line trigger and free mode removed) points to issue #4; a fixed turret never approaches, so the approach trigger rarely fires and the threat rule is re-decided after the turret work.
+- The list of environment changes needed for projectile capture drops the evade item (now decided) and keeps two.
+#### Verification
+- ko-writing `check.py` on the note: sections 1-8 clean (the first draft had an 8-sentence paragraph; split in two).
+#### Notes
+- Cold-reader review not re-run for these paragraphs (the user stopped the review loop).
 
 ## Management Notes
 ### Follow-up Candidates
