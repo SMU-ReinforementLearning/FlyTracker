@@ -11,3 +11,4 @@ One row per management document, added in the same commit that creates the doc.
 | #9 | docs/issues/feature/9-feature-fly-realism-search.md | done | 초파리 비행을 문헌값에 맞추고 조준기 탐색 넣기 |
 | #11 | docs/issues/feature/11-feature-fly-model.md | done | viewer에서 초파리를 실제 모양으로 그리기 |
 | #13 | docs/issues/feature/13-feature-detection-model.md | paused | 조준기 관측에 초파리 검출 모델 넣기 |
+| #15 | docs/issues/docs/15-docs-readme-structure-episode.md | done | README에 저장소 구성과 에피소드 기록 설명 넣기 |
