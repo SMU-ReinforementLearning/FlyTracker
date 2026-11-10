@@ -4,7 +4,7 @@
 - Issue: #19
 - Branch: `19-docs-readme-baseline-vs-rl`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 Adds a README section on what stays the same and what changes when the rule-based baseline is replaced by a reinforcement-learning agent, with the training speed and baseline numbers measured for it. The user asked for this after a Q&A (2026-11-10) that followed #15.
@@ -24,11 +24,12 @@ Adds a README section on what stays the same and what changes when the rule-base
 - [x] ko-writing `check.py` on `README.md` shows nothing in the new section except known false positives. (2026-11-10)
 - [x] `readme_check.py` passes. (2026-11-10)
 - [x] A cold-reader review of the new section is applied. (2026-11-10, two passes)
-- [ ] The user approved the text.
+- [x] The user approved the text. (2026-11-10, "머지해")
 
 ## Current State
 - Issue, branch and worktree created from `origin/main` @ 74818f1; this document seeded.
-- README section written, measured and reviewed; nothing committed yet. Waiting for the user's approval at the pre-commit review gate.
+- README section committed after two cold-reader passes.
+- `AGENTS.md` pointer removed in the branch's last commit; PR opened and squash-merged at the user's request.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -63,6 +64,18 @@ Adds a README section on what stays the same and what changes when the rule-base
 - Two cold-reader passes (fresh subagent each, README only). Fixed: "one difference" contradicted by the memory difference; DQN 5.5 min rounded to 6; "학습 전" undefined; baseline command and conditions missing; 고도 띠 vs 높이 띠; agent scope; frame stack presented as memory although it covers only N × 0.02 s; the conclusion "win on time" now rests on 200/200 captured; "+ 보상"; the aim-error term's scale and its dependence on the FOV; which weights produced −19.22; 탐색 vs exploration.
 #### Notes
 - Left as is, with reasons: speeds measured over different step counts (each run 30 s–2 min; the 14× gap is far beyond that noise); "모델" in the run-folder tree and "놓쳤을 때 고정 벌점" in the environment table are pre-#19 text; no baseline numbers on the 3 eval seeds (the section says 3 episodes are too few to judge). No third cold-reader pass was run after the second round of fixes.
+
+### chore: 작업 마무리와 AGENTS.md 포인터 제거 (#19)
+> why: the branch's last commit before the PR; `main` takes PRs only, so the pointer must go now
+#### Scope
+- `AGENTS.md`, this doc's Status, Done Criteria and Current State, the registry row.
+#### Changes
+- `AGENTS.md` Recent Active Context: pointer line removed, `- (none)` placeholder restored.
+- Status: in progress → done, here and in `docs/issues/README.md`.
+#### Verification
+- `grep -c 19-docs-readme-baseline-vs-rl AGENTS.md` prints 0.
+#### Notes
+- The user approved the text by saying "머지해".
 
 ## Management Notes
 ### Follow-up Candidates
