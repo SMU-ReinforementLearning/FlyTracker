@@ -44,6 +44,26 @@ Adds a README section on what stays the same and what changes when the rule-base
 #### Notes
 - No umbrella issue exists in this repo yet, so no `--parent`.
 
+### docs: README에 기준선과 강화학습의 차이 넣기 (#19)
+> why: the user asked for the Q&A answer on what changes when moving from the rule baseline to RL to be written down like #15
+#### Scope
+- `README.md` (new section `## 기준선과 강화학습` before `## viewer`), this doc.
+#### Changes
+- Intro: same 13-dim observation for both; the baseline chooses by rules plus its own search state, the agent by an MLP policy learned from reward only; "탐색" means searching for the lost fly, not RL exploration; the viewer labels the step-0 evaluation "학습 전".
+- `### 보상`: the five reward terms with values and how the aim-error term scales; why there is no positive per-step reward.
+- `### 기억`: the baseline's search state vs the MLP's two memory-like observation fields (2 s cap); three ways to add memory, of which only frame stack works without code changes and it is too short for multi-second search.
+- `### 학습 시간`: measured training speed per algorithm and the 200,000-step estimate, with the measurement conditions.
+- `### 기준선과 비교`: baseline numbers on 200 seeds with the command; why the agent can only win on time to capture; match seeds; 3 eval episodes are too few and no checkpoint evaluation script exists.
+- `### 관측과 행동 기록`: observations and actions are not recorded, which matters more for a learned policy.
+#### Verification
+- Training speed, Intel Core i9-13900H, CPU only, SB3 2.9.2 defaults, torch 2.15.0+cpu: SAC 6,000 steps in 112.5 s (53/s), TD3 6,000 in 141.2 s (42/s), DQN 20,000 in 32.7 s (611/s), PPO 16,384 in 33.2 s (493/s). Environment alone with random actions: 2,486 steps/s over 5 s.
+- Baseline: `record_baseline.py --episodes 200 --seed 10000 --no-save` printed 포획 200/200, 평균 보상 -19.22, 보인 비율 18%, 포획까지 평균 4.21초.
+- Code facts: `RuleAimer` reads only the observation and keeps `mode`, figure-8 and band state (`flytracker/baseline.py`); `RewardWeights` and `memory_horizon=2.0` (`flytracker/env.py`); eval at training start and every `--eval-every`, seeds `--eval-seed` + i, default 3 episodes (`scripts/train.py`); `tagLabel` shows step 0 as 학습 전 (`viewer/src/data/labels.js`); no `sb3-contrib` in `pyproject.toml`; no script loads a saved model (grep for `.load(` in `scripts/` and `flytracker/` is empty).
+- ko-writing `check.py README.md`: sections 1-8 clean; the one section-9 warning is the pre-existing line 36 false positive. `readme_check.py`: 0 fail, 0 warn.
+- Two cold-reader passes (fresh subagent each, README only). Fixed: "one difference" contradicted by the memory difference; DQN 5.5 min rounded to 6; "학습 전" undefined; baseline command and conditions missing; 고도 띠 vs 높이 띠; agent scope; frame stack presented as memory although it covers only N × 0.02 s; the conclusion "win on time" now rests on 200/200 captured; "+ 보상"; the aim-error term's scale and its dependence on the FOV; which weights produced −19.22; 탐색 vs exploration.
+#### Notes
+- Left as is, with reasons: speeds measured over different step counts (each run 30 s–2 min; the 14× gap is far beyond that noise); "모델" in the run-folder tree and "놓쳤을 때 고정 벌점" in the environment table are pre-#19 text; no baseline numbers on the 3 eval seeds (the section says 3 episodes are too few to judge). No third cold-reader pass was run after the second round of fixes.
+
 ## Management Notes
 ### Follow-up Candidates
 - A script that loads a saved checkpoint and runs it on many seeds (the baseline has `record_baseline.py`; trained models have no equivalent), so a checkpoint can be compared with the baseline on hundreds of episodes.
