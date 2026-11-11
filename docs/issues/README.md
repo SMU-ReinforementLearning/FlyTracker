@@ -13,4 +13,5 @@ One row per management document, added in the same commit that creates the doc.
 | #13 | docs/issues/feature/13-feature-detection-model.md | paused | 조준기 관측에 초파리 검출 모델 넣기 |
 | #15 | docs/issues/docs/15-docs-readme-structure-episode.md | done | README에 저장소 구성과 에피소드 기록 설명 넣기 |
 | #19 | docs/issues/docs/19-docs-readme-baseline-vs-rl.md | done | README에 기준선과 강화학습의 차이 넣기 |
+| #21 | docs/issues/docs/21-docs-readme-env-train-viewer.md | in progress | README를 환경, 학습 코드, viewer로 나눠 다시 쓰기 |
 | #22 | docs/issues/feature/22-feature-publish-runs-cloudflare.md | done | 학습 결과를 저장소에 올려 Cloudflare viewer에서 재생하기 |
