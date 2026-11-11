@@ -12,7 +12,7 @@
 
 ## 시작하기
 
-Python 3.10 이상, [uv](https://docs.astral.sh/uv/), Node 20.19 이상이 필요하다.
+결과만 볼 때는 https://flytracker-ewk.pages.dev/ 를 연다. 저장소에 올린 실행이 재생된다. 직접 돌리려면 Python 3.10 이상, [uv](https://docs.astral.sh/uv/), Node 20.19 이상이 필요하다.
 
 ```sh
 git clone https://github.com/SMU-ReinforementLearning/FlyTracker.git
@@ -270,7 +270,7 @@ npm run dev --prefix viewer
 
 ### 배포
 
-Cloudflare Pages에 저장소를 연결해 두면, main에 merge할 때마다 viewer를 build해 사이트에 올린다. build 결과물(`viewer/dist/`)에는 `published/`의 실행만 들어가고 `runs/`는 들어가지 않는다. PR을 올리면 미리보기 주소가 따로 생기므로, merge 전에 올린 실행을 재생해 볼 수 있다.
+viewer는 https://flytracker-ewk.pages.dev/ 에 올라가 있다. Cloudflare Pages가 저장소에 연결되어 있어서, main에 merge할 때마다 viewer를 다시 build해 올린다. build 결과물(`viewer/dist/`)에는 `published/`의 실행만 들어가고 `runs/`는 들어가지 않는다. PR을 올리면 미리보기 주소가 따로 생기므로, merge 전에 올린 실행을 재생해 볼 수 있다.
 
 사이트에 올라갈 결과물은 내 컴퓨터에서도 미리 볼 수 있다. preview 서버는 개발 서버와 달리 `dist/`만 내준다.
 
@@ -279,7 +279,7 @@ npm run build --prefix viewer
 npm run preview --prefix viewer
 ```
 
-Cloudflare Pages 프로젝트는 아래처럼 설정한다.
+Cloudflare Pages 프로젝트 `flytracker`는 아래처럼 설정되어 있다. 새 프로젝트를 만들 때 dashboard의 Create application 화면에 Pages가 보이지 않으면, 화면 아래 Pages 링크나 `https://dash.cloudflare.com/?to=/:account/workers-and-pages/create/pages`로 들어간다.
 
 | 항목 | 값 |
 |---|---|

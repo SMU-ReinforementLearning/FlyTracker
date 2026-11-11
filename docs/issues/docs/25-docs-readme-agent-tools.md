@@ -16,6 +16,7 @@ Fixes one paragraph of `README.md` `## 시작하기` that #21 wrote as "팀 작�
 - `README.md`: the one paragraph in `## 시작하기` about AI coding tools.
 - `README.md`: mark "조준기가 자기를 겨누는지는 모른다" (`### 초파리`) as a dated assumption that may change, and the sentence in `### 에피소드` that depends on it. Added at the same review gate on the user's request.
 - `README.md`: spell out the acceleration limit in `### 관측과 행동` (the user asked what "각가속도 제한 720°/s² 안에서 따라간다" means). Added at the same gate.
+- `README.md`: the Cloudflare Pages production URL in `## 시작하기` and `### 배포`, plus the dashboard note from the #22 post-merge check ("cloudflare 배포해놓은 것도 확인해봐 … 반영해놔").
 
 ## Out Of Scope
 - Changes to `AGENTS.md`, the onboarding runbook or the hooks themselves.
@@ -24,6 +25,7 @@ Fixes one paragraph of `README.md` `## 시작하기` that #21 wrote as "팀 작�
 ## Done Criteria
 - [ ] The paragraph names Claude Code, Codex and ChatGPT desktop as examples and gives the manual hook command (`git config core.hooksPath .githooks`, as in `docs/agent-workflow/onboarding.md` §3).
 - [ ] The fly's ignorance of the aim direction is stated as an assumption dated 2026-11-11, and the episode sentence that depends on it says so.
+- [ ] The production URL is in the README and was checked live on this date (root, `/runs/index.json`, one episode file all 200).
 - [ ] `check.py` shows no new finding in the changed text; `readme_check.py` passes.
 - [ ] The user approved the text at the review gate.
 
@@ -33,6 +35,7 @@ Fixes one paragraph of `README.md` `## 시작하기` that #21 wrote as "팀 작�
 - AI coding tool paragraph committed.
 - Assumption sentences committed.
 - Acceleration sentence committed.
+- Cloudflare URL committed.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -84,6 +87,19 @@ Fixes one paragraph of `README.md` `## 시작하기` that #21 wrote as "팀 작�
 - ko-writing `check.py README.md`: no new finding; `readme_check.py`: 0 fail, 0 warn.
 #### Notes
 - The 0.25 s figure is for yaw; pitch (120°/s) reaches its top rate in 0.17 s, not stated to keep the sentence short.
+
+### docs: README에 Cloudflare 배포 주소 넣기 (#25)
+> why: the user asked to check the Cloudflare deployment and put it in the README; the #22 post-merge check (issue #22 comment, 2026-11-11) had the URL but the README only described the setup
+#### Scope
+- `README.md` `## 시작하기` first paragraph and `### 배포`; this doc.
+#### Changes
+- `## 시작하기`: "결과만 볼 때는 https://flytracker-ewk.pages.dev/ 를 연다" before the install requirements.
+- `### 배포`: opens with the URL; the settings table is introduced as the existing project `flytracker`; the dashboard note (Pages hidden behind the Workers create screen; direct link `https://dash.cloudflare.com/?to=/:account/workers-and-pages/create/pages`) taken from the #22 comment.
+#### Verification
+- Live check 2026-11-11 with `main` at 25af854: `GET /` 200 `text/html`; `GET /runs/index.json` 200 `application/json`, one run `2026-11-11_133858_baseline` with 5 episodes; `GET /runs/2026-11-11_133858_baseline/episodes/baseline/ep_000.json` 200, 24,758 B.
+- ko-writing `check.py README.md`: no new finding; `readme_check.py`: 0 fail, 0 warn.
+#### Notes
+- The dashboard note is second-hand (the #22 session cited Cloudflare Community posts); the direct link is what that session used. Not re-verified here, since no new project was created.
 
 ## Management Notes
 ### Follow-up Candidates
