@@ -4,7 +4,7 @@
 - Issue: #25
 - Branch: `25-docs-readme-agent-tools`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 Fixes one paragraph of `README.md` `## 시작하기` that #21 wrote as "팀 작업은 Claude Code로 한다": some team members use ChatGPT desktop or Codex, so the paragraph must hold for any AI coding tool. The user pointed this out on 2026-11-11 right after #21 merged.
@@ -23,11 +23,11 @@ Fixes one paragraph of `README.md` `## 시작하기` that #21 wrote as "팀 작�
 - Documenting any tool-specific setup beyond "read `AGENTS.md`" and the hook command.
 
 ## Done Criteria
-- [ ] The paragraph names Claude Code, Codex and ChatGPT desktop as examples and gives the manual hook command (`git config core.hooksPath .githooks`, as in `docs/agent-workflow/onboarding.md` §3).
-- [ ] The fly's ignorance of the aim direction is stated as an assumption dated 2026-11-11, and the episode sentence that depends on it says so.
-- [ ] The production URL is in the README and was checked live on this date (root, `/runs/index.json`, one episode file all 200).
-- [ ] `check.py` shows no new finding in the changed text; `readme_check.py` passes.
-- [ ] The user approved the text at the review gate.
+- [x] The paragraph names Claude Code, Codex and ChatGPT desktop as examples and gives the manual hook command (`git config core.hooksPath .githooks`, as in `docs/agent-workflow/onboarding.md` §3). (2026-11-11)
+- [x] The fly's ignorance of the aim direction is stated as an assumption dated 2026-11-11, and the episode sentence that depends on it says so. (2026-11-11)
+- [x] The production URL is in the README and was checked live on this date (root, `/runs/index.json`, one episode file all 200). (2026-11-11)
+- [x] `check.py` shows no new finding in the changed text; `readme_check.py` passes. (2026-11-11)
+- [x] The user approved the text at the review gate. (2026-11-11, "그렇게 바꾸고 머지해", "반영해놔")
 
 ## Current State
 - Issue, branch and worktree created from `origin/main` @ 25af854; this document seeded.
@@ -36,6 +36,7 @@ Fixes one paragraph of `README.md` `## 시작하기` that #21 wrote as "팀 작�
 - Assumption sentences committed.
 - Acceleration sentence committed.
 - Cloudflare URL committed.
+- `AGENTS.md` pointer removed in the branch's last commit; PR opened and squash-merged at the user's request.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -100,6 +101,18 @@ Fixes one paragraph of `README.md` `## 시작하기` that #21 wrote as "팀 작�
 - ko-writing `check.py README.md`: no new finding; `readme_check.py`: 0 fail, 0 warn.
 #### Notes
 - The dashboard note is second-hand (the #22 session cited Cloudflare Community posts); the direct link is what that session used. Not re-verified here, since no new project was created.
+
+### chore: #25 마무리 (#25)
+> why: the branch's last commit before the PR; `main` takes PRs only, so the pointer must go now
+#### Scope
+- `AGENTS.md`, this doc's Status, Done Criteria and Current State, the registry row.
+#### Changes
+- `AGENTS.md` Recent Active Context: pointer line removed, `- (none)` placeholder restored.
+- Status: in progress → done, here and in `docs/issues/README.md`.
+#### Verification
+- `grep -c 25-docs-readme-agent-tools AGENTS.md` prints 0.
+#### Notes
+- Four README fixes approved at one gate landed as four commits; the issue title names only the first.
 
 ## Management Notes
 ### Follow-up Candidates

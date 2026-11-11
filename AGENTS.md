@@ -62,7 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `25-docs-readme-agent-tools` — `docs/issues/docs/25-docs-readme-agent-tools.md` — README의 agent 안내를 Claude Code 외 도구에도 맞게 고치기
+- (none)
 
 ## Environment (repo slot)
 
