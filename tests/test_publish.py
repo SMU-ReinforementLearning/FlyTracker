@@ -63,6 +63,21 @@ def test_run_json_is_the_index_entry(tmp_path):
     assert entry["notes"] == "메모"
 
 
+def test_extra_fields_go_into_run_json(tmp_path):
+    run = make_run(tmp_path / "runs")
+    issue = {"number": 31, "title": "보상에 각도 항 넣기", "url": "https://github.com/o/r/issues/31"}
+    publish_run(tmp_path / "runs", run.id, tmp_path / "published", extra={"issue": issue, "author": "kim", "episodeCount": 99})
+
+    entry = json.loads((tmp_path / "published" / run.id / "run.json").read_text(encoding="utf-8"))
+    assert entry["issue"] == issue
+    assert entry["author"] == "kim"
+    assert entry["id"] == run.id
+    assert entry["episodeCount"] == 4  # 세어서 적는 값은 extra 가 덮지 못한다
+    # runs/index.json 은 그대로다
+    index = json.loads((tmp_path / "runs" / "index.json").read_text(encoding="utf-8"))
+    assert "issue" not in index["runs"][0]
+
+
 def test_refuses_existing_unless_overwrite(tmp_path):
     run = make_run(tmp_path / "runs")
     publish_run(tmp_path / "runs", run.id, tmp_path / "published")

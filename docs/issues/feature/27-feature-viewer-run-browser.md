@@ -60,6 +60,21 @@ Reshapes the viewer for many runs from many issues: runs grouped by the issue th
 #### Notes
 - #18 overlap noted under Out Of Scope; the user chose to go ahead.
 
+### feat: 실행을 올릴 때 issue와 올린 사람 적기 (#27)
+> why: the viewer groups runs by issue, so each published run must say which issue it belongs to
+#### Scope
+- `flytracker/record.py`, `scripts/publish_run.py`, `tests/test_publish.py`, `published/2026-11-11_133858_baseline/run.json`.
+#### Changes
+- `publish_run(..., extra=None)`: `extra` is merged into `run.json`; `episodeCount` is still counted and cannot be overridden.
+- `publish_run.py --issue N` is required. `gh issue view N --json number,title,url,labels` gives `issue: {number, title, url}`; `author` = `git config user.name` (empty when unset). Without the `training` label it prints a warning to stderr and still copies. gh missing or the issue unknown → exit 1 with the reason.
+- Baseline run: `issue` = #22 (the issue that published it), `author` = `lhk0721`, written by hand because its `runs/` source folder no longer exists.
+- GitHub label `training` created (green, "실행을 올려 viewer에서 보는 학습 작업"); not part of git.
+#### Verification
+- `uv run pytest -q`: 33 passed (1 new: extra fields land in `run.json`, `episodeCount` not overridable, `runs/index.json` untouched).
+- CLI by hand, `--dest` in the scratchpad, on a local 30,000-step PPO run: no `--issue` → argparse usage error, exit 2; `--issue 27` → warning about the missing label, 39 files, `run.json` has number, title, URL and `author: lhk0721`, exit 0; `--issue 99999` → `issue #99999 정보를 읽지 못했다: GraphQL: Could not resolve…`, exit 1.
+#### Notes
+- That PPO run is 2,524 KB for 36 episodes, about 70 KB per episode; the baseline episodes are 10–38 KB because they end sooner. A default 200,000-step run (33 episodes) would be about 2.3 MB in git.
+
 ## Management Notes
 ### Follow-up Candidates
 - `train.py --issue N` so local runs group by issue before publishing.
