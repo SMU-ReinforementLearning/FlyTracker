@@ -108,6 +108,18 @@ Lets a teammate copy a finished run into a tracked folder, open a PR, and after 
 #### Notes
 - None.
 
+### docs: README에 실행 올리기와 Cloudflare 배포 설명 넣기 (#22)
+> why: teammates need the publish → PR → merge flow and the Pages settings in one place
+#### Scope
+- `README.md`: 구성 (item 4 added, items 3 and intro mention `published/`), 실행 (publish paragraph + commands), 실행 폴더 (`published/` layout and `run.json`), viewer (dev server reads both folders; new `### 배포` with preview commands and the Pages settings table), 폴더 table (`published/` row, `scripts/` row).
+#### Changes
+- Pages settings written: production branch `main`, root `viewer`, build `npm run build`, output `dist`, `NODE_VERSION=22`.
+#### Verification
+- ko-writing `check.py README.md`: no failures; section 9 shows two pointer warnings at lines 37 and 157, both in text this branch did not touch (one warning in the new text was fixed).
+- `readme_check.py README.md`: 0 fail, 0 warn (anchors `#배포`, `#실행-폴더` resolve).
+#### Notes
+- The "팀원 시작하기" clone URL still points to the pre-transfer repo; left for #21, which rewrites the README.
+
 ## Management Notes
 ### Follow-up Candidates
 - Optional GitHub Actions workflow that trains, publishes and opens the PR (user chose local training for now).
