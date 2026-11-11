@@ -96,6 +96,18 @@ Lets a teammate copy a finished run into a tracked folder, open a PR, and after 
 #### Notes
 - On Cloudflare a missing file returns the SPA `index.html` with 200, not 404. `index.json` is always emitted, so the run list never hits that case.
 
+### chore: 기준선 실행 하나를 published에 올리기 (#22)
+> why: the deployed viewer should not open empty, and the build needs real content to check
+#### Scope
+- `published/2026-11-11_133858_baseline/` (8 files, 128 KB).
+#### Changes
+- Made with `python scripts/record_baseline.py --episodes 5` on this branch (env defaults, seeds 0–4), then `python scripts/publish_run.py 2026-11-11_133858_baseline`.
+#### Verification
+- Summary printed by the recorder: 포획 5/5, 평균 보상 −13.71, 보인 비율 24%, 포획까지 평균 3.53초.
+- This is the run shown in the preview capture above.
+#### Notes
+- None.
+
 ## Management Notes
 ### Follow-up Candidates
 - Optional GitHub Actions workflow that trains, publishes and opens the PR (user chose local training for now).
