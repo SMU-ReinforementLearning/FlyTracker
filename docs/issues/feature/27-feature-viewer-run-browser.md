@@ -31,21 +31,22 @@ Reshapes the viewer for many runs from many issues: runs grouped by the issue th
 - #18 (CSS modules) is open with uncommitted work in `FlyTracker-18` that moves the same components; whichever lands second redoes its part.
 
 ## Done Criteria
-- [ ] pytest: `publish_run()` writes `extra` fields into `run.json`; the full suite passes.
-- [ ] `publish_run.py` without `--issue` exits with a usage error; with `--issue` it records number, title, URL and author; a non-`training` issue prints a warning.
-- [ ] `npm run build`: each `dist/runs/index.json` entry carries `checkpoints` matching a recount from `episodes.json`.
-- [ ] dev server: local runs get the same `checkpoints`; a run in both folders shows its published issue.
-- [ ] URL: reload restores the run, episode and issue page; Back and Forward move between them; an unknown id falls back to the newest run.
-- [ ] Sidebar: groups by issue (newest group first, runs without an issue last), search by run name, issue title, author or algorithm, groups collapse.
-- [ ] Run panel: grid cell click plays that episode; arrow keys move within the grid and Space plays; learning curve shown only with 2+ checkpoints.
-- [ ] Issue page: one line per run, a dashed line for runs without steps (baseline), the table shows only config keys whose values differ.
-- [ ] No caption or subtitle lines added; ko-ui-text check on the new strings.
-- [ ] ui-evidence, 1600x900 and 390x844, run view and issue page: overflow none, no console errors.
-- [ ] README passes ko-writing `check.py` and `readme_check.py`.
+- [x] pytest: `publish_run()` writes `extra` fields into `run.json`; the full suite passes.
+- [x] `publish_run.py` without `--issue` exits with a usage error; with `--issue` it records number, title, URL and author; a non-`training` issue prints a warning.
+- [x] `npm run build`: each `dist/runs/index.json` entry carries `checkpoints` matching a recount from `episodes.json`.
+- [x] dev server: local runs get the same `checkpoints`; a run in both folders shows its published issue.
+- [x] URL: reload restores the run, episode and issue page; Back and Forward move between them; an unknown id falls back to the newest run.
+- [x] Sidebar: groups by issue (newest group first, runs without an issue last), search by run name, issue title, author or algorithm, groups collapse.
+- [x] Run panel: grid cell click plays that episode; arrow keys move within the grid and Space toggles play; learning curve shown only with 2+ checkpoints.
+- [x] Issue page: one line per run, a dashed line for runs without steps (baseline), the table shows only config keys whose values differ.
+- [x] No caption or subtitle lines added; ko-ui-text check on the new strings.
+- [x] ui-evidence, 1600x900 and 390x844, run view and issue page: overflow none, no console errors.
+- [x] README passes ko-writing `check.py` and `readme_check.py`.
 
 ## Current State
-- Python side, build index and all viewer screens are committed. Left: README, then the PR (push only when the user asks).
+- All Done Criteria are met and everything is committed. Left: delete the test data below, remove the AGENTS.md pointer line as the last commit, then the PR (push only when the user asks).
 - Test data in this worktree, none of it committed: gitignored `runs/` (two PPO runs, one DQN run, synthetic `demo-learns`) and untracked `published/` folders (`…ppo-fov40`, `…ppo-fov60`, `…demo-learns`, `…baseline-copy`). Delete the untracked `published/` folders before the PR; never `git add published/` wholesale.
+- A dev server from the earlier session may still be listening on 5180, serving this worktree.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -126,6 +127,21 @@ Reshapes the viewer for many runs from many issues: runs grouped by the issue th
 - Not checked: light colour scheme by screenshot (the palette was validated numerically only); Firefox and Safari.
 - With more than 8 runs in one issue the line colours repeat.
 - Runs with equal values overlap on the curve (the two 0% PPO runs draw as one line); the table tells them apart.
+
+### docs: README에 issue 번호로 올리는 법과 viewer 새 화면 넣기 (#27)
+> why: publishing now needs `--issue`, and the viewer section described the old two-list sidebar
+#### Scope
+- `README.md` only.
+#### Changes
+- 실행 올리기: the example uses `--issue 22`; what `--issue` records, the `gh` login it needs, the `training` label and its warning; `run.json` described with `issue` and `author`.
+- viewer: one paragraph replaced by five subsections (실행 목록, 실행 패널, 재생 화면, issue 화면, 링크) with the URL table.
+- "체크포인트" → "checkpoint" (4 places) to match the glossary entry added in the previous commit.
+#### Verification
+- ko-writing `check.py README.md`: no banned pattern, endings uniform (해라체), no paragraph over 6 sentences, no heading finding; remaining warnings are older lines (116, dates at 48 and 250, 104).
+- `readme_check.py README.md`: 0 fail, 0 warn (URLs not probed).
+- `uv run pytest -q`: 33 passed. `npm run build` passed in the previous commit; no viewer file changed since.
+#### Notes
+- The `gh` link (cli.github.com) was not probed online.
 
 ## Management Notes
 ### Follow-up Candidates

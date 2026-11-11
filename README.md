@@ -130,9 +130,9 @@ uv run python scripts/train.py --algo sac --steps 200000 --eval-every 20000
 uv run tensorboard --logdir runs
 ```
 
-학습 중 평가는 학습을 시작할 때와 그 뒤 일정 step마다 에피소드 몇 개를 저장하는 것이다. 간격은 `--eval-every`로 기본 20,000 step, 개수는 `--eval-episodes`로 기본 3개다. 체크포인트는 그때마다 저장한 모델이다.
+학습 중 평가는 학습을 시작할 때와 그 뒤 일정 step마다 에피소드 몇 개를 저장하는 것이다. 간격은 `--eval-every`로 기본 20,000 step, 개수는 `--eval-episodes`로 기본 3개다. checkpoint는 그때마다 저장한 모델이다.
 
-학습 중 평가는 매번 같은 seed를 쓴다. 첫 에피소드가 `--eval-seed`(기본 10000)이고 다음 에피소드부터 하나씩 커진다. 그래서 체크포인트끼리 같은 초파리를 상대로 비교된다. 학습을 시작할 때 저장한 에피소드는 viewer에 "학습 전"으로 나오고, 그 뒤 것은 "20,000 step"처럼 나온다.
+학습 중 평가는 매번 같은 seed를 쓴다. 첫 에피소드가 `--eval-seed`(기본 10000)이고 다음 에피소드부터 하나씩 커진다. 그래서 checkpoint끼리 같은 초파리를 상대로 비교된다. 학습을 시작할 때 저장한 에피소드는 viewer에 "학습 전"으로 나오고, 그 뒤 것은 "20,000 step"처럼 나온다.
 
 ### 기준선과 비교
 
@@ -151,7 +151,7 @@ uv run python scripts/record_baseline.py --episodes 200 --seed 10000 --no-save
 
 기준선은 200개를 모두 포획했으므로, agent가 포획한 에피소드 수로 기준선을 이길 수는 없다. 남은 여지는 포획까지 걸리는 시간과 누적 보상이다. 기준선은 초파리가 보인 비율이 18%뿐이라 시간 대부분을 탐색에 쓴다.
 
-지금 할 수 있는 비교는 학습 중 평가 에피소드 3개를 같은 seed의 기준선 에피소드 3개와 견주는 것이다. 기준선 쪽은 `record_baseline.py --episodes 3 --seed 10000`으로 만든다. seed가 같아야 같은 초파리를 상대로 비교되므로, `--seed`를 주지 않은 기준선(seed 0부터)과는 견주지 않는다. [시작하기](#시작하기)에서 만든 실행이 그 경우다. 에피소드 3개는 위 표의 200개와 바로 견주기에는 적다. 체크포인트를 불러 기준선처럼 수백 개 seed로 돌리는 스크립트는 아직 없다.
+지금 할 수 있는 비교는 학습 중 평가 에피소드 3개를 같은 seed의 기준선 에피소드 3개와 견주는 것이다. 기준선 쪽은 `record_baseline.py --episodes 3 --seed 10000`으로 만든다. seed가 같아야 같은 초파리를 상대로 비교되므로, `--seed`를 주지 않은 기준선(seed 0부터)과는 견주지 않는다. [시작하기](#시작하기)에서 만든 실행이 그 경우다. 에피소드 3개는 위 표의 200개와 바로 견주기에는 적다. checkpoint를 불러 기준선처럼 수백 개 seed로 돌리는 스크립트는 아직 없다.
 
 ### 환경 옵션
 
@@ -176,7 +176,7 @@ runs/
     config.json                 환경 설정 전체와 알고리즘 설정
     episodes.json               에피소드 목록과 각 요약
     episodes/<tag>/ep_000.json  에피소드 하나
-    checkpoints/<tag>.zip       체크포인트 (학습만)
+    checkpoints/<tag>.zip       checkpoint (학습만)
     model.zip                   마지막 모델 (학습만)
     tb/                         TensorBoard 기록 (학습만)
 ```
@@ -214,11 +214,15 @@ runs/
 팀과 나눌 실행은 `published/`에 복사해 PR로 올린다. 학습한 실행 폴더에는 모델 파일과 TensorBoard 기록이 함께 들어 있어서 `runs/`는 통째로 올리지 않는다. `publish_run.py`는 설정과 에피소드 파일만 복사한다. 이미 올린 실행을 다시 복사하려면 `--force`를 붙인다.
 
 ```sh
-uv run python scripts/publish_run.py 2026-11-11_133858_baseline
+uv run python scripts/publish_run.py 2026-11-11_133858_baseline --issue 22
 git add published/2026-11-11_133858_baseline
 ```
 
-`published/`는 `runs/`와 구조가 같다. 다만 `checkpoints/`, `model.zip`, `tb/`가 없고, `index.json` 대신 실행 폴더마다 `run.json`이 있다. `run.json`은 `runs/index.json`에 있던 그 실행의 한 줄이다. viewer를 build할 때 실행마다 있는 `run.json`을 모아 실행 목록을 만든다. 실행 목록을 한 파일에 두지 않으므로, 두 사람이 각자 실행을 올린 PR도 서로 충돌하지 않는다. PR이 main에 merge되면 [배포](#배포)한 viewer에 그 실행이 나온다.
+`--issue`에는 그 실행이 속한 GitHub issue 번호를 적고, 빠뜨리면 복사하지 않는다. viewer가 실행을 issue별로 묶어 보여 주기 때문이다. 스크립트는 `gh`로 issue의 제목과 주소를 읽고, 올린 사람은 `git config user.name`에서 가져와 `run.json`에 적는다. 그래서 [GitHub CLI](https://cli.github.com/)(`gh`)에 로그인되어 있어야 한다.
+
+학습 결과를 올리는 issue에는 `training` label을 붙인다. GitHub에서 학습 issue만 골라 보려는 표시다. label이 없는 issue 번호를 주면 스크립트가 경고하지만 복사는 한다.
+
+`published/`는 `runs/`와 구조가 같다. 다만 `checkpoints/`, `model.zip`, `tb/`가 없고, `index.json` 대신 실행 폴더마다 `run.json`이 있다. `run.json`은 `runs/index.json`에 있던 그 실행의 한 줄에 issue(`issue`)와 올린 사람(`author`)을 더한 것이다. viewer를 build할 때 실행마다 있는 `run.json`을 모아 실행 목록을 만든다. 실행 목록을 한 파일에 두지 않으므로, 두 사람이 각자 실행을 올린 PR도 서로 충돌하지 않는다. PR이 main에 merge되면 [배포](#배포)한 viewer에 그 실행이 나온다.
 
 ### 정책의 기억
 
@@ -258,7 +262,38 @@ npm install --prefix viewer
 npm run dev --prefix viewer
 ```
 
-브라우저에서 http://localhost:5180 을 연다. 왼쪽에서 실행과 에피소드를 고르면 3인칭 장면, 조준기 화면, 현재 상태, 누적 보상과 조준 오차 그래프가 나온다. 에피소드는 고르면 바로 재생되고, 스페이스로 멈추거나 다시 재생하며, 화살표 키로 한 프레임씩 옮긴다. 그래프를 누르면 그 시각으로 간다.
+브라우저에서 http://localhost:5180 을 연다. 화면은 왼쪽부터 실행 목록, 실행 패널, 재생 화면이다.
+
+### 실행 목록
+
+실행은 issue별로 묶여 나온다. 가장 최근 실행이 있는 issue가 위에 오고, issue 번호 없이 `runs/`에만 있는 실행은 맨 아래 "issue 없음"에 모인다. 실행마다 마지막 checkpoint의 포획률이 나온다. 포획률은 그 checkpoint의 평가 에피소드 가운데 포획으로 끝난 비율이다. checkpoint가 둘 이상이면 포획률이 학습 중에 어떻게 변했는지를 작은 선으로도 그린다. 검색 칸에는 실행 이름, issue 제목, `#22` 같은 issue 번호, 올린 사람, 알고리즘을 넣는다.
+
+### 실행 패널
+
+실행을 고르면 그 실행의 에피소드가 격자로 나온다. 행은 checkpoint이고 위에서 아래로 학습이 진행된다. 열은 평가 에피소드 번호다. 점은 포획이고 빨리 잡았을수록 진하다. ×는 시간 초과다.
+
+평가는 checkpoint마다 같은 seed를 쓰므로([학습](#학습)), 한 열은 같은 초파리를 상대한 결과다. 한 열을 위에서 아래로 읽으면 학습이 그 에피소드의 결과를 어떻게 바꿨는지 보인다.
+
+칸을 누르면 그 에피소드가 재생된다. 격자 안에서는 화살표 키로 칸을 옮기고 스페이스로 멈추거나 다시 재생한다. 격자 위에는 고른 checkpoint의 포획률, 평균 보상, 포획 시간과 학습 곡선이 있다. 곡선의 점을 누르면 그 checkpoint로 간다. checkpoint가 하나뿐인 실행(기준선)에는 학습 곡선이 없다. 학습 곡선은 가로축이 step이고 세로축은 포획률과 평균 보상 가운데 고른 값이다.
+
+### 재생 화면
+
+3인칭 장면, 조준기 화면, 현재 상태, 누적 보상과 조준 오차 그래프가 나온다. 에피소드는 고르면 바로 재생된다. 격자 밖에서는 스페이스로 멈추거나 다시 재생하고, 화살표 키로 한 프레임씩 옮긴다. 그래프를 누르면 그 시각으로 간다.
+
+### issue 화면
+
+실행 목록에서 issue 제목을 누르면 그 issue의 실행을 비교하는 화면이 열린다. 위에는 실행들의 학습 곡선을 겹쳐 그린다. step이 없는 실행(기준선)은 점선 가로줄이다. 아래 표에는 실행마다 마지막 checkpoint의 포획률, 평균 보상, 포획 시간이 나오고, `config.json`에서 실행끼리 값이 다른 항목만 열로 붙는다. reward 계수 하나를 바꿔 돌린 실행 둘이면 그 계수 열 하나가 나온다.
+
+### 링크
+
+무엇을 골랐는지는 주소에 남는다. 주소를 복사해 PR이나 issue 댓글에 붙이면 받은 사람에게 같은 에피소드가 열린다.
+
+| 주소 | 열리는 것 |
+|---|---|
+| `/?run=<실행 폴더 이름>&tag=<tag>&ep=<번호>` | 그 실행의 그 에피소드. `ep`는 1부터 센다 |
+| `/?issue=<issue 번호>` | 그 issue의 비교 화면 |
+
+없는 실행이나 issue를 가리키는 주소는 가장 최근 실행을 연다.
 
 ### 초파리 3D 모델
 
