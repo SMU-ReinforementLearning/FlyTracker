@@ -4,7 +4,7 @@
 - Issue: #21
 - Branch: `21-docs-readme-env-train-viewer`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 Rewrites `README.md` so that it reads in three parts — environment, training code, viewer — instead of the current nine sections that grew one issue at a time (#1, #15, #19). The user asked for it on 2026-11-11 right after the repository moved to the team organization: "readme 쉽고 읽히게 다시 써줘. 환경, 학습코드, viewer로 나누어서". Facts stay; the order, the depth-first-then-detail flow and the clone URL change.
@@ -24,18 +24,18 @@ Rewrites `README.md` so that it reads in three parts — environment, training c
 - Fixing the org name typo (`ReinforementLearning`) — that is a GitHub setting, not a repo file.
 
 ## Done Criteria
-- [ ] The README has exactly the three parts the user named, each starting with what a reader does, followed by what they need to know.
-- [ ] Every number and name in the README is in the facts ledger with its source; measured values (baseline over 200 episodes) are re-run on this branch.
-- [ ] `ko-writing` `check.py` with glossary and facts ledger reports nothing except known false positives.
-- [ ] `readme_check.py` passes (links, anchors).
-- [ ] Two cold-reader passes applied (fresh subagent each time).
-- [ ] The user approved the text at the review gate.
+- [x] The README has exactly the three parts the user named, each starting with what a reader does, followed by what they need to know. (2026-11-11)
+- [x] Every number and name in the README is in the facts ledger with its source; measured values (baseline over 200 episodes) are re-run on this branch. (2026-11-11)
+- [x] `ko-writing` `check.py` with glossary and facts ledger reports nothing except known false positives. (2026-11-11)
+- [x] `readme_check.py` passes (links, anchors). (2026-11-11)
+- [x] Two cold-reader passes applied (fresh subagent each time). (2026-11-11, four passes)
+- [x] The user approved the text at the review gate. (2026-11-11, "머지해")
 
 ## Current State
 - Issue, branch and worktree created from `origin/main` @ fc67f84; this document seeded.
 - #22 (publish runs, Cloudflare viewer) merged to `main` while the draft was being written. The branch was fast-forwarded to `origin/main` @ 8aed060 before its first commit, and the #22 README sections were folded into the new outline.
 - README draft written with a glossary and a facts ledger (scratchpad), checked with `check.py` and `readme_check.py`, and reviewed by four cold-reader passes before the #22 merge. The user stopped further passes.
-- Next: the user approved the text ("머지해"); commit, remove the pointer, open the PR, squash-merge, run post-PR cleanup.
+- README committed; `AGENTS.md` pointer removed in the branch's last commit; PR opened and squash-merged at the user's request ("머지해").
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -75,6 +75,23 @@ Rewrites `README.md` so that it reads in three parts — environment, training c
 - Left as is, with reasons: the org name typo in the clone URL (it is the real address); 탐색 in the linked design-note title (a document title); "학습 코드" as the name of `scripts/` although it also holds the baseline and publish scripts (the user's naming); the 200-episode baseline table next to 3 eval episodes (the README says the comparison script does not exist yet).
 - Length 10,760 → 12,066 characters; the growth is the #22 content.
 
+### chore: #21 마무리 (#21)
+> why: the branch's last commit before the PR; `main` takes PRs only, so the pointer must go now
+#### Scope
+- `AGENTS.md`, this doc's Status, Done Criteria and Current State, the registry row.
+#### Changes
+- `AGENTS.md` Recent Active Context: pointer line removed, `- (none)` placeholder restored.
+- Status: in progress → done, here and in `docs/issues/README.md`.
+#### Verification
+- `grep -c 21-docs-readme-env-train-viewer AGENTS.md` prints 0.
+#### Notes
+- The user approved the text by saying "머지해" and stopped further cold-reader passes.
+
 ## Management Notes
 ### Follow-up Candidates
+- The org name `SMU-ReinforementLearning` has a typo ("Reinforement"); renaming the org is a GitHub setting and would change the clone URL in the README.
+- The empty placeholder repo `SMU-ReinforementLearning/FlyTracker-empty` still needs deleting (the gh token lacks `delete_repo`).
+- A checkpoint evaluation script (hundreds of seeds) so the 200-episode baseline table can be matched on the agent side; first noted in #19.
 ### References
+- Scratchpad ledgers used for this rewrite: `README.terms.md`, `README.facts.md` (ko-writing `references/ledgers.md` shape).
+- Sources re-read: `flytracker/env.py`, `aimer.py`, `camera.py`, `fly.py`, `world.py`, `wrappers.py`, `record.py`, `baseline.py`; `scripts/*.py --help`; `viewer/vite.config.js`, `viewer/src/data/labels.js`, `viewer/src/playback/clock.js`.
