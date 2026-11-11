@@ -43,20 +43,44 @@ function Stats({ checkpoint }) {
   )
 }
 
+function Chevron() {
+  return (
+    <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="m4 2.5 4 3.5-4 3.5" />
+    </svg>
+  )
+}
+
 /**
- * 에피소드 격자. 행은 checkpoint, 열은 평가 에피소드 번호다.
- * 학습은 checkpoint 마다 같은 seed 로 평가하므로, 한 열을 위에서 아래로 읽으면 같은 시작 조건에서 결과가 어떻게 바뀌었는지 보인다.
- * 화살표 키로 칸을 옮기면 그 에피소드가 바로 재생되고, 스페이스는 재생과 일시정지를 바꾼다.
+ * 에피소드 목록. checkpoint 마다 제목 줄이 하나 있고, 펼치면 에피소드가 한 줄에 하나씩 나온다.
+ * 에피소드가 아무리 많아도 세로로만 길어진다. 고른 checkpoint 만 펼쳐 두므로 checkpoint 가 많아도 제목 줄만 늘어난다.
+ * 위아래 화살표는 앞뒤 에피소드로, 좌우 화살표는 같은 번호(같은 seed)의 앞뒤 checkpoint 로 옮긴다. 스페이스는 재생과 일시정지를 바꾼다.
  */
-function EpisodeGrid({ grid, sel, onSelect }) {
+function EpisodeList({ grid, sel, onSelect }) {
   const root = useRef(null)
-  const cols = Math.max(...grid.map((row) => row.items.length))
-  const longest = Math.max(...grid.flatMap((row) => row.items.map((e) => e.summary.duration)))
+  const byKey = useRef(false)
+  const selTag = grid[sel.r].tag
+  // 제목 줄을 눌러 직접 바꾼 것만 적는다. 적힌 것이 없으면 고른 checkpoint 만 펼친다.
+  const [toggled, setToggled] = useState({})
+  const isOpen = (tag) => toggled[tag] ?? tag === selTag
+  const selOpen = isOpen(selTag)
+
+  const reopen = (tag) => setToggled((prev) => (prev[tag] === false ? { ...prev, [tag]: true } : prev))
 
   useEffect(() => {
-    // 키보드로 옮겼을 때만 focus 를 따라 옮긴다. 격자 밖에 있던 focus 는 건드리지 않는다.
-    if (root.current?.contains(document.activeElement)) root.current.querySelector('[aria-selected="true"]')?.focus()
-  }, [sel.r, sel.k])
+    // 학습 곡선처럼 목록 밖에서 고른 checkpoint 도 펼친다
+    reopen(selTag)
+  }, [selTag])
+
+  useEffect(() => {
+    const row = root.current?.querySelector('.ep-item[aria-current="true"]')
+    if (!row) return
+    row.scrollIntoView({ block: 'nearest' })
+    // 키보드로 옮겼을 때만 focus 를 따라 옮긴다. 목록 밖에 있던 focus 는 건드리지 않는다.
+    // 옮기면서 앞 checkpoint 가 접히면 focus 를 쥔 줄이 사라지므로, 지금 focus 가 어디 있는지로는 판단하지 못한다.
+    if (byKey.current) row.focus()
+    byKey.current = false
+  }, [sel.r, sel.k, selOpen])
 
   const onKey = (e) => {
     if (e.key === ' ') {
@@ -64,59 +88,70 @@ function EpisodeGrid({ grid, sel, onSelect }) {
       togglePlay()
       return
     }
-    const move = { ArrowLeft: [0, -1], ArrowRight: [0, 1], ArrowUp: [-1, 0], ArrowDown: [1, 0] }[e.key]
-    if (!move) return
+    let { r, k } = sel
+    if (e.key === 'ArrowUp') {
+      if (k > 0) k -= 1
+      else if (r > 0) {
+        r -= 1
+        k = grid[r].items.length - 1
+      }
+    } else if (e.key === 'ArrowDown') {
+      if (k < grid[r].items.length - 1) k += 1
+      else if (r < grid.length - 1) {
+        r += 1
+        k = 0
+      }
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      r = Math.min(Math.max(r + (e.key === 'ArrowRight' ? 1 : -1), 0), grid.length - 1)
+      k = Math.min(k, grid[r].items.length - 1)
+    } else {
+      return
+    }
     e.preventDefault()
-    const r = Math.min(Math.max(sel.r + move[0], 0), grid.length - 1)
-    const k = Math.min(Math.max(sel.k + move[1], 0), grid[r].items.length - 1)
-    if (r !== sel.r || k !== sel.k) onSelect(r, k, true)
+    if (r === sel.r && k === sel.k) return
+    byKey.current = true
+    reopen(grid[r].tag)
+    onSelect(r, k, true)
   }
 
   return (
-    <div className="ep-grid" role="grid" aria-label="에피소드" ref={root} onKeyDown={onKey} style={{ '--cols': cols }}>
-      <div className="ep-row ep-head" role="row">
-        <span role="columnheader" />
-        {Array.from({ length: cols }, (_, k) => (
-          <span key={k} role="columnheader" aria-label={`에피소드 ${k + 1}`}>
-            {k + 1}
-          </span>
-        ))}
-      </div>
-      {grid.map((row, r) => (
-        <div key={row.tag} className="ep-row" role="row" aria-current={r === sel.r}>
-          <span className="ep-tag" role="rowheader">
-            {tagLabel(row.tag)}
-          </span>
-          {row.items.map((e, k) => {
-            const { captured, duration } = e.summary
-            const selected = r === sel.r && k === sel.k
-            const outcome = captured ? `포획 ${seconds(duration)}` : '시간 초과'
-            const text = `${tagLabel(row.tag)}, 에피소드 ${k + 1}, ${outcome}`
-            return (
-              <button
-                key={e.file}
-                type="button"
-                role="gridcell"
-                className="ep-cell"
-                aria-selected={selected}
-                aria-label={text}
-                title={text}
-                tabIndex={selected ? 0 : -1}
-                onClick={() => onSelect(r, k, false)}
-              >
-                {captured ? (
-                  // 빨리 잡았을수록 진하다
-                  <span className="ep-dot" style={{ opacity: 0.4 + 0.6 * (1 - duration / (longest || 1)) }} />
-                ) : (
-                  <span className="ep-miss" aria-hidden="true">
-                    ×
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </div>
-      ))}
+    <div className="ep-list" ref={root} onKeyDown={onKey}>
+      {grid.map((row, r) => {
+        const open = isOpen(row.tag)
+        const captured = row.items.filter((e) => e.summary.captured).length
+        return (
+          <section key={row.tag} className="ep-group" aria-label={tagLabel(row.tag)}>
+            <button
+              type="button"
+              className="ep-head"
+              aria-expanded={open}
+              aria-current={r === sel.r}
+              onClick={() => setToggled((prev) => ({ ...prev, [row.tag]: !open }))}
+            >
+              <Chevron />
+              <span className="ep-tag">{tagLabel(row.tag)}</span>
+              <span className="ep-count" aria-label={`포획 ${captured}, 전체 ${row.items.length}`}>
+                {captured} / {row.items.length}
+              </span>
+            </button>
+            {open && (
+              <ul className="source-list">
+                {row.items.map((e, k) => (
+                  <li key={e.file}>
+                    <button type="button" className="row ep-item" aria-current={r === sel.r && k === sel.k} onClick={() => onSelect(r, k, false)}>
+                      <span className="ep-num">{k + 1}</span>
+                      <span className={e.summary.captured ? 'ep-outcome outcome outcome-capture' : 'ep-outcome outcome'}>
+                        {e.summary.captured ? `포획 ${seconds(e.summary.duration)}` : '시간 초과'}
+                      </span>
+                      <span className="ep-return">{signed(e.summary.return)}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )
+      })}
     </div>
   )
 }
@@ -147,7 +182,7 @@ export function RunPanel({ run, grid, sel, onSelect }) {
           <CurveChart series={series} label={m.label} format={m.format} tickFormat={m.tickFormat} domain={m.domain} marker={checkpoint?.step ?? null} onPick={pickStep} />
         </section>
       )}
-      <EpisodeGrid grid={grid} sel={sel} onSelect={onSelect} />
+      <EpisodeList grid={grid} sel={sel} onSelect={onSelect} />
     </aside>
   )
 }

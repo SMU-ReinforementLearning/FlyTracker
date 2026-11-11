@@ -171,7 +171,7 @@ export default function App() {
           <IssuePage key={group.key} group={group} onSelectRun={selectRun} />
         ) : (
           <div className="workspace">
-            {run && sel && <RunPanel run={run} grid={grid} sel={sel} onSelect={selectEpisode} />}
+            {run && sel && <RunPanel key={run.id} run={run} grid={grid} sel={sel} onSelect={selectEpisode} />}
             {ep ? (
               <div className="stage">
                 <div className="scene">

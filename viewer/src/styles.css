@@ -834,74 +834,76 @@ code {
   border-radius: 50%;
 }
 
-.ep-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) repeat(var(--cols), 34px);
-  align-items: center;
-  height: 26px;
+.ep-group + .ep-group {
+  margin-top: 2px;
 }
 
 .ep-head {
-  height: 20px;
-  color: var(--text-3);
-  font-size: 11px;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-}
-
-.ep-tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: var(--radius-s);
+  background: none;
   color: var(--text-2);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+  text-align: left;
+  cursor: default;
 }
 
-.ep-row[aria-current='true'] .ep-tag {
+.ep-head:hover {
+  background: var(--fill);
+}
+
+.ep-head svg {
+  flex: none;
+  color: var(--text-3);
+  transition: transform 0.15s;
+}
+
+.ep-head[aria-expanded='true'] svg {
+  transform: rotate(90deg);
+}
+
+.ep-head[aria-current='true'] .ep-tag {
   color: var(--text);
   font-weight: 600;
 }
 
-.ep-cell {
-  display: grid;
-  place-items: center;
-  height: 24px;
-  margin: 0 2px;
-  padding: 0;
-  border: 0;
-  border-radius: 6px;
-  background: none;
-  cursor: default;
+.ep-count {
+  margin-left: auto;
 }
 
-.ep-cell:hover {
-  background: var(--fill-strong);
+.ep-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 5px 8px 5px 26px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
 }
 
-.ep-cell[aria-selected='true'] {
-  background: var(--accent);
-  color: var(--on-accent);
-}
-
-.ep-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--capture);
-}
-
-.ep-cell[aria-selected='true'] .ep-dot {
-  background: currentColor;
-  opacity: 1 !important;
-}
-
-.ep-miss {
+.ep-num {
+  flex: none;
+  min-width: 22px;
   color: var(--text-3);
-  font-size: 13px;
-  line-height: 1;
 }
 
-.ep-cell[aria-selected='true'] .ep-miss {
-  color: inherit;
+.ep-outcome {
+  flex: 1;
+  min-width: 0;
+}
+
+.ep-return {
+  color: var(--text-2);
+}
+
+.ep-item[aria-current='true'] .ep-num,
+.ep-item[aria-current='true'] .ep-return {
+  color: rgba(255, 255, 255, 0.82);
 }
 
 /* issue 화면: 실행 비교 */
