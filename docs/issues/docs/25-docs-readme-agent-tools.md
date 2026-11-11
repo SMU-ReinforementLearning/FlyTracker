@@ -29,7 +29,8 @@ Fixes one paragraph of `README.md` `## 시작하기` that #21 wrote as "팀 작�
 
 ## Current State
 - Issue, branch and worktree created from `origin/main` @ 25af854; this document seeded.
-- Paragraph rewritten; waiting for the review gate.
+- The user approved all three README changes at one gate ("그렇게 바꾸고 머지해"); they land as three commits in the order of the work log.
+- AI coding tool paragraph committed.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->

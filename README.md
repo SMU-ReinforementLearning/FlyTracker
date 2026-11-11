@@ -27,7 +27,7 @@ npm run dev --prefix viewer
 
 `train` extra는 Stable-Baselines3와 TensorBoard를, `dev` extra는 pytest를 설치한다. 기준선만 돌릴 때는 `uv sync`로 충분하다. 테스트는 `uv run pytest`로 돌린다.
 
-팀 작업은 Claude Code로 한다. `claude`를 띄우고 채팅에 `run onboarding`이라고 입력하면, Claude가 저장소의 git hook과 Claude Code hook을 켜고 필요한 도구를 확인한다. 코드만 돌려 볼 때는 건너뛰어도 된다.
+Claude Code, Codex, ChatGPT desktop 같은 AI 코딩 도구로 작업할 때 지킬 규칙은 `AGENTS.md`에 있다. Claude Code는 `claude`를 띄우고 채팅에 `run onboarding`이라고 입력하면 저장소의 git hook과 Claude Code hook을 켜고 Node와 GitHub CLI가 있는지 확인한다. 다른 AI 코딩 도구는 `AGENTS.md`를 읽게 하고, git hook은 `git config core.hooksPath .githooks`로 직접 켠다. 코드만 돌려 볼 때는 건너뛰어도 된다.
 
 ## 환경
 
