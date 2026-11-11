@@ -75,6 +75,21 @@ Reshapes the viewer for many runs from many issues: runs grouped by the issue th
 #### Notes
 - That PPO run is 2,524 KB for 36 episodes, about 70 KB per episode; the baseline episodes are 10–38 KB because they end sooner. A default 200,000-step run (33 episodes) would be about 2.3 MB in git.
 
+### feat: 실행 목록에 checkpoint별 요약 넣기 (#27)
+> why: the sidebar sparkline and the learning curves need per-checkpoint numbers without downloading every episode file
+#### Scope
+- `viewer/vite.config.js` only.
+#### Changes
+- `checkpointsOf(manifest)`: groups `episodes.json` summaries by tag → `{tag, step, episodes, captured, meanReturn, meanCaptureTime}`; `step` from `step_N` (`initial` = 0, other tags such as `baseline` = null); sorted by step, null first; means rounded to 4 decimals, `meanCaptureTime` over captured episodes only (null when none).
+- Build and dev index entries carry `checkpoints`. In dev, a run in both `runs/` and `published/` keeps the local entry and files but takes `issue` and `author` from the published `run.json`.
+#### Verification
+- `npm run build`: the baseline entry has one checkpoint `{baseline, step null, 5 episodes, 5 captured, meanReturn −13.7137, meanCaptureTime 3.528}`, matching the recorder's printed summary (−13.71, 3.53 s).
+- A Python recount from `episodes.json` (scratchpad `recount.py`) matches every checkpoint of the build index and of the dev index (baseline, two 12-checkpoint PPO runs, one DQN run still training): 0 mismatches.
+- Dev index with the two PPO runs also published locally under `--issue 27`: both show issue 27 and author `lhk0721`; the DQN run (local only) has neither.
+#### Notes
+- PPO evaluates at multiples of its 2,048-step rollout, so `--eval-every 3000` gave 12 checkpoints (0, 3,000 … 30,720).
+- The locally published PPO runs are test data and are not committed.
+
 ## Management Notes
 ### Follow-up Candidates
 - `train.py --issue N` so local runs group by issue before publishing.
