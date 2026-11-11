@@ -14,11 +14,12 @@ Claude Code에서 `run onboarding`이라고 입력하면 hook 설정과 필요�
 
 ## 구성
 
-Python 쪽이 에피소드를 만들고, viewer가 그것을 재생한다. 둘은 서로를 부르지 않고 `runs/` 폴더의 JSON 파일로만 이어진다.
+Python 쪽이 에피소드를 만들고, viewer가 그것을 재생한다. 둘은 서로를 부르지 않고 `runs/`와 `published/` 폴더의 JSON 파일로만 이어진다.
 
 1. `flytracker/`의 환경이 초파리와 조준기를 움직인다. agent가 행동을 하나 고르면 0.02초를 진행하고 관측과 보상을 돌려준다. 이 한 번을 step이라고 부른다.
 2. `scripts/`의 스크립트가 환경에서 에피소드를 돌리고 결과를 `runs/`에 저장한다. 에피소드는 JSON 파일로 남는다. 규칙 기반 조준기(기준선)로 돌리는 것이 `record_baseline.py`, 학습하면서 돌리는 것이 `train.py`다.
-3. `viewer/`는 `runs/`의 에피소드를 3D로 재생하는 웹 페이지다. 로컬에서 띄우는 viewer 개발 서버가 `runs/`의 파일을 `/runs` 주소로 내주고, 브라우저의 viewer가 그 파일을 받아 그린다.
+3. `viewer/`는 에피소드를 3D로 재생하는 웹 페이지다. 로컬에서 띄우는 viewer 개발 서버가 `runs/`와 `published/`의 파일을 `/runs` 주소로 내주고, 브라우저의 viewer가 그 파일을 받아 그린다.
+4. 팀과 나눌 실행은 `publish_run.py`로 `published/`에 복사해 PR로 올린다. `runs/`는 git에 올리지 않는다. main에 merge되면 Cloudflare Pages가 viewer를 다시 build해 사이트에 올린다.
 
 ## 설치
 
@@ -54,6 +55,15 @@ uv run tensorboard --logdir runs
 | `--fov` | 세로 시야각(도). 기본 40 |
 | `--capture-range` | 포획 거리(m). 주지 않으면 거리 조건이 없다 |
 | `--start-facing-fly` | 시작할 때 초파리를 바라보게 한다. 주지 않으면 방 가운데 쪽을 수평으로 바라본다(바닥 가운데에 있으면 −z) |
+
+실행 결과를 팀과 나누려면 `published/`에 복사해 PR로 올린다. 학습한 실행 폴더에는 모델 파일과 TensorBoard 기록이 함께 들어 있어서, `runs/`는 통째로 올리지 않는다. `publish_run.py`는 설정과 에피소드 JSON만 복사한다. 이미 올린 실행을 다시 복사하려면 `--force`를 붙인다.
+
+```sh
+uv run python scripts/publish_run.py 2026-11-11_133858_baseline
+git add published/2026-11-11_133858_baseline
+```
+
+PR이 main에 merge되면 [배포](#배포)한 viewer에 그 실행이 나온다.
 
 ## 환경
 
@@ -112,6 +122,8 @@ runs/
 ```
 
 `<tag>`는 에피소드 묶음 이름이다. 기준선이면 `baseline`이고, 학습이면 평가한 시점까지의 step 수다(`step_0020000` 형식). 평가 한 번에 에피소드 3개(`--eval-episodes`)를 저장하고, seed는 매번 10000, 10001, 10002다. 초파리 경로는 seed로 정해지므로 체크포인트끼리 같은 초파리를 상대로 비교된다.
+
+`published/`는 `runs/`와 구조가 같다. 다만 `checkpoints/`, `model.zip`, `tb/`가 없고, `index.json` 대신 실행 폴더마다 `run.json`이 있다. `run.json`은 `runs/index.json`에 있던 그 실행의 한 줄이다. viewer를 build할 때 실행마다 있는 `run.json`을 모아 실행 목록을 만든다. 실행 목록을 한 파일에 두지 않으므로, 두 사람이 각자 실행을 올린 PR도 서로 충돌하지 않는다.
 
 ### 에피소드 파일
 
@@ -215,7 +227,7 @@ uv run python scripts/record_baseline.py --episodes 200 --seed 10000 --no-save
 
 ## viewer
 
-Node 20 이상이 필요하다. 개발 서버가 `runs/`를 그대로 읽으므로 따로 백엔드가 없다.
+Node 20 이상이 필요하다. 개발 서버가 `runs/`와 `published/`를 그대로 읽으므로 따로 백엔드가 없다. 같은 실행이 두 폴더에 다 있으면 목록에 한 번만 나온다.
 
 ```sh
 npm install --prefix viewer
@@ -228,12 +240,34 @@ npm run dev --prefix viewer
 
 조준기 화면 위의 사각형은 Python이 기록한 화면 좌표다. 초파리가 멀리 있으면 보이지 않으므로 위치는 이 사각형으로 본다. 3D로 그린 초파리와 사각형이 어긋나면 Python의 투영 계산과 viewer 중 한쪽이 틀린 것이다.
 
+### 배포
+
+Cloudflare Pages에 저장소를 연결해 두면, main에 merge할 때마다 viewer를 build해 사이트에 올린다. build 결과물(`viewer/dist/`)에는 `published/`의 실행만 들어가고 `runs/`는 들어가지 않는다. PR을 올리면 미리보기 주소가 따로 생기므로, merge 전에 올린 실행을 재생해 볼 수 있다.
+
+사이트에 올라갈 결과물은 내 컴퓨터에서도 미리 볼 수 있다. preview 서버는 개발 서버와 달리 `dist/`만 내준다.
+
+```sh
+npm run build --prefix viewer
+npm run preview --prefix viewer
+```
+
+Cloudflare Pages 프로젝트는 아래처럼 설정한다.
+
+| 항목 | 값 |
+|---|---|
+| Production branch | `main` |
+| Root directory | `viewer` |
+| Build command | `npm run build` |
+| Build output directory | `dist` |
+| 환경 변수 | `NODE_VERSION` = `22` |
+
 ## 폴더
 
 | 경로 | 내용 |
 |---|---|
 | `flytracker/` | 환경, 카메라 모델, 조준기, 초파리, wrapper, 기록 저장, 기준선 |
-| `scripts/` | 기준선 기록, 학습 |
+| `scripts/` | 기준선 기록, 학습, 실행 올리기 |
 | `tests/` | pytest |
 | `viewer/` | 에피소드 viewer. Vite, React, React Three Fiber |
 | `runs/` | 실행 결과. git에 올리지 않는다. 형식은 [에피소드와 기록](#에피소드와-기록) |
+| `published/` | 저장소에 올린 실행. 형식은 [실행 폴더](#실행-폴더) |
