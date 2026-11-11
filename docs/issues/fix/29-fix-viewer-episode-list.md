@@ -4,7 +4,7 @@
 - Issue: #29
 - Branch: `29-fix-viewer-episode-list`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 The run panel's episode grid (#27) puts every episode of a checkpoint on one horizontal row of fixed 34 px cells, so a checkpoint with more than about 5 episodes overflows the 300 px panel; this replaces it with a vertical list grouped by checkpoint. The user pointed at the row on 2026-11-11 ("episode가 다섯개 수준이 아니고 엄청 많을 거잖아"), said the panel only holds one run so a vertical list is enough, and chose the collapsible variant from two previews.
@@ -35,9 +35,8 @@ The run panel's episode grid (#27) puts every episode of a checkpoint on one hor
 - [x] `npm run build` passes; `uv run pytest -q` passes; README passes ko-writing `check.py` and `readme_check.py`.
 
 ## Current State
-- The list is implemented, verified and committed; all Done Criteria are met. Left: remove the AGENTS.md pointer line and set Status to done as the last commit, then the PR. Push only when the user asks.
-- Test data in this worktree's gitignored `runs/`: `2026-11-11_164643_baseline` (40 episodes) and `2026-11-11_164919_ppo-list` (PPO, 30,000 step, 12 checkpoints × 3 episodes, no captures). Both real.
-- A dev server started in this session listens on 127.0.0.1:5181 from this worktree; stop it before removing the worktree.
+- Done. The user looked at the result and asked for the merge ("머지해", 2026-11-11).
+- After merge: check the deployed site still opens the run view with the list; the test runs exist only in this worktree's gitignored `runs/` and go away with it. Stop the dev server on 127.0.0.1:5181 before removing the worktree.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -79,6 +78,17 @@ The run panel's episode grid (#27) puts every episode of a checkpoint on one hor
 #### Notes
 - Not checked: light colour scheme, Firefox and Safari, more than 40 episodes in one checkpoint (rows are plain DOM; no virtualisation).
 - The capture-speed shading of the grid is gone; the time is text now.
+
+### chore: #29 pointer 줄 지우고 문서 상태를 done으로 (#29)
+> why: last commit on the branch before the PR, per the post-PR cleanup gate
+#### Scope
+- `AGENTS.md`, `docs/issues/README.md`, this document.
+#### Changes
+- Pointer line removed, registry row and Status set to done, Current State rewritten.
+#### Verification
+- `git status --short` was clean before this commit.
+#### Notes
+- (none)
 
 ## Management Notes
 ### Follow-up Candidates

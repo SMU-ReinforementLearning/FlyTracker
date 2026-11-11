@@ -62,7 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `29-fix-viewer-episode-list` — `docs/issues/fix/29-fix-viewer-episode-list.md` — viewer 실행 패널의 에피소드를 checkpoint별 세로 목록으로 바꾸기
+- (none)
 
 ## Environment (repo slot)
 
