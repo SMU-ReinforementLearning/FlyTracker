@@ -4,7 +4,7 @@
 - Issue: #27
 - Branch: `27-feature-viewer-run-browser`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 Reshapes the viewer for many runs from many issues: runs grouped by the issue they belong to, a run panel with the learning curve and a checkpoint × start-condition episode grid, an issue page that compares its runs, and the selection kept in the URL so a link opens the same episode. The user asked for the four steps proposed in a Q&A on 2026-11-11 ("4번까지 진행해"), Apple-style minimal, with no captions or subtitles.
@@ -44,9 +44,8 @@ Reshapes the viewer for many runs from many issues: runs grouped by the issue th
 - [x] README passes ko-writing `check.py` and `readme_check.py`.
 
 ## Current State
-- All Done Criteria are met and everything is committed. Left: delete the test data below, remove the AGENTS.md pointer line as the last commit, then the PR (push only when the user asks).
-- Test data in this worktree, none of it committed: gitignored `runs/` (two PPO runs, one DQN run, synthetic `demo-learns`) and untracked `published/` folders (`…ppo-fov40`, `…ppo-fov60`, `…demo-learns`, `…baseline-copy`). Delete the untracked `published/` folders before the PR; never `git add published/` wholesale.
-- A dev server from the earlier session may still be listening on 5180, serving this worktree.
+- Done. All Done Criteria are met; the user asked for merge and deploy ("머지 배포까지 진행해", 2026-11-11). The untracked test folders under `published/` were deleted before the PR; the synthetic and short local runs remain only in this worktree's gitignored `runs/`.
+- After merge: check that https://flytracker-ewk.pages.dev/ shows the grouped sidebar and `?issue=22`; post the result on #27.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -142,6 +141,17 @@ Reshapes the viewer for many runs from many issues: runs grouped by the issue th
 - `uv run pytest -q`: 33 passed. `npm run build` passed in the previous commit; no viewer file changed since.
 #### Notes
 - The `gh` link (cli.github.com) was not probed online.
+
+### chore: #27 pointer 줄 지우고 문서 상태를 done으로 (#27)
+> why: last commit on the branch before the PR, per the post-PR cleanup gate
+#### Scope
+- `AGENTS.md`, `docs/issues/README.md`, this document.
+#### Changes
+- Pointer line removed, registry row and Status set to done, Current State rewritten.
+#### Verification
+- `git status --short` after deleting the four untracked `published/` test folders: clean before this commit.
+#### Notes
+- (none)
 
 ## Management Notes
 ### Follow-up Candidates

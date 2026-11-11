@@ -62,7 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `27-feature-viewer-run-browser` — `docs/issues/feature/27-feature-viewer-run-browser.md` — viewer 실행 목록을 issue별로 묶고 학습 곡선과 에피소드 격자 넣기
+- (none)
 
 ## Environment (repo slot)
 
