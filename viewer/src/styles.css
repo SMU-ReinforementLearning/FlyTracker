@@ -15,6 +15,16 @@
   --accent: #0071e3;
   --on-accent: #ffffff;
   --capture: #1a8a62;
+  /* 실행 여러 개를 겹쳐 그릴 때의 선 색. dataviz 검사 스크립트로 두 모드 모두 확인했다.
+     밝은 모드의 3, 4, 5번은 바탕 대비 3:1 미만이라, 같은 값을 아래 표가 글자로도 보여 준다. */
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
+  --series-7: #6250d6;
+  --series-8: #e34948;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
   --radius-l: 14px;
   --radius-m: 10px;
@@ -35,6 +45,14 @@
     --fill-strong: rgba(255, 255, 255, 0.1);
     --accent: #0a84ff;
     --capture: #30d158;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --series-5: #d55181;
+    --series-6: #008300;
+    --series-7: #9085e9;
+    --series-8: #e66767;
     --shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
   }
 }
@@ -105,6 +123,13 @@ code {
   border-bottom: 1px solid var(--separator);
 }
 
+.toolbar-lead {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+}
+
 .toolbar-title {
   margin: 0;
   font-size: 15px;
@@ -115,8 +140,35 @@ code {
   text-overflow: ellipsis;
 }
 
+.toolbar-num {
+  color: var(--text-3);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.toolbar-meta {
+  display: flex;
+  gap: 12px;
+  color: var(--text-2);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.workspace {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
 .stage {
   flex: 1;
+  min-width: 0;
   min-height: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 320px;
@@ -161,24 +213,93 @@ code {
 
 /* 사이드바 목록 */
 
-.sidebar-title {
-  margin: 0 0 6px;
+.search {
+  display: block;
+  width: 100%;
+  height: 28px;
+  margin: 0 0 10px;
   padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--fill-strong);
+  color: var(--text);
+  font: inherit;
+}
+
+.search::placeholder {
+  color: var(--text-3);
+}
+
+.group + .group {
+  margin-top: 10px;
+}
+
+.group-head {
+  display: flex;
+  align-items: center;
+}
+
+.disclosure {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-s);
+  background: none;
+  color: var(--text-3);
+}
+
+.disclosure svg {
+  transition: transform 0.15s;
+}
+
+.disclosure[aria-expanded='true'] svg {
+  transform: rotate(90deg);
+}
+
+.group-name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 5px;
+  padding: 5px 6px;
+  border: 0;
+  border-radius: var(--radius-s);
+  background: none;
+  color: var(--text-2);
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-2);
+  text-align: left;
+  cursor: default;
 }
 
-.sidebar-title:not(:first-child) {
-  margin-top: 22px;
+.group-name:hover,
+.disclosure:hover {
+  background: var(--fill);
 }
 
-.group-title {
-  margin: 12px 0 4px;
-  padding: 0 10px;
-  font-size: 11px;
-  font-weight: 600;
+.group-name[aria-current='true'] {
+  background: var(--fill-strong);
+  color: var(--text);
+}
+
+.group-num {
+  flex: none;
   color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.group-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.group .row {
+  padding-left: 26px;
 }
 
 .sidebar-note {
@@ -224,6 +345,27 @@ code {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.row-rate {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.row-meta {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spark path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
 .row-aside,
@@ -440,7 +582,7 @@ code {
 }
 
 .segmented {
-  display: flex;
+  display: inline-flex;
   padding: 2px;
   border-radius: 8px;
   background: var(--fill);
@@ -556,9 +698,291 @@ code {
   font-size: 11px;
 }
 
+/* 실행 패널: 고른 checkpoint 의 수치, 학습 곡선, 에피소드 격자 */
+
+.run-panel {
+  flex: none;
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 18px 16px 24px;
+  border-right: 1px solid var(--separator);
+  overflow-y: auto;
+}
+
+.panel-title {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.stat dt {
+  color: var(--text-2);
+  font-size: 11px;
+}
+
+.stat dd {
+  margin: 2px 0 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.panel-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.curve {
+  position: relative;
+  width: 100%;
+}
+
+.curve svg {
+  display: block;
+  overflow: visible;
+}
+
+.curve svg[data-pickable] {
+  cursor: pointer;
+}
+
+.curve .grid {
+  stroke: var(--separator);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.curve .tick {
+  fill: var(--text-3);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.curve .series {
+  fill: none;
+  stroke: var(--series, var(--accent));
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.curve .series-flat {
+  stroke: var(--series, var(--accent));
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+
+.curve .series-point {
+  fill: var(--series, var(--accent));
+  stroke: var(--window);
+  stroke-width: 1.5;
+}
+
+/* 지금 고른 checkpoint. 속을 비운 고리로 다른 점과 구분한다. */
+.curve .series-marker {
+  fill: var(--window);
+  stroke: var(--series, var(--accent));
+  stroke-width: 2.5;
+}
+
+.curve .crosshair-line {
+  stroke: var(--text-3);
+  stroke-width: 1;
+}
+
+.tooltip-side {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 3px;
+  transform: translate(12px, 0);
+  z-index: 1;
+}
+
+.tooltip-side[data-flip='true'] {
+  transform: translate(calc(-100% - 12px), 0);
+}
+
+.tooltip-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.tooltip-row strong {
+  margin-left: auto;
+  padding-left: 10px;
+}
+
+.swatch {
+  flex: none;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.ep-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(var(--cols), 34px);
+  align-items: center;
+  height: 26px;
+}
+
+.ep-head {
+  height: 20px;
+  color: var(--text-3);
+  font-size: 11px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.ep-tag {
+  color: var(--text-2);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ep-row[aria-current='true'] .ep-tag {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.ep-cell {
+  display: grid;
+  place-items: center;
+  height: 24px;
+  margin: 0 2px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  cursor: default;
+}
+
+.ep-cell:hover {
+  background: var(--fill-strong);
+}
+
+.ep-cell[aria-selected='true'] {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.ep-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--capture);
+}
+
+.ep-cell[aria-selected='true'] .ep-dot {
+  background: currentColor;
+  opacity: 1 !important;
+}
+
+.ep-miss {
+  color: var(--text-3);
+  font-size: 13px;
+  line-height: 1;
+}
+
+.ep-cell[aria-selected='true'] .ep-miss {
+  color: inherit;
+}
+
+/* issue 화면: 실행 비교 */
+
+.issue-page {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background: var(--stage);
+  overflow-y: auto;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--window);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow);
+}
+
+.table-wrap {
+  display: block;
+  padding: 4px 0;
+  overflow-x: auto;
+}
+
+.run-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.run-table th,
+.run-table td {
+  padding: 9px 16px;
+  text-align: left;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.run-table thead th {
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.run-table tbody tr {
+  border-top: 1px solid var(--separator);
+}
+
+.run-table tbody th {
+  font-weight: 500;
+}
+
+.run-table .num {
+  text-align: right;
+}
+
+.run-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-weight: inherit;
+  cursor: pointer;
+}
+
+.run-link:hover {
+  color: var(--accent);
+}
+
 /* 좁은 화면에서는 위에서 아래로 쌓는다 */
 
-@media (max-width: 1080px) {
+@media (max-width: 1360px) {
   .stage {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto;
@@ -570,7 +994,40 @@ code {
   }
 }
 
+@media (max-width: 1080px) {
+  .workspace {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .run-panel {
+    width: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--separator);
+    overflow-y: visible;
+  }
+  .stage {
+    flex: none;
+    overflow-y: visible;
+  }
+}
+
 @media (max-width: 760px) {
+  .toolbar {
+    height: auto;
+    min-height: 52px;
+    padding: 8px 12px 8px 16px;
+  }
+  .toolbar-lead,
+  .toolbar-meta {
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+  .workspace {
+    overflow-y: visible;
+  }
+  .issue-page {
+    overflow-y: visible;
+  }
   .app {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
@@ -588,7 +1045,7 @@ code {
   .transport {
     flex-wrap: wrap;
   }
-  .segmented {
+  .transport .segmented {
     margin-left: auto;
   }
 }

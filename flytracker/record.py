@@ -11,6 +11,7 @@ runs/
 
 runs/ 는 git 에 올리지 않는다. 저장소에 올릴 실행은 `publish_run()` 으로 published/ 에 복사한다.
 published/ 는 runs/ 와 구조가 같고, index.json 대신 실행마다 run.json(실행 목록의 한 줄)을 둔다.
+run.json 에는 목록의 한 줄에 더해 실행이 속한 issue(number, title, url)와 올린 사람(author)이 들어간다.
 여러 사람이 각자 실행을 올려도 한 파일을 함께 고치지 않게 하려는 것이다. 목록은 viewer 가 build 할 때 만든다.
 """
 
@@ -190,11 +191,18 @@ class RunStore:
         _write_json(self.root / "index.json", index)
 
 
-def publish_run(runs_root: str | os.PathLike, run_id: str, dest_root: str | os.PathLike, overwrite: bool = False) -> list[Path]:
+def publish_run(
+    runs_root: str | os.PathLike,
+    run_id: str,
+    dest_root: str | os.PathLike,
+    overwrite: bool = False,
+    extra: dict | None = None,
+) -> list[Path]:
     """실행 하나의 JSON 을 dest_root/<run_id>/ 로 복사하고, 쓴 파일 목록을 돌려준다.
 
     config.json, episodes.json, episodes.json 에 적힌 에피소드 파일, 그리고 runs/index.json 에서 꺼낸
     이 실행의 한 줄(run.json)만 쓴다. 모델 파일과 TensorBoard 기록은 복사하지 않는다.
+    extra 는 run.json 에 더 적을 값이다. scripts/publish_run.py 가 issue 와 올린 사람을 넘긴다.
     원본을 모두 확인한 뒤 임시 폴더에 쓰고 바꿔치기하므로, 중간에 실패해도 반쯤 복사된 폴더가 남지 않는다.
     """
     runs_root, dest_root = Path(runs_root), Path(dest_root)
@@ -225,7 +233,7 @@ def publish_run(runs_root: str | os.PathLike, run_id: str, dest_root: str | os.P
     for rel in rels:
         (tmp / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(src / rel, tmp / rel)
-    _write_json(tmp / "run.json", {**entry, "episodeCount": len(manifest["episodes"])})
+    _write_json(tmp / "run.json", {**entry, **(extra or {}), "episodeCount": len(manifest["episodes"])})
     if dest.exists():
         shutil.rmtree(dest)
     os.replace(tmp, dest)

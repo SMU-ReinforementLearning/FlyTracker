@@ -8,6 +8,7 @@ import { defineConfig } from 'vite'
 //   개발 서버: runs/(내 컴퓨터에서 만든 실행)와 published/(저장소에 올라온 실행)를 함께 내준다.
 //   build: published/ 만 dist/runs/ 에 넣는다. Cloudflare 에 올라가는 것은 이것뿐이다.
 // published/ 에는 index.json 이 없다. 실행마다 있는 run.json 을 모아 목록을 만든다(flytracker/record.py).
+// 목록의 실행마다 checkpoint 별 요약(checkpoints)을 붙인다. 화면이 에피소드 파일을 다 받지 않고 학습 곡선을 그리게 하려는 것이다.
 const ROOT = path.resolve(fileURLToPath(new URL('.', import.meta.url)), '..')
 const RUNS_DIR = path.join(ROOT, 'runs')
 const PUBLISHED_DIR = path.join(ROOT, 'published')
@@ -43,23 +44,69 @@ async function listJson(dir, prefix = '') {
   return out
 }
 
+/** tag 이름의 학습 step. 기준선처럼 step 이 없는 tag 는 null. */
+function stepOf(tag) {
+  if (tag === 'initial') return 0
+  const m = /^step_(\d+)$/.exec(tag)
+  return m ? Number(m[1]) : null
+}
+
+const round4 = (v) => Math.round(v * 1e4) / 1e4
+const mean = (xs) => (xs.length ? round4(xs.reduce((a, b) => a + b, 0) / xs.length) : null)
+
+/** episodes.json 의 에피소드 요약을 tag 별로 모은다. step 순서이고, step 이 없는 tag 가 앞에 온다. */
+export function checkpointsOf(manifest) {
+  const byTag = new Map()
+  for (const e of manifest?.episodes ?? []) {
+    if (!byTag.has(e.tag)) byTag.set(e.tag, [])
+    byTag.get(e.tag).push(e.summary ?? {})
+  }
+  return [...byTag]
+    .map(([tag, list]) => {
+      const caught = list.filter((s) => s.captured)
+      return {
+        tag,
+        step: stepOf(tag),
+        episodes: list.length,
+        captured: caught.length,
+        meanReturn: mean(list.map((s) => s.return ?? 0)),
+        meanCaptureTime: mean(caught.map((s) => s.duration ?? 0)),
+      }
+    })
+    .sort((a, b) => (a.step ?? -1) - (b.step ?? -1))
+}
+
+async function withCheckpoints(entry, root) {
+  const manifest = await readJson(path.join(root, entry.id, 'episodes.json'), null)
+  return { ...entry, checkpoints: checkpointsOf(manifest) }
+}
+
 async function publishedRuns() {
   const runs = []
   for (const d of await dirents(PUBLISHED_DIR)) {
     if (!d.isDirectory() || d.name.startsWith('.')) continue
     const entry = await readJson(path.join(PUBLISHED_DIR, d.name, 'run.json'), null)
-    if (entry) runs.push(entry)
+    if (entry) runs.push(await withCheckpoints(entry, PUBLISHED_DIR))
   }
   return runs
 }
 
 const byCreatedAt = (a, b) => String(a.createdAt).localeCompare(String(b.createdAt))
 
-/** 같은 id 가 양쪽에 있으면 runs/ 쪽을 쓴다. 파일도 runs/ 에서 먼저 찾는다. */
+/**
+ * 같은 id 가 양쪽에 있으면 runs/ 쪽 목록과 파일을 쓰되, issue 와 올린 사람은 published/ 의 run.json 에서 가져온다.
+ * runs/index.json 에는 그 둘이 없기 때문이다. 파일도 runs/ 에서 먼저 찾는다.
+ */
 async function devIndex() {
-  const local = (await readJson(path.join(RUNS_DIR, 'index.json'), { runs: [] })).runs
+  const published = await publishedRuns()
+  const pub = new Map(published.map((r) => [r.id, r]))
+  const local = []
+  for (const r of (await readJson(path.join(RUNS_DIR, 'index.json'), { runs: [] })).runs) {
+    const { issue, author } = pub.get(r.id) ?? {}
+    local.push(await withCheckpoints({ ...r, ...(issue && { issue }), ...(author !== undefined && { author }) }, RUNS_DIR))
+  }
   const seen = new Set(local.map((r) => r.id))
-  const runs = [...local, ...(await publishedRuns()).filter((r) => !seen.has(r.id))]
+  const runs = [...local, ...published.filter((r) => !seen.has(r.id))]
   return { format: INDEX_FORMAT, runs: runs.sort(byCreatedAt) }
 }
 

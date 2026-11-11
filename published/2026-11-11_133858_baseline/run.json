@@ -1,1 +1,1 @@
-{"id":"2026-11-11_133858_baseline","name":"baseline","createdAt":"2026-11-11T13:38:58","algo":"rule-baseline","actionMode":"continuous","notes":"","episodeCount":5}
+{"id":"2026-11-11_133858_baseline","name":"baseline","createdAt":"2026-11-11T13:38:58","algo":"rule-baseline","actionMode":"continuous","notes":"","issue":{"number":22,"title":"학습 결과를 저장소에 올려 Cloudflare viewer에서 재생하기","url":"https://github.com/SMU-ReinforementLearning/FlyTracker/issues/22"},"author":"lhk0721","episodeCount":5}
