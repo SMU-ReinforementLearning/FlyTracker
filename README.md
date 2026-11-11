@@ -62,7 +62,7 @@ Claude Code, Codex, ChatGPT desktop 같은 AI 코딩 도구로 작업할 때 지
 | 조준기의 yaw(sin과 cos)와 pitch | 3 |
 | 조준기의 yaw와 pitch 각속도 | 2 |
 
-행동은 −1~1 범위의 2차원이다. yaw와 pitch의 각속도이고, 1이 yaw 180°/s, pitch 120°/s다. 실제 각속도는 각가속도 제한 720°/s² 안에서 따라가고, pitch는 위아래 80°까지 돈다. DQN처럼 이산 행동만 받는 알고리즘을 위해 행동 5개짜리 wrapper가 있다. 차례로 정지, yaw 왼쪽, yaw 오른쪽, pitch 위, pitch 아래다.
+행동은 −1~1 범위의 2차원이고, yaw와 pitch의 목표 각속도다. 1이 yaw 180°/s, pitch 120°/s다. 실제 각속도는 목표를 향해 1초에 720°/s까지만 바뀌므로, 멈춘 상태에서 최고 속도까지 0.25초가 걸린다. pitch는 위아래 80°까지 돈다. DQN처럼 이산 행동만 받는 알고리즘을 위해 행동 5개짜리 wrapper가 있다. 차례로 정지, yaw 왼쪽, yaw 오른쪽, pitch 위, pitch 아래다.
 
 ### 에피소드
 
