@@ -4,7 +4,7 @@
 - Issue: #22
 - Branch: `22-feature-publish-runs-cloudflare`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 Lets a teammate copy a finished run into a tracked folder, open a PR, and after merge replay it on the viewer that Cloudflare Pages builds from `main`. The user asked for this in a Q&A (2026-11-11) and chose the default answers: training stays on each member's PC (not GitHub Actions), and the Cloudflare dashboard connection is done by the user after the repo side lands.
@@ -32,16 +32,16 @@ Lets a teammate copy a finished run into a tracked folder, open a PR, and after 
 - Changing the episode or run format, recording observations/actions, checkpoint evaluation.
 
 ## Done Criteria
-- [ ] pytest: `publish_run()` copies only the listed JSON files, writes `run.json`, skips `checkpoints/`, `model.zip`, `tb/`, refuses an existing destination without overwrite.
-- [ ] Full pytest suite passes.
-- [ ] `npm run build` puts every published run plus a generated `index.json` under `dist/runs/`; nothing named `index.json` is committed under `published/`.
-- [ ] `npm run preview` (dist only): the run list shows the published run and an episode plays. Screenshot evidence via ui-evidence.
-- [ ] `npm run dev`: local runs and published runs show together; a run present in both shows once.
-- [ ] README passes ko-writing `check.py` and `readme_check.py`.
-- [ ] After the user connects Cloudflare Pages and the PR merges: the production URL lists the published run and plays it. (Recorded here once checked; may land after the merge.)
+- [x] pytest: `publish_run()` copies only the listed JSON files, writes `run.json`, skips `checkpoints/`, `model.zip`, `tb/`, refuses an existing destination without overwrite. (2026-11-11 13:30)
+- [x] Full pytest suite passes. (2026-11-11 13:45, 32 passed, rerun after the last code change)
+- [x] `npm run build` puts every published run plus a generated `index.json` under `dist/runs/`; nothing named `index.json` is committed under `published/`. (2026-11-11 13:45, clean `dist/` rebuild)
+- [x] `npm run preview` (dist only): the run list shows the published run and an episode plays. Screenshot evidence via ui-evidence. (2026-11-11 13:42)
+- [x] `npm run dev`: local runs and published runs show together; a run present in both shows once. (2026-11-11 13:42)
+- [x] README passes ko-writing `check.py` and `readme_check.py`. (2026-11-11 13:44)
+- [ ] Post-merge, outside this branch: after the user connects Cloudflare Pages, the production URL lists the published run and plays it. The result goes into an issue #22 comment, because `main` takes PRs only.
 
 ## Current State
-- Issue, branch and worktree created from `origin/main` @ fc67f84; this document filled. Next: first commit, then `publish_run()` + tests.
+- All repo-side work committed; PR open for merge. Not done here: Cloudflare Pages project creation and the GitHub App install on the `SMU-ReinforementLearning` org (user, dashboard). Settings are in README `### 배포`. After that, check the production URL and comment on #22.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -119,6 +119,18 @@ Lets a teammate copy a finished run into a tracked folder, open a PR, and after 
 - `readme_check.py README.md`: 0 fail, 0 warn (anchors `#배포`, `#실행-폴더` resolve).
 #### Notes
 - The "팀원 시작하기" clone URL still points to the pre-transfer repo; left for #21, which rewrites the README.
+
+### chore: #22 마무리 (#22)
+> why: last commit before merge: close the document and drop the AGENTS.md pointer (git-rules, post-PR gate)
+#### Scope
+- This document, `docs/issues/README.md` registry row, `AGENTS.md` pointer.
+#### Changes
+- Status → done; Done Criteria ticked; the Cloudflare production check recorded as post-merge work.
+- Registry row status → done. AGENTS.md pointer line removed (`- (none)` restored).
+#### Verification
+- `uv run pytest -q`: 32 passed. Clean `npm run build`: 9 files under `dist/runs/`, index lists the one published run.
+#### Notes
+- None.
 
 ## Management Notes
 ### Follow-up Candidates

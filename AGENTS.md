@@ -62,7 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `22-feature-publish-runs-cloudflare` — `docs/issues/feature/22-feature-publish-runs-cloudflare.md` — 학습 결과를 저장소에 올려 Cloudflare viewer에서 재생하기
+- (none)
 
 ## Environment (repo slot)
 
