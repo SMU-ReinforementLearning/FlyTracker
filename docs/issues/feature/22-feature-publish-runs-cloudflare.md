@@ -71,6 +71,31 @@ Lets a teammate copy a finished run into a tracked folder, open a PR, and after 
 #### Notes
 - Episode paths in `episodes.json` stay `<run_id>/episodes/...`, relative to whichever root serves `/runs`, so the viewer needs no path rewrite.
 
+### feat: viewer build에 published 실행 넣기 (#22)
+> why: a static host has no `/runs` middleware, so the build itself must carry the published runs and their list
+#### Scope
+- `viewer/vite.config.js` only. Screen code still reads `/runs/...`; nothing in `viewer/src` changes.
+#### Changes
+- build (`generateBundle`): emits every JSON under `published/<run_id>/` to `dist/runs/<run_id>/` and a generated `dist/runs/index.json` built from the `run.json` files, sorted by `createdAt`. Files at the top of `published/` and dot-folders (publish temp dirs) are skipped.
+- dev server: `/runs/index.json` = `runs/index.json` entries + published entries whose id is not local; a file is looked up in `runs/` first, then `published/`. Path check kept per root (only `.json` inside the root).
+- preview server: the `/runs` middleware is gone, so `npm run preview` serves `dist/` exactly as Cloudflare will.
+#### Verification
+- `npm run build --prefix viewer`: `dist/runs/` holds the published run's 8 files plus `index.json` listing only that run; `ep_003.json` byte-identical to the source (`cmp`). The >500 kB chunk warning is the existing three.js bundle.
+- dev server (port 5191), `runs/` = {baseline (also published), local-only}: index lists both, baseline once; local-only file 200; `..%2Fpyproject.toml`, `..%2Fviewer%2Fpackage.json`, unknown run → 404. With `runs/` moved away: index lists the published run only and its episode file is 200.
+- preview server (port 5192): index lists only the published run; the local-only run's `episodes.json` is not served (HTML fallback, as on Cloudflare).
+- ui-evidence (commit 589c20b + this uncommitted change, Chrome 156.0.8078.74), captures kept in the session scratchpad, not committed:
+
+| page | viewport | overflow | probes | console |
+| --- | --- | --- | --- | --- |
+| preview `/` | 1600x900 | none | run rows = 1 (`baseline 11월 11일 13:38`), episode rows = 5 | favicon.ico 404 (no favicon in the repo), THREE.Clock deprecation, GL ReadPixels stall |
+| preview `/` | 390x844 mobile | none | run rows = 1, episode rows = 5 | THREE.Clock deprecation only |
+| dev `/` | 1600x900 | none | run rows = 2 (`local-only`, `baseline`) | same as preview |
+
+  - preview 1600x900: published baseline run selected, episode 5 playing at 2.92 / 4.26 s, frame 146 / 214, both views and both charts drawn.
+  - dev 1600x900: local-only run on top, published baseline below it, episode 2 playing.
+#### Notes
+- On Cloudflare a missing file returns the SPA `index.html` with 200, not 404. `index.json` is always emitted, so the run list never hits that case.
+
 ## Management Notes
 ### Follow-up Candidates
 - Optional GitHub Actions workflow that trains, publishes and opens the PR (user chose local training for now).
