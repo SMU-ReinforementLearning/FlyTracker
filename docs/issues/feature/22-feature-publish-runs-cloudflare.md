@@ -57,6 +57,20 @@ Lets a teammate copy a finished run into a tracked folder, open a PR, and after 
 #### Notes
 - #21 (README rewrite) is open in `FlyTracker-21` with no commits yet; whichever merges second rebases README.
 
+### feat: 실행을 published 폴더로 복사하는 스크립트 (#22)
+> why: runs/ is gitignored and holds model files; a run needs a JSON-only copy that can go into git without a shared list file
+#### Scope
+- `flytracker/record.py`, `scripts/publish_run.py`, `tests/test_publish.py`.
+#### Changes
+- `publish_run(runs_root, run_id, dest_root, overwrite=False)`: copies `config.json`, `episodes.json` and every episode file listed in it; writes `run.json` = the run's entry from `runs/index.json` with `episodeCount` recomputed. Checks every source first, writes into `.<run_id>.tmp`, then swaps it in. Raises `FileExistsError` unless `overwrite`.
+- `scripts/publish_run.py <run id or runs/<id>> [--runs-dir] [--dest published] [--force]`; stdout and stderr forced to UTF-8 so errors are readable in a cp949 console.
+- Module docstring of `record.py` describes `published/`.
+#### Verification
+- `uv run pytest -q`: 32 passed (4 new: JSON-only copy with checkpoints/model.zip/tb present, run.json equals index entry, refuse then overwrite removes stale files, unknown id and missing episode write nothing).
+- CLI by hand on a fresh `record_baseline.py --episodes 5` run with `--dest` in the scratchpad: 8 files, 128 KB; second call exits 1 with the `--force` hint; `--force` succeeds; unknown id exits 1. Messages render in Korean (they were garbled before stderr was reconfigured).
+#### Notes
+- Episode paths in `episodes.json` stay `<run_id>/episodes/...`, relative to whichever root serves `/runs`, so the viewer needs no path rewrite.
+
 ## Management Notes
 ### Follow-up Candidates
 - Optional GitHub Actions workflow that trains, publishes and opens the PR (user chose local training for now).
