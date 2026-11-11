@@ -12,7 +12,7 @@
 
 ## 시작하기
 
-Python 3.10 이상, [uv](https://docs.astral.sh/uv/), Node 20.19 이상이 필요하다.
+결과만 볼 때는 https://flytracker-ewk.pages.dev/ 를 연다. 저장소에 올린 실행이 재생된다. 직접 돌리려면 Python 3.10 이상, [uv](https://docs.astral.sh/uv/), Node 20.19 이상이 필요하다.
 
 ```sh
 git clone https://github.com/SMU-ReinforementLearning/FlyTracker.git
@@ -27,7 +27,7 @@ npm run dev --prefix viewer
 
 `train` extra는 Stable-Baselines3와 TensorBoard를, `dev` extra는 pytest를 설치한다. 기준선만 돌릴 때는 `uv sync`로 충분하다. 테스트는 `uv run pytest`로 돌린다.
 
-팀 작업은 Claude Code로 한다. `claude`를 띄우고 채팅에 `run onboarding`이라고 입력하면, Claude가 저장소의 git hook과 Claude Code hook을 켜고 필요한 도구를 확인한다. 코드만 돌려 볼 때는 건너뛰어도 된다.
+Claude Code, Codex, ChatGPT desktop 같은 AI 코딩 도구로 작업할 때 지킬 규칙은 `AGENTS.md`에 있다. Claude Code는 `claude`를 띄우고 채팅에 `run onboarding`이라고 입력하면 저장소의 git hook과 Claude Code hook을 켜고 Node와 GitHub CLI가 있는지 확인한다. 다른 AI 코딩 도구는 `AGENTS.md`를 읽게 하고, git hook은 `git config core.hooksPath .githooks`로 직접 켠다. 코드만 돌려 볼 때는 건너뛰어도 된다.
 
 ## 환경
 
@@ -45,7 +45,7 @@ npm run dev --prefix viewer
 
 초파리는 실제 초파리의 자유비행 측정값을 따라 난다. 직선 구간과 급선회를 번갈아 하고, 직선 구간은 짧은 것이 잦고 긴 것이 드물다. 속도는 평균 약 0.3m/s이고, 급선회는 평균 93°를 약 50ms에 돈다.
 
-초파리에는 평시와 비상시가 있다. 초파리가 조준기에 1m 안에서 지금 속도로 1초 안에 닿을 만큼 빠르게 가까워지거나, 0.35m 안으로 들어가면 조준기를 위협으로 느껴 비상시로 바뀐다. 비상시가 되면 60ms 뒤 조준기 반대쪽으로 빠르게 돌며 잠깐 빨라진다. 조준기가 자기를 겨누는지는 모른다.
+초파리에는 평시와 비상시가 있다. 초파리가 조준기에 1m 안에서 지금 속도로 1초 안에 닿을 만큼 빠르게 가까워지거나, 0.35m 안으로 들어가면 조준기를 위협으로 느껴 비상시로 바뀐다. 비상시가 되면 60ms 뒤 조준기 반대쪽으로 빠르게 돌며 잠깐 빨라진다. 조준기가 자기를 겨누는지는 모른다고 가정한다. 이 가정은 2026-11-11 기준이고 바뀔 수 있다.
 
 비행 값에는 문헌에서 가져온 값과 가정한 값이 섞여 있다. 값마다 출처는 [초파리 비행 모델과 기준선 탐색](docs/issues/feature/9-feature-fly-realism-search/fly-flight-and-search-model.md)에 있고, `flytracker/fly.py`의 `FlyParams`에서 바꾼다.
 
@@ -62,7 +62,7 @@ npm run dev --prefix viewer
 | 조준기의 yaw(sin과 cos)와 pitch | 3 |
 | 조준기의 yaw와 pitch 각속도 | 2 |
 
-행동은 −1~1 범위의 2차원이다. yaw와 pitch의 각속도이고, 1이 yaw 180°/s, pitch 120°/s다. 실제 각속도는 각가속도 제한 720°/s² 안에서 따라가고, pitch는 위아래 80°까지 돈다. DQN처럼 이산 행동만 받는 알고리즘을 위해 행동 5개짜리 wrapper가 있다. 차례로 정지, yaw 왼쪽, yaw 오른쪽, pitch 위, pitch 아래다.
+행동은 −1~1 범위의 2차원이고, yaw와 pitch의 목표 각속도다. 1이 yaw 180°/s, pitch 120°/s다. 실제 각속도는 목표를 향해 1초에 720°/s까지만 바뀌므로, 멈춘 상태에서 최고 속도까지 0.25초가 걸린다. pitch는 위아래 80°까지 돈다. DQN처럼 이산 행동만 받는 알고리즘을 위해 행동 5개짜리 wrapper가 있다. 차례로 정지, yaw 왼쪽, yaw 오른쪽, pitch 위, pitch 아래다.
 
 ### 에피소드
 
@@ -72,7 +72,7 @@ npm run dev --prefix viewer
 2. step: 환경은 행동을 유지한 채 0.01초씩 두 번, 합쳐 0.02초를 움직인다. 에피소드 파일에는 step마다 프레임 하나가 남는다.
 3. 끝: 초파리가 조준 방향에서 3° 안에 0.2초 머물면 포획이다. 10초가 지나면 시간 초과다. 포획 거리를 주면 초파리가 그 거리 안에 있어야 포획이 되는데, 기본으로는 없다.
 
-그래서 에피소드 하나는 길어야 500 step이고, 시작 직후 프레임까지 더해 프레임은 최대 501개다. seed가 같으면 초파리는 같은 경로로 난다. 초파리는 고정된 조준기의 자리에만 반응하고 조준 방향은 모르므로, 정책이 달라도 경로는 같다.
+그래서 에피소드 하나는 길어야 500 step이고, 시작 직후 프레임까지 더해 프레임은 최대 501개다. seed가 같으면 초파리는 같은 경로로 난다. 초파리는 고정된 조준기의 자리에만 반응하고 조준 방향은 모르므로, 정책이 달라도 경로는 같다. 초파리가 조준 방향을 모른다는 가정이 바뀌면 이것도 달라진다.
 
 ### 보상
 
@@ -270,7 +270,7 @@ npm run dev --prefix viewer
 
 ### 배포
 
-Cloudflare Pages에 저장소를 연결해 두면, main에 merge할 때마다 viewer를 build해 사이트에 올린다. build 결과물(`viewer/dist/`)에는 `published/`의 실행만 들어가고 `runs/`는 들어가지 않는다. PR을 올리면 미리보기 주소가 따로 생기므로, merge 전에 올린 실행을 재생해 볼 수 있다.
+viewer는 https://flytracker-ewk.pages.dev/ 에 올라가 있다. Cloudflare Pages가 저장소에 연결되어 있어서, main에 merge할 때마다 viewer를 다시 build해 올린다. build 결과물(`viewer/dist/`)에는 `published/`의 실행만 들어가고 `runs/`는 들어가지 않는다. PR을 올리면 미리보기 주소가 따로 생기므로, merge 전에 올린 실행을 재생해 볼 수 있다.
 
 사이트에 올라갈 결과물은 내 컴퓨터에서도 미리 볼 수 있다. preview 서버는 개발 서버와 달리 `dist/`만 내준다.
 
@@ -279,7 +279,7 @@ npm run build --prefix viewer
 npm run preview --prefix viewer
 ```
 
-Cloudflare Pages 프로젝트는 아래처럼 설정한다.
+Cloudflare Pages 프로젝트 `flytracker`는 아래처럼 설정되어 있다. 새 프로젝트를 만들 때 dashboard의 Create application 화면에 Pages가 보이지 않으면, 화면 아래 Pages 링크나 `https://dash.cloudflare.com/?to=/:account/workers-and-pages/create/pages`로 들어간다.
 
 | 항목 | 값 |
 |---|---|

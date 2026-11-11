@@ -15,3 +15,4 @@ One row per management document, added in the same commit that creates the doc.
 | #19 | docs/issues/docs/19-docs-readme-baseline-vs-rl.md | done | README에 기준선과 강화학습의 차이 넣기 |
 | #21 | docs/issues/docs/21-docs-readme-env-train-viewer.md | done | README를 환경, 학습 코드, viewer로 나눠 다시 쓰기 |
 | #22 | docs/issues/feature/22-feature-publish-runs-cloudflare.md | done | 학습 결과를 저장소에 올려 Cloudflare viewer에서 재생하기 |
+| #25 | docs/issues/docs/25-docs-readme-agent-tools.md | done | README의 agent 안내를 Claude Code 외 도구에도 맞게 고치기 |
