@@ -24,3 +24,7 @@ export async function fetchEpisodes(runId) {
 export async function fetchEpisode(file) {
   return getJson(file)
 }
+
+export async function fetchConfig(runId) {
+  return getJson(`${runId}/config.json`)
+}

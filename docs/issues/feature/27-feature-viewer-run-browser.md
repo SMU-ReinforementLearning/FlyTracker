@@ -19,7 +19,7 @@ Reshapes the viewer for many runs from many issues: runs grouped by the issue th
 - `scripts/publish_run.py --issue N` (required): reads number, title, URL and labels with `gh issue view`, warns when the issue lacks `training`, takes the author from `git config user.name`; `publish_run()` gains `extra` fields written into `run.json`.
 - `published/2026-11-11_133858_baseline/run.json`: issue #22 and author added by hand (its source folder is gone).
 - `viewer/vite.config.js`: every index entry (build and dev) gains `checkpoints`, per-tag aggregates computed from `episodes.json`; in dev a run present in both `runs/` and `published/` keeps the published issue and author.
-- `viewer/src`: URL state; sidebar grouped by issue with search and collapse; run panel (last-checkpoint numbers, learning curve, episode grid with arrow-key moves); issue page (overlaid curves, run table with the differing config values).
+- `viewer/src`: URL state; sidebar grouped by issue with search and collapse; run panel (numbers of the selected checkpoint, learning curve, episode grid with arrow-key moves); issue page (overlaid curves, run table with the differing config values).
 - `README.md`: publish with `--issue`, the `training` label, the new viewer screens.
 - `tests/test_publish.py`.
 
@@ -44,7 +44,8 @@ Reshapes the viewer for many runs from many issues: runs grouped by the issue th
 - [ ] README passes ko-writing `check.py` and `readme_check.py`.
 
 ## Current State
-- Seeded. Test data: three short local training runs (PPO, PPO with `--fov 60`, DQN; 30,000 step, evaluation every 3,000) in this worktree's gitignored `runs/`.
+- Python side, build index and all viewer screens are committed. Left: README, then the PR (push only when the user asks).
+- Test data in this worktree, none of it committed: gitignored `runs/` (two PPO runs, one DQN run, synthetic `demo-learns`) and untracked `published/` folders (`…ppo-fov40`, `…ppo-fov60`, `…demo-learns`, `…baseline-copy`). Delete the untracked `published/` folders before the PR; never `git add published/` wholesale.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -89,6 +90,42 @@ Reshapes the viewer for many runs from many issues: runs grouped by the issue th
 #### Notes
 - PPO evaluates at multiples of its 2,048-step rollout, so `--eval-every 3000` gave 12 checkpoints (0, 3,000 … 30,720).
 - The locally published PPO runs are test data and are not committed.
+
+### feat: viewer에 issue별 실행 목록, 실행 패널, issue 비교 화면 넣기 (#27)
+> why: steps 1–4 of the plan on the screen side; one commit because all four share `App.jsx` and `styles.css` and were written together after the session that started them was interrupted
+#### Scope
+- New: `viewer/src/route.js`, `viewer/src/data/runs.js`, `viewer/src/components/{CurveChart,RunPanel,IssuePage}.jsx`.
+- Changed: `viewer/src/App.jsx`, `components/Sidebar.jsx`, `components/LineChart.jsx` (helpers exported), `data/api.js`, `data/labels.js`, `styles.css`, `ui-text.glossary.md`.
+#### Changes
+- URL state (`useRoute`): `?run=<id>&tag=<tag>&ep=<n, 1-based>` or `?issue=<number|none>`. Clicks push; arrow-key moves and address corrections replace. An unknown run or issue opens the newest run; an unknown tag or ep opens the last episode of the last checkpoint.
+- Sidebar: search field (run name, issue title, `#N`, author, algorithm), groups by issue (group of the newest run first, "issue 없음" last), disclosure button per group, group title opens the issue page. A run row shows the last checkpoint's capture rate and a sparkline when the run has 2+ stepped checkpoints. The episode list left the sidebar.
+- Run panel (300 px column between sidebar and stage): numbers of the selected checkpoint (not the last one, as first written in Scope — the heading names the checkpoint and it follows the grid selection), learning curve with a capture-rate / mean-reward switch (only with 2+ stepped checkpoints; click picks that checkpoint), episode grid (rows = checkpoints in training order, columns = evaluation episode; filled dot = capture, darker = faster; × = timeout). Arrow keys move the selection and play it, Space toggles play.
+- Toolbar shows the selected episode (checkpoint, episode number, outcome, return).
+- Issue page: overlaid learning curves (8 categorical colours as CSS variables, assigned in creation order), a dashed horizontal line for a run without steps, a table with one row per run (last checkpoint numbers) plus one column per config key whose value differs among the runs that have the key; the run name opens the run. Toolbar links to the GitHub issue.
+- Layout: stage stacks at ≤1360 px (was 1080) because of the new column; at ≤1080 px the run panel stacks above the stage.
+- Glossary: 포획률, 평균 보상, 포획 시간, 학습 곡선, checkpoint, 올린 사람, issue 없음.
+#### Verification
+- `npm run build`: passes.
+- Series palette, dataviz `validate_palette.js`: light on `#ffffff` and dark on `#1c1c1e` both ALL CHECKS PASS; light slots 3–5 are below 3:1 against the surface (WARN), relieved by the table under the chart.
+- Test data (uncommitted): the two real 30,000-step PPO runs and the DQN run (0 captures everywhere), plus two synthetic entries made by a scratchpad script — `demo-learns` (PPO run copy whose episode summaries were rewritten so captures appear from checkpoint 4; `reward.angle` 0.1; author `teammate`) and `baseline-copy` (the baseline under issue 27). Episode files were not changed.
+- Interaction script run as an async ui-evidence probe at 1600x900 on `?run=…demo-learns&tag=step_0018000&ep=2`, all as expected: the address opens that cell; cell click pushes one history entry; ArrowRight/ArrowUp move, keep focus on the selected cell and add no history entry; ArrowRight at the last column stays; Space toggles 일시정지 → 재생; a click at the left end of the curve selects 학습 전; group title opens `?issue=27` with 4 table rows; Back returns to the episode, Forward to the issue; a run name in the table opens that run; search by name / author / algorithm / issue title / `#27` each returns the expected runs; no match shows the empty note; collapsing the first group hides its 4 rows; group order is #27, #22, issue 없음.
+- ui-evidence (dev server on 5180 checked to serve this worktree, Chrome 156, 1600x900 and 390x844), 6 addresses × 2 viewports:
+
+| address | result |
+| --- | --- |
+| `?run=nope&tag=x&ep=99` | corrected to the newest run, last checkpoint, last episode |
+| `?issue=999` | same fallback |
+| `?run=…baseline` | 5 cells, no learning curve (one checkpoint) |
+| `?issue=22` | 1 row, no curve, no config columns |
+| `?issue=27` | 1 curve chart, 1 dashed line, 4 rows, config columns `env.camera.fov_v_deg`, `env.reward.angle` |
+| `?run=…demo-learns&tag=step_0018000&ep=2` | 36 cells, curve shown |
+
+  Page-level horizontal scroll: none in all 12 shots (`scrollWidth <= innerWidth`). The script flags the run table at 390 px on the two issue pages; the table is wider than the phone by design and scrolls inside its own `overflow-x: auto` card. Console: only the existing `favicon.ico` 404 and three.js deprecation warnings. PNGs looked at for the run view and issue 27 at both widths (dark scheme); they stay in the session scratchpad, not committed.
+- No caption or subtitle element added: `figcaption` count is 2 on the run view (the two existing per-episode charts) and 0 on the issue page.
+#### Notes
+- Not checked: light colour scheme by screenshot (the palette was validated numerically only); Firefox and Safari.
+- With more than 8 runs in one issue the line colours repeat.
+- Runs with equal values overlap on the curve (the two 0% PPO runs draw as one line); the table tells them apart.
 
 ## Management Notes
 ### Follow-up Candidates

@@ -5,14 +5,14 @@ import { clock, seek } from '../playback/clock.js'
 const H = 112
 const M = { top: 26, right: 12, bottom: 20, left: 40 }
 
-function niceStep(span, count) {
+export function niceStep(span, count) {
   const raw = span / Math.max(count, 1)
   const mag = 10 ** Math.floor(Math.log10(raw || 1))
   const n = raw / mag
   return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * mag
 }
 
-function ticks(lo, hi, count) {
+export function ticks(lo, hi, count) {
   const step = niceStep(hi - lo, count)
   const start = Math.ceil(lo / step) * step
   const out = []
@@ -20,7 +20,7 @@ function ticks(lo, hi, count) {
   return { out, step }
 }
 
-function useWidth(ref) {
+export function useWidth(ref) {
   const [w, setW] = useState(0)
   useEffect(() => {
     const ro = new ResizeObserver(([entry]) => setW(Math.floor(entry.contentRect.width)))

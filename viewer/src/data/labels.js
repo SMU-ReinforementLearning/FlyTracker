@@ -26,3 +26,7 @@ export function shortDate(iso) {
   const mm = String(d.getMinutes()).padStart(2, '0')
   return `${d.getMonth() + 1}월 ${d.getDate()}일 ${hh}:${mm}`
 }
+
+export const percent = (ratio) => `${Math.round(ratio * 100)}%`
+
+export const stepLabel = (step) => step.toLocaleString('ko-KR')
