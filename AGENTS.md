@@ -62,7 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `35-feature-sac-aimer-training` — `docs/issues/feature/35-feature-sac-aimer-training.md` — SAC로 조준기 학습하기
+- (none)
 
 ## Environment (repo slot)
 

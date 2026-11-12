@@ -5,7 +5,7 @@
 - Branch: `35-feature-sac-aimer-training`
 - Umbrella: (none) — no umbrella issue exists yet
 - Related: #34 (alternate training of aimer and fly; this issue trains the aimer alone against the scripted fly), #13 (detection model, not implemented — the aimer still sees the fly perfectly inside the frame)
-- Status: in progress
+- Status: done
 
 ## Summary
 First reinforcement-learning run for the aimer: train SAC with `scripts/train.py` on the current environment and compare the trained aimer with the rule baseline on a pre-registered gate. Until now the repo has only baseline runs; nobody has trained an agent yet.
@@ -31,27 +31,25 @@ First reinforcement-learning run for the aimer: train SAC with `scripts/train.py
 - [x] 6 SAC runs (frame stack 1 and 4 × seeds 0, 1, 2) finish 1,000,000 steps each; run folders and final models copied back. (2026-11-13 00:52)
 - [x] Final models evaluated on seeds 20000-20199; paired bootstrap verdict appended to the gate document. (2026-11-13 01:03)
 - [x] SAC explainer written, passed `check.py` and a cold-reader review. (2026-11-12 22:40)
-- [ ] `uv run pytest` passes (no code changes expected; re-run before the last commit).
+- [x] `uv run pytest` passes (no code changes expected; re-run before the last commit). (2026-11-13 01:40, 53 passed after merging main)
 
 ## Current State
-Read only this block to take over. As of 2026-11-13 01:05 KST. Training, evaluation and the gate are done; the instance is destroyed. What is left is publishing the runs, the PR, and reporting to the user (asleep; approved publishing, push and PR on 2026-11-13).
+Read only this block to take over. As of 2026-11-13 01:45 KST. The work is done; the branch is pushed and the PR is open (`Closes #35`). Nothing is running.
 
 ### Fallback that is certain
-Nothing ships from this issue. Local results: `runs/2026-11-12_131635_sac-fs{1,4}-s{0,1,2}/` in this worktree (final `model.zip`, 21 checkpoints, episodes, TensorBoard). Backup, independent of this worktree: `C:/Users/neighbor/Documents/Code/Github/FlyTracker/runs/_backup-issue35/runs-full.tgz` (sha256 `491888f4a4bb…`, 350 MB) and `gate_out.tgz` (`0bcb10c60926…`), verified after the copy. Restore: `tar -xzf runs-full.tgz -C <worktree>`.
+Nothing ships from this issue beyond the PR. Results: `runs/2026-11-12_131635_sac-fs{1,4}-s{0,1,2}/` in this worktree (gitignored) and the verified backup `C:/Users/neighbor/Documents/Code/Github/FlyTracker/runs/_backup-issue35/runs-full.tgz` (sha256 `491888f4a4bb…`), which survives the worktree's removal.
 
 ### Running now
-Nothing. vast.ai instance 60356096 destroyed at 00:52 KST by `runs/_ops/fetch_and_release.sh` after every check passed; `vastai show instances` lists none.
+Nothing. vast.ai instance 60356096 was destroyed at 00:52 KST.
 
 ### Confirmed so far
-- Gate (`gate.md` Verdict, raw output `gate/bootstrap-output.md`): both candidates PASS on mean time to capture, P 1.000 vs threshold 0.90. sac-fs1 2.18 s, sac-fs4 2.12 s, baseline 4.10 s. No exclusion fired; sac-fs4's capture rate 0.9717 was 0.0017 above the 0.97 floor. Decision: adopt; no choice between fs1 and fs4.
-- SAC misses more flies than the baseline (2.0 % and 2.8 % vs 0.5 %); seed 20112 is missed by all 6 SAC models. Training-rollout episode length is flat from 500k steps on.
-- Env v2 = code part of #34's f8cfa78; `uv run pytest` 37 passed locally and on the instance; baseline byte-identical with branch 34 HEAD 50c05b7.
-- Commits so far: 629a967, 8050472, 20ae755, 060b28a, 6c1d084 (all with the user's approval).
+- Gate: both SAC settings catch the fly in about half the baseline's time (2.18 s and 2.12 s vs 4.10 s, P 1.000); decision adopt; SAC misses more flies (2.0 % / 2.8 % vs 0.5 %) — `gate.md` Verdict.
+- The 6 runs are published for the viewer (`published/`), and the viewer build lists them under issue #35.
+- Branch merged with `origin/main` @ 64c60ff (#34); library code identical to main; pytest 53 passed; the result does not depend on Linux vs Windows evaluation.
 
 ### Next steps in order
-1. Commit the verdict (`docs: SAC 판정 결과 (#35)`): `gate.md`, `gate/*.csv`, `gate/*-gate.json`, `gate/bootstrap-output.md`, this doc.
-2. Publish all 6 runs (all 6 so the viewer shows the seed spread; about 15 MB of episode JSON, models excluded): from the worktree root, for each run id `uv run python scripts/publish_run.py <run_id> --issue 35` (issue #35 has the `training` label). Commit `published/` with its own work-log section.
-3. `uv run pytest`; remove this branch's pointer from `AGENTS.md` as the last commit; `git push -u origin 35-feature-sac-aimer-training`; open the PR (`Closes #35`); report to the user with the PR URL.
+1. After the PR merges: run the post-PR cleanup gate (`post-pr-cleanup` skill). Before removing this worktree, keep or move `runs/` if the local copy is still wanted (the backup tarball stays in the main checkout).
+2. Follow-up issues, if wanted: see Follow-up Candidates.
 
 ### Today's traps
 - PyPI download of the CUDA torch wheel stalled at ~120 KB/s on the instance → the host's PyPI path was slow, download.pytorch.org was 3 MB/s → install torch 2.15.0+cpu from download.pytorch.org (`runs/_ops/remote_launch2.sh`).
@@ -192,6 +190,19 @@ Nothing. vast.ai instance 60356096 destroyed at 00:52 KST by `runs/_ops/fetch_an
 - The 6 SAC models on the merged tree: capture identical on all 200 seeds for every model; 18-68 rows differ in time; mean time changes by at most 0.013 s (sac-fs4-s1 2.152 → 2.139 s). Cause: platform, not the merge. `sac-fs4-s1` evaluated with the pre-merge package (12a9112) on this laptop is byte-identical to the post-merge laptop result; the gate CSVs were made on the Linux instance. The gate decision does not move: Δ is about −1.9 s with CI half-widths near 0.3 s.
 #### Notes
 - The gate CSVs stay as measured on the instance; `gate.md` names that platform (torch 2.15.0+cpu, Linux).
+
+### chore: AGENTS.md 포인터 정리와 마무리 (#35)
+> why: last commit on the branch before the PR (git-rules post-PR gate): the pointer goes, the status becomes done
+#### Scope
+- `AGENTS.md`, `docs/issues/README.md`, this doc.
+#### Changes
+- `AGENTS.md` Recent Active Context: this branch's pointer removed, `- (none)` restored.
+- Status in progress → done, here and in the registry row; Done Criteria all ticked; Current State rewritten for the finished state.
+#### Verification
+- `grep -c 35-feature-sac-aimer-training AGENTS.md` prints 0.
+- `uv run pytest`: 53 passed on the merged tree.
+#### Notes
+- The user approved push and PR on 2026-11-13 ("3개 다 진행해").
 
 ## Management Notes
 ### Follow-up Candidates
