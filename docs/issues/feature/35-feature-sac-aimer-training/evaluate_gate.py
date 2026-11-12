@@ -42,7 +42,8 @@ def evaluate(policy, frame_stack: int, seeds: range) -> list[dict]:
 def write(rows: list[dict], out: str) -> None:
     Path(out).parent.mkdir(parents=True, exist_ok=True)
     with open(out, "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=["id", "capture", "time"])
+        # LF line endings, so the file (and its sha256 in gate.md) is the same after a git checkout anywhere
+        w = csv.DictWriter(f, fieldnames=["id", "capture", "time"], lineterminator="\n")
         w.writeheader()
         w.writerows(rows)
     n = len(rows)

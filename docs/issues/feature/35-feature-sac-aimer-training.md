@@ -12,7 +12,7 @@ First reinforcement-learning run for the aimer: train SAC with `scripts/train.py
 
 ## Goal
 - SAC (Stable-Baselines3 defaults) trained on the default `EnvConfig`, environment version 2, 3 training seeds, two observation settings: frame stack 1 and 4.
-- Gate: does SAC capture the fly more often than the rule baseline on 200 held-out evaluation seeds? Written before any candidate number is seen.
+- Gate: does SAC catch the fly faster than the rule baseline (mean time to capture, misses counted as 10 s) on 200 held-out evaluation seeds? Written before any candidate number is seen.
 - A short Korean explainer of SAC for the team, in this issue's folder.
 
 ## Scope
@@ -34,13 +34,59 @@ First reinforcement-learning run for the aimer: train SAC with `scripts/train.py
 - [ ] `uv run pytest` passes (no code changes expected; re-run before the last commit).
 
 ## Current State
-- Issue #35, branch and worktree created from `origin/main` @ 0cda845. `uv sync --extra train --extra dev` done in the worktree; `uv run pytest`: 33 passed.
-- Local throughput is too low for 1M-step runs: SAC learns at 41 steps/s on one thread, 68 steps/s on four (laptop CPU; one 256×256 MLP update takes 2.9 ms). The user allowed a vast.ai instance; account has $15.27 credit.
-- The user asked to train on environment version 2. f8cfa78's code part applied; `uv run pytest`: 37 passed. Gate written: `docs/issues/feature/35-feature-sac-aimer-training/gate.md`; baseline re-frozen on version 2 (199/200 captures, 4.100 s mean) and cross-checked byte-identical against branch 34 HEAD 50c05b7.
-- vast.ai instance 60356096 (Ryzen 9 7900X, 24 cores, 61 GB, $0.157/h, label `flytracker-35-sac`, `ssh -p 28112 root@ssh1.vast.ai`) rented 2026-11-12 21:43 KST; destroy it when the runs are copied back.
-- Instance setup: PyPI's CUDA torch download stalled at ~120 KB/s, so the venv was rebuilt with torch 2.15.0+cpu from download.pytorch.org and every other package at its `uv.lock` version (`uv export` minus torch/nvidia); `pytest` there: 37 passed. Runs use `/root/ft/.venv/bin/python`, not `uv run` (which would re-sync to the CUDA wheel).
-- 6 runs started 2026-11-12 22:15 KST under `/root/ft/runs/` (logs `/root/ft/logs/sac-fs{1,4}-s{0,1,2}.log`, progress `python /root/progress.py`): about 120 steps/s each, so about 2.3 h; expected end around 00:40 KST.
-- Next: when all 6 `model.zip` exist, run `evaluate_gate.py model` for each on the instance, `evaluate_gate.py mean` per candidate, copy `runs/` (without checkpoints) and the CSVs back, destroy the instance, run `paired_bootstrap.py` as written in `gate.md`, append the verdict.
+Read only this block to take over. As of 2026-11-13 00:00 KST. The user went to sleep and will check in the morning; they asked that the results be fetched, backed up, and the instance destroyed when training ends.
+
+### Fallback that is certain
+Nothing ships from this issue. The rule baseline is the reference aimer: `gate/baseline.csv`, sha256 `4aec8f8e…` (199/200 captures, 4.100 s mean on seeds 20000-20199, env v2). Branch `35-feature-sac-aimer-training` @ 20ae755 (local, not pushed) holds the gate, the explainer and env v2. If the instance and its results were lost, the runs are reproducible from `gate.md` (6 × 1M steps, about 2.3 h and $0.5 on a 7900X).
+
+### Running now
+| job | where | started | ETA | log path | how to check | survives a dropped session |
+| --- | --- | --- | --- | --- | --- | --- |
+| 6 SAC runs (`sac-fs{1,4}-s{0,1,2}`, 1M steps) | vast.ai instance 60356096, `ssh -p 28112 root@ssh1.vast.ai`, `/root/ft/runs/` | 22:16 KST | about 00:45 KST | `/root/ft/logs/*.log` (block-buffered, mostly empty) | `ssh -p 28112 root@ssh1.vast.ai '/root/ft/.venv/bin/python /root/progress.py'` | yes (nohup on the instance) |
+| auto-eval: waits for 6 `model.zip` and no `train.py`, runs `remote_eval.sh` (gate CSVs, tarballs, `manifest.sha256`), then touches `/root/RESULTS_READY` | same instance, `setsid nohup bash /root/remote_autorun.sh` | 23:55 KST | about 00:50 KST | `/root/autorun.log`, `/root/eval.log` | `ssh -p 28112 root@ssh1.vast.ai 'cat /root/autorun.log; ls /root/RESULTS_READY'` | yes |
+| local waiter: polls for `RESULTS_READY`, then runs `runs/_ops/fetch_and_release.sh` | this laptop, background task of the session that wrote this | 23:58 KST | about 01:00 KST | session task output | `ls runs/_download/RELEASED` in the worktree | no |
+| progress watch (`runs/_ops/watch_runs.sh`) | this laptop, Monitor of the same session | 23:30 KST | until done | session events | — | no |
+
+The instance costs $0.167/h while it runs (about $1.5 overnight). It cannot stop itself (no per-instance API key; the account key is not copied there). Destroying deletes its disk; stopping keeps the disk at $0.20/GB/month but a restart needs the host free, so download first, then destroy.
+
+### Confirmed so far
+- Baseline (env v2), seeds 20000-20199: 199/200 captures, 4.100 s mean time — `gate.md`.
+- Env v2 = code part of #34's f8cfa78; `uv run pytest` 37 passed locally and on the instance; baseline byte-identical with branch 34 HEAD 50c05b7 — work log, `feat:` section.
+- Throughput: laptop 41 steps/s (1 thread); instance 109-118 steps/s per run with 6 in parallel — this block.
+- At 14:48 UTC (23:48 KST) all 6 runs were between 601k and 648k steps, no stall, no traceback.
+- Commits 629a967, 8050472, 20ae755 made with the user's approval. Uncommitted, awaiting approval: the LF fix (`evaluate_gate.py`, both gate CSVs, `gate.md` hashes, work-log section `fix: 판정 기준 CSV 줄바꿈을 LF로 고정 (#35)`).
+
+### Next steps in order
+1. Check whether the release already happened: `ls runs/_download/RELEASED` (worktree root). If it is missing, run `bash runs/_ops/fetch_and_release.sh` in Git Bash from the worktree root. It downloads `runs-full.tgz` (checkpoints included), `gate_out.tgz`, `manifest.sha256`, verifies sha256, extracts to `runs/` and `runs/_download/gate_out/`, copies the tarballs to `C:/Users/neighbor/Documents/Code/Github/FlyTracker/runs/_backup-issue35/` and verifies them there, and only then runs `vastai destroy instance 60356096 -y`. If it prints `FAIL: results are not packed yet`, check the auto-eval row above; if `/root/autorun.log` says `eval FAILED`, read `/root/eval.log`, fix, and run `bash /root/remote_eval.sh` on the instance.
+2. Copy `runs/_download/gate_out/sac-fs{1,4}.csv` and `sac-fs{1,4}-s{0,1,2}.csv` to `docs/issues/feature/35-feature-sac-aimer-training/gate/`, record their sha256 in `gate.md`.
+3. Gate, as written in `gate.md` (from the worktree root, D = `docs/issues/feature/35-feature-sac-aimer-training`): `python .claude/skills/experiment-gate/scripts/paired_bootstrap.py --truth $D/gate/truth.csv --a $D/gate/baseline.csv --b $D/gate/sac-fs1.csv --targets time --metric mae --lower-is-better --resamples 10000 --seed 42 --threshold 0.90 --json $D/gate/sac-fs1-gate.json`; same for `sac-fs4`, for each `-s0/-s1/-s2` file (exclusion: any P < 0.50 → undecided), `--targets capture --metric mae --lower-is-better` for capture rate (mae against truth 1 is 1 − capture rate; exclusion: pooled capture < 0.97 → not adopted), and `--a sac-fs1.csv --b sac-fs4.csv` descriptively.
+4. Paste the tables under `## Verdict` in `gate.md`, decide adopt / reject / undecided by the pre-written rule, update this block and the Done Criteria, write the work-log section, show the user the changed files and wait for commit approval.
+5. Ask the user the open decisions below.
+
+### Today's traps
+- PyPI download of the CUDA torch wheel stalled at ~120 KB/s on the instance → the host's PyPI path was slow, download.pytorch.org was 3 MB/s → install torch 2.15.0+cpu from download.pytorch.org (`runs/_ops/remote_launch2.sh`).
+- `uv run` on the instance re-syncs the env to `uv.lock` (CUDA torch) → call `/root/ft/.venv/bin/python` directly.
+- Bash calls naming the worktree path together with variables, `$(...)` or pipelines into scp/ssh are refused by the worktree-isolation guard → put the command in a script file and run `bash <file>`; plain `cd <worktree> && git ...` works.
+- `EnterWorktree` refuses this sibling worktree from a session started in another worktree → work with absolute paths, `cd` inside each command.
+- Python `csv` writes CRLF; git stores LF, so a recorded sha256 breaks after checkout → `lineterminator="\n"` (fixed, uncommitted).
+- `train.py` stdout is block-buffered into the log, so logs look empty for a long time → read progress from TensorBoard events (`progress.py`).
+- Monitor watches expire every 30 min → re-arm `watch_runs.sh`.
+
+### Tools
+| script | path | what it does | copied from scratchpad on |
+| --- | --- | --- | --- |
+| `fetch_and_release.sh` | `runs/_ops/` (gitignored) | download, verify, extract, back up, then destroy the instance | written there 2026-11-12 |
+| `progress.py` | `runs/_ops/` and `/root/progress.py` | one line per run: step, fps, record age | 2026-11-12 |
+| `watch_runs.sh` | `runs/_ops/` | Monitor loop: progress, stall, crash, death, all done | 2026-11-12 |
+| `remote_eval.sh`, `remote_autorun.sh` | `runs/_ops/` and `/root/` | gate evaluation on the instance, auto-start after training | 2026-11-12 |
+| `remote_launch2.sh` | `runs/_ops/` | instance setup with CPU torch and the 6 launches (rough; instance-specific) | 2026-11-12 |
+| `katex-check/check.js` | `runs/_ops/katex-check/` | renders every formula of an md file with KaTeX strict; `npm install katex markdown-it @vscode/markdown-it-katex` first | 2026-11-12 |
+| `evaluate_gate.py` | `docs/issues/feature/35-feature-sac-aimer-training/` | gate CSVs for baseline / model / mean | was already in the repo |
+
+### Open decisions for the user
+- Commit the LF fix (`fix: 판정 기준 CSV 줄바꿈을 LF로 고정 (#35)`)? Asked 2026-11-12 23:50, not answered yet.
+- Publish runs to `published/` for the Cloudflare viewer (`scripts/publish_run.py <run> --issue 35`; issue #35 then needs the `training` label, and the copy goes in through a PR)? Which runs: all 6, or one per candidate?
+- Push the branch and open a PR once the verdict is in?
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -88,6 +134,20 @@ First reinforcement-learning run for the aimer: train SAC with `scripts/train.py
 - Six cold-reader reviews by fresh subagents, findings fixed after each: undefined aimer/yaw/pitch, "점수" ambiguous, two critics appearing unannounced, α direction, "기본값 그대로" vs "바꾼 것", "목표값" clashing with target network, actor "outputs an action" vs "outputs a distribution", "상태" vs "관측", 13-dim breakdown, screen motion caused by the aimer's own rotation; after the formulas: ε used for both ε-greedy and the Gaussian noise (noise renamed ξ), SAC's Q including the entropy bonus, α's initial value, $a'$ vs $\tilde a$, $\bar\theta$ undefined, list order vs section order, "first term" pointing at the wrong term of the actor loss, no term table for the tanh correction, gradient step vs environment step. Left as is: tanh, off-policy, Double DQN, discount γ, TensorBoard (course material for the readers), "issue #35" (the doc sits in that issue's folder), "목표" in 목표 각속도 / 목표 entropy / 목표값 (each is the standard term).
 #### Notes
 - Capture rate was planned as the gate metric; the baseline's 0.99 left no room, so the metric is time to capture. The change was made after seeing the baseline only.
+
+### fix: 판정 기준 CSV 줄바꿈을 LF로 고정 (#35)
+> why: the gate CSVs were written with CRLF (Python `csv` default) but git stores them as LF, so the sha256 in `gate.md` would not match after a checkout
+#### Scope
+- `evaluate_gate.py`, `gate/baseline.csv`, `gate/truth.csv`, `gate.md`, this doc.
+#### Changes
+- `evaluate_gate.py` writes with `lineterminator="\n"`.
+- Both CSVs re-written; `gate.md` carries the new hashes and a note on the first ones.
+#### Verification
+- Old and new files compared after stripping `\r`: identical line by line for both.
+- New sha256 (baseline `4aec8f8e…`, truth `630ec5b3…`) equal `git show HEAD:<path> | sha256sum` of the blobs committed in 20ae755.
+- The instance's copy of `evaluate_gate.py` replaced before any candidate CSV was written.
+#### Notes
+- No candidate had been measured, so this is still the first gate.
 
 ## Management Notes
 ### Follow-up Candidates

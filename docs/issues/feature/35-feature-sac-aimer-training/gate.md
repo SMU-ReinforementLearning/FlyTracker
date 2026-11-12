@@ -18,11 +18,12 @@ evaluation seeds 20000-20199 of the default environment, version 2?
 
 ## Baseline
 
-- Predictions file: `gate/baseline.csv` — sha256 `b1ea2e87f0ba3b35f1ad935dc67ec69b07f09a8762de53b1f039eb882e52bab2` (frozen; regenerate = a new gate)
+- Predictions file: `gate/baseline.csv` — sha256 `4aec8f8eecf6074d73e37bdd132b6c54b00cd2cd3113e46ed57e2ea36b06b08d` (frozen; regenerate = a new gate)
+- Line endings: the first frozen file had CRLF (Python `csv` default; sha256 `b1ea2e87…`), which git stores as LF, so the hash would not survive a checkout. `evaluate_gate.py` now writes LF; the values are identical line by line, and the hash above equals the committed blob's. No candidate had been measured.
 - Produced by: `evaluate_gate.py baseline`, environment version 2 as above (`RuleAimer` defaults, `max_pitch_deg` 89)
 - Cross-check: the same command with branch `34-feature-fly-vs-aimer-env` @ 50c05b7's `flytracker` package (learned-fly slot added, rule fly by default) gives a byte-identical file, so the aimer's environment is the same there.
 - Metric value: time 4.100 s (mean), capture rate 0.995 (199/200)
-- Truth file: `gate/truth.csv` — sha256 `107776e87f6f44b0505778ec653adcd74b176e016d28990c9e00d1b87aef8af3` (capture = 1, time = 0 for every id)
+- Truth file: `gate/truth.csv` — sha256 `630ec5b311a118169c3d0a5872638c13680f0a02d3f509cf98f52238aad98089` (capture = 1, time = 0 for every id)
 
 Capture rate is already 0.995, so a candidate can gain at most 1 capture on it; it cannot
 carry the gate. Time to capture can.
