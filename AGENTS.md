@@ -62,7 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- (none)
+- `36-docs-readme-aimer-side` — `docs/issues/docs/36-docs-readme-aimer-side.md` — README에서 조준기 쪽 state와 R을 공통 부분과 나누기
 
 ## Environment (repo slot)
 
