@@ -23,16 +23,16 @@ Separates, in the README's `## 환경`, what the aimer and the fly share (room, 
 - Code changes.
 
 ## Done Criteria
-- [ ] `### 에피소드` sits before `### 조준기의 state와 action` and `### 조준기의 R`; the `## 환경` intro names the shared and the aimer-only sections.
-- [ ] No bare "agent" meaning the aimer policy is left in `README.md`.
-- [ ] No link in the repo points at the renamed anchors; `#에피소드` still resolves.
-- [ ] ko-writing `check.py README.md` shows no new finding; `readme_check.py` passes.
-- [ ] The user approved the text at the review gate.
+- [x] `### 에피소드` sits before `### 조준기의 state와 action` and `### 조준기의 R`; the `## 환경` intro names the shared and the aimer-only sections. (2026-11-12)
+- [x] No bare "agent" meaning the aimer policy is left in `README.md`. (2026-11-12)
+- [x] No link in the repo points at the renamed anchors; `#에피소드` still resolves. (2026-11-12)
+- [x] ko-writing `check.py README.md` shows no new finding except the user-chosen heading length; `readme_check.py` passes. (2026-11-12)
+- [x] The user approved the text at the review gate. (2026-11-12, "머지해")
 
 ## Current State
 - Issue, branch and worktree created from `origin/main` @ 0cda845; this document seeded and filled.
 - #34 (조준기와 초파리를 번갈아 학습하는 환경 만들기) and #35 were opened just before this issue; neither has a branch on the remote yet, so no README conflict today.
-- README change written and checked; waiting for the user's approval at the review gate.
+- README change committed after the user's approval ("머지해").
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
