@@ -19,4 +19,4 @@ One row per management document, added in the same commit that creates the doc.
 | #27 | docs/issues/feature/27-feature-viewer-run-browser.md | done | viewer 실행 목록을 issue별로 묶고 학습 곡선과 에피소드 격자 넣기 |
 | #29 | docs/issues/fix/29-fix-viewer-episode-list.md | done | viewer 실행 패널의 에피소드를 checkpoint별 세로 목록으로 바꾸기 |
 | #32 | docs/issues/docs/32-docs-readme-state-reward.md | done | README에 state와 R 항목 설명 넣기 |
-| #36 | docs/issues/docs/36-docs-readme-aimer-side.md | in progress | README에서 조준기 쪽 state와 R을 공통 부분과 나누기 |
+| #36 | docs/issues/docs/36-docs-readme-aimer-side.md | done | README에서 조준기 쪽 state와 R을 공통 부분과 나누기 |

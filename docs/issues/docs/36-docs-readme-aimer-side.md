@@ -4,7 +4,7 @@
 - Issue: #36
 - Branch: `36-docs-readme-aimer-side`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 Separates, in the README's `## 환경`, what the aimer and the fly share (room, aimer, fly, episode) from what belongs to the aimer agent only (state, action, R), and calls the learned aimer "조준기 agent" everywhere. The user asked on 2026-11-12 right after #32 merged, because #31/#34 will add a learned fly with its own state, action and R ("조준기 입장의 state와 R, 에피소드 … 구분해야 할 거 같은데").
@@ -33,6 +33,7 @@ Separates, in the README's `## 환경`, what the aimer and the fly share (room, 
 - Issue, branch and worktree created from `origin/main` @ 0cda845; this document seeded and filled.
 - #34 (조준기와 초파리를 번갈아 학습하는 환경 만들기) and #35 were opened just before this issue; neither has a branch on the remote yet, so no README conflict today.
 - README change committed after the user's approval ("머지해").
+- `AGENTS.md` pointer removed in the branch's last commit; PR opened and squash-merged at the user's request.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -63,6 +64,18 @@ Separates, in the README's `## 환경`, what the aimer and the fly share (room, 
 - ko-writing `check.py README.md` vs `origin/main`: one new finding, heading length 18 > 15 for `조준기의 state와 action`; kept because the user picked this exact heading. `readme_check.py`: 0 fail, 0 warn.
 #### Notes
 - #34 (alternating aimer/fly training env) will add the fly side; that branch should add `### 초파리의 state와 action` and `### 초파리의 R` after the aimer sections.
+
+### chore: #36 마무리 (#36)
+> why: the branch's last commit before the PR; `main` takes PRs only, so the pointer must go now
+#### Scope
+- `AGENTS.md`, this doc's Status and Current State, the registry row.
+#### Changes
+- `AGENTS.md` Recent Active Context: pointer line removed, `- (none)` placeholder restored.
+- Status: in progress → done, here and in `docs/issues/README.md`.
+#### Verification
+- `grep -c 36-docs-readme-aimer-side AGENTS.md` prints 0.
+#### Notes
+- The user asked to merge ("머지해"), which covers push, PR and merge.
 
 ## Management Notes
 ### Follow-up Candidates
