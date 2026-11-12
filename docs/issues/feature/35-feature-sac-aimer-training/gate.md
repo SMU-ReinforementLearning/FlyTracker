@@ -32,8 +32,10 @@ carry the gate. Time to capture can.
 
 | name | what changes vs baseline | predictions file (filled when measured) |
 | --- | --- | --- |
-| `sac-fs1` | SAC policy, observation as is (frame stack 1) | `gate/sac-fs1.csv` (mean of `gate/sac-fs1-s{0,1,2}.csv`) |
-| `sac-fs4` | SAC policy, last 4 observations stacked (frame stack 4) | `gate/sac-fs4.csv` (mean of `gate/sac-fs4-s{0,1,2}.csv`) |
+| `sac-fs1` | SAC policy, observation as is (frame stack 1) | `gate/sac-fs1.csv` (mean of `gate/sac-fs1-s{0,1,2}.csv`), sha256 `87157690c9ff…` |
+| `sac-fs4` | SAC policy, last 4 observations stacked (frame stack 4) | `gate/sac-fs4.csv` (mean of `gate/sac-fs4-s{0,1,2}.csv`), sha256 `51ab848c6116…` |
+
+Per-seed files (sha256 prefixes): `sac-fs1-s0` `3b6869d1b868`, `sac-fs1-s1` `54622a2ee46f`, `sac-fs1-s2` `fcaca01b249d`, `sac-fs4-s0` `86c30eecf606`, `sac-fs4-s1` `dc676f615b40`, `sac-fs4-s2` `02abbc5c6b68`. Produced on the vast.ai instance by `evaluate_gate.py model` on each final `model.zip` (torch 2.15.0+cpu, deterministic policy), 2026-11-12 15:51 UTC.
 
 Training, identical for both except the frame stack:
 
@@ -90,3 +92,52 @@ them is adopted from these 200 seeds; picking one would need a new gate on fresh
 ## Verdict
 
 <!-- Filled after measuring. Paste the script's Markdown tables here unedited. -->
+
+- Date: 2026-11-13 (KST)
+- Full, unedited script output for every call below: `gate/bootstrap-output.md` (produced by `runs/_ops/run_gate.sh`, a local helper that runs exactly the commands in "Metric" and "Pre-declared exclusions").
+
+### sac-fs1
+
+- P(candidate faster): **1.000** (threshold 0.90) — **PASS**
+- Mean time: 4.0999 s → 2.1836 s, Δ −1.9163 s, 95% CI [−2.1957, −1.6234]
+
+| target | A | B | Δ (B−A) | boot mean Δ | 95% CI | P(B better) |
+| --- | --- | --- | --- | --- | --- | --- |
+| time | 4.0999 | 2.1836 | -1.9163 | -1.9150 | [-2.1957, -1.6234] | 1.000 |
+| **macro** | 4.0999 | 2.1836 | -1.9163 | -1.9150 | [-2.1957, -1.6234] | 1.000 |
+
+- Capture (reported; `capture` column scored as mae against 1, i.e. miss rate): baseline 0.0050, sac-fs1 0.0200, Δ +0.0150, 95% CI [−0.0033, +0.0350], P(sac-fs1 better) 0.055. Pooled capture rate 0.980 ≥ 0.97: the capture exclusion does not fire.
+- Per training seed, time (exclusion if P < 0.50): s0 2.7278 s (P 1.000), s1 1.8014 s (P 1.000), s2 2.0217 s (P 1.000). Does not fire.
+
+### sac-fs4
+
+- P(candidate faster): **1.000** (threshold 0.90) — **PASS**
+- Mean time: 4.0999 s → 2.1232 s, Δ −1.9767 s, 95% CI [−2.2707, −1.6688]
+
+| target | A | B | Δ (B−A) | boot mean Δ | 95% CI | P(B better) |
+| --- | --- | --- | --- | --- | --- | --- |
+| time | 4.0999 | 2.1232 | -1.9767 | -1.9762 | [-2.2707, -1.6688] | 1.000 |
+| **macro** | 4.0999 | 2.1232 | -1.9767 | -1.9762 | [-2.2707, -1.6688] | 1.000 |
+
+- Capture (reported): baseline miss rate 0.0050, sac-fs4 0.0283, Δ +0.0233, 95% CI [+0.0033, +0.0450], P(sac-fs4 better) 0.013. Pooled capture rate 0.9717 ≥ 0.97: the capture exclusion does not fire, by a margin of 0.0017 (about one third of one missed seed).
+- Per training seed, time: s0 2.1561 s, s1 2.1523 s, s2 2.0612 s, each P 1.000. Does not fire.
+
+### Descriptive: sac-fs4 vs sac-fs1 (no decision)
+
+- Time: 2.1836 → 2.1232 s, Δ −0.0604, 95% CI [−0.1851, +0.0642], P(fs4 faster) 0.832.
+- Miss rate: 0.0200 → 0.0283, Δ +0.0083, 95% CI [−0.0050, +0.0233], P(fs4 better) 0.118.
+- Frame stack 4 did not separate from frame stack 1 on these 200 seeds.
+
+### Where SAC loses
+
+- Seeds not captured: baseline 1 (20068); SAC models 1 to 8 each (`sac-fs1-s1` 1, `sac-fs1-s2` 3, `sac-fs4-s1` and `-s2` 5, `sac-fs4-s0` 7, `sac-fs1-s0` 8). Seed 20112 is missed by all 6 SAC models and caught by the baseline; 20084 by 4 models, 20037 and 20062 by 3.
+- On 5 seeds (20033, 20045, 20093, 20112, 20180) the baseline is faster than every SAC model.
+- Among captured episodes, median time: baseline 4.25 s, SAC 1.65-1.89 s; 90th percentile: baseline 5.44 s, SAC 2.41-3.31 s.
+- Learning curve (training rollouts, stochastic policy, `rollout/ep_len_mean`): from 394-485 steps at 50k to 95-137 steps at 1M; every run is flat within about ±10 steps from 500k on. More steps under these settings are unlikely to change the result; this is a reading of 6 curves, not a gate.
+
+### Decision
+
+- Exclusions fired: none (sac-fs4's capture exclusion missed firing by 0.0017).
+- Deployed gate: not applicable.
+- Decision: **adopt** — SAC passes for both frame-stack settings: it catches the fly in about half the baseline's time (2.12-2.18 s vs 4.10 s), consistently over 3 training seeds each. SAC becomes the reference RL aimer for later issues (#34), and the rule baseline stays as the comparison. Its weakness is written down with it: SAC misses more flies than the baseline (2.0-2.8 % vs 0.5 %), significantly so for frame stack 4.
+- No choice between `sac-fs1` and `sac-fs4` is made from these seeds, as pre-declared; picking one is a new gate on fresh seeds. Of the two, `sac-fs1` has the simpler observation and the lower miss rate.

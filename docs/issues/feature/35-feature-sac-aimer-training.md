@@ -28,40 +28,30 @@ First reinforcement-learning run for the aimer: train SAC with `scripts/train.py
 
 ## Done Criteria
 - [x] Gate document with frozen baseline CSV (sha256) written before training starts. (2026-11-12 22:10)
-- [ ] 6 SAC runs (frame stack 1 and 4 × seeds 0, 1, 2) finish 1,000,000 steps each; run folders and final models copied back.
-- [ ] Final models evaluated on seeds 20000-20199; paired bootstrap verdict appended to the gate document.
+- [x] 6 SAC runs (frame stack 1 and 4 × seeds 0, 1, 2) finish 1,000,000 steps each; run folders and final models copied back. (2026-11-13 00:52)
+- [x] Final models evaluated on seeds 20000-20199; paired bootstrap verdict appended to the gate document. (2026-11-13 01:03)
 - [x] SAC explainer written, passed `check.py` and a cold-reader review. (2026-11-12 22:40)
 - [ ] `uv run pytest` passes (no code changes expected; re-run before the last commit).
 
 ## Current State
-Read only this block to take over. As of 2026-11-13 00:00 KST. The user went to sleep and will check in the morning; they asked that the results be fetched, backed up, and the instance destroyed when training ends.
+Read only this block to take over. As of 2026-11-13 01:05 KST. Training, evaluation and the gate are done; the instance is destroyed. What is left is publishing the runs, the PR, and reporting to the user (asleep; approved publishing, push and PR on 2026-11-13).
 
 ### Fallback that is certain
-Nothing ships from this issue. The rule baseline is the reference aimer: `gate/baseline.csv`, sha256 `4aec8f8e…` (199/200 captures, 4.100 s mean on seeds 20000-20199, env v2). Branch `35-feature-sac-aimer-training` @ 20ae755 (local, not pushed) holds the gate, the explainer and env v2. If the instance and its results were lost, the runs are reproducible from `gate.md` (6 × 1M steps, about 2.3 h and $0.5 on a 7900X).
+Nothing ships from this issue. Local results: `runs/2026-11-12_131635_sac-fs{1,4}-s{0,1,2}/` in this worktree (final `model.zip`, 21 checkpoints, episodes, TensorBoard). Backup, independent of this worktree: `C:/Users/neighbor/Documents/Code/Github/FlyTracker/runs/_backup-issue35/runs-full.tgz` (sha256 `491888f4a4bb…`, 350 MB) and `gate_out.tgz` (`0bcb10c60926…`), verified after the copy. Restore: `tar -xzf runs-full.tgz -C <worktree>`.
 
 ### Running now
-| job | where | started | ETA | log path | how to check | survives a dropped session |
-| --- | --- | --- | --- | --- | --- | --- |
-| 6 SAC runs (`sac-fs{1,4}-s{0,1,2}`, 1M steps) | vast.ai instance 60356096, `ssh -p 28112 root@ssh1.vast.ai`, `/root/ft/runs/` | 22:16 KST | about 00:45 KST | `/root/ft/logs/*.log` (block-buffered, mostly empty) | `ssh -p 28112 root@ssh1.vast.ai '/root/ft/.venv/bin/python /root/progress.py'` | yes (nohup on the instance) |
-| auto-eval: waits for 6 `model.zip` and no `train.py`, runs `remote_eval.sh` (gate CSVs, tarballs, `manifest.sha256`), then touches `/root/RESULTS_READY` | same instance, `setsid nohup bash /root/remote_autorun.sh` | 23:55 KST | about 00:50 KST | `/root/autorun.log`, `/root/eval.log` | `ssh -p 28112 root@ssh1.vast.ai 'cat /root/autorun.log; ls /root/RESULTS_READY'` | yes |
-| local waiter: polls for `RESULTS_READY`, then runs `runs/_ops/fetch_and_release.sh` | this laptop, background task of the session that wrote this | 23:58 KST | about 01:00 KST | session task output | `ls runs/_download/RELEASED` in the worktree | no |
-| progress watch (`runs/_ops/watch_runs.sh`) | this laptop, Monitor of the same session | 23:30 KST | until done | session events | — | no |
-
-The instance costs $0.167/h while it runs (about $1.5 overnight). It cannot stop itself (no per-instance API key; the account key is not copied there). Destroying deletes its disk; stopping keeps the disk at $0.20/GB/month but a restart needs the host free, so download first, then destroy.
+Nothing. vast.ai instance 60356096 destroyed at 00:52 KST by `runs/_ops/fetch_and_release.sh` after every check passed; `vastai show instances` lists none.
 
 ### Confirmed so far
-- Baseline (env v2), seeds 20000-20199: 199/200 captures, 4.100 s mean time — `gate.md`.
-- Env v2 = code part of #34's f8cfa78; `uv run pytest` 37 passed locally and on the instance; baseline byte-identical with branch 34 HEAD 50c05b7 — work log, `feat:` section.
-- Throughput: laptop 41 steps/s (1 thread); instance 109-118 steps/s per run with 6 in parallel — this block.
-- At 14:48 UTC (23:48 KST) all 6 runs were between 601k and 648k steps, no stall, no traceback.
-- Commits 629a967, 8050472, 20ae755 made with the user's approval. Uncommitted, awaiting approval: the LF fix (`evaluate_gate.py`, both gate CSVs, `gate.md` hashes, work-log section `fix: 판정 기준 CSV 줄바꿈을 LF로 고정 (#35)`).
+- Gate (`gate.md` Verdict, raw output `gate/bootstrap-output.md`): both candidates PASS on mean time to capture, P 1.000 vs threshold 0.90. sac-fs1 2.18 s, sac-fs4 2.12 s, baseline 4.10 s. No exclusion fired; sac-fs4's capture rate 0.9717 was 0.0017 above the 0.97 floor. Decision: adopt; no choice between fs1 and fs4.
+- SAC misses more flies than the baseline (2.0 % and 2.8 % vs 0.5 %); seed 20112 is missed by all 6 SAC models. Training-rollout episode length is flat from 500k steps on.
+- Env v2 = code part of #34's f8cfa78; `uv run pytest` 37 passed locally and on the instance; baseline byte-identical with branch 34 HEAD 50c05b7.
+- Commits so far: 629a967, 8050472, 20ae755, 060b28a, 6c1d084 (all with the user's approval).
 
 ### Next steps in order
-1. Check whether the release already happened: `ls runs/_download/RELEASED` (worktree root). If it is missing, run `bash runs/_ops/fetch_and_release.sh` in Git Bash from the worktree root. It downloads `runs-full.tgz` (checkpoints included), `gate_out.tgz`, `manifest.sha256`, verifies sha256, extracts to `runs/` and `runs/_download/gate_out/`, copies the tarballs to `C:/Users/neighbor/Documents/Code/Github/FlyTracker/runs/_backup-issue35/` and verifies them there, and only then runs `vastai destroy instance 60356096 -y`. If it prints `FAIL: results are not packed yet`, check the auto-eval row above; if `/root/autorun.log` says `eval FAILED`, read `/root/eval.log`, fix, and run `bash /root/remote_eval.sh` on the instance.
-2. Copy `runs/_download/gate_out/sac-fs{1,4}.csv` and `sac-fs{1,4}-s{0,1,2}.csv` to `docs/issues/feature/35-feature-sac-aimer-training/gate/`, record their sha256 in `gate.md`.
-3. Gate, as written in `gate.md` (from the worktree root, D = `docs/issues/feature/35-feature-sac-aimer-training`): `python .claude/skills/experiment-gate/scripts/paired_bootstrap.py --truth $D/gate/truth.csv --a $D/gate/baseline.csv --b $D/gate/sac-fs1.csv --targets time --metric mae --lower-is-better --resamples 10000 --seed 42 --threshold 0.90 --json $D/gate/sac-fs1-gate.json`; same for `sac-fs4`, for each `-s0/-s1/-s2` file (exclusion: any P < 0.50 → undecided), `--targets capture --metric mae --lower-is-better` for capture rate (mae against truth 1 is 1 − capture rate; exclusion: pooled capture < 0.97 → not adopted), and `--a sac-fs1.csv --b sac-fs4.csv` descriptively.
-4. Paste the tables under `## Verdict` in `gate.md`, decide adopt / reject / undecided by the pre-written rule, update this block and the Done Criteria, write the work-log section, show the user the changed files and wait for commit approval.
-5. Ask the user the open decisions below.
+1. Commit the verdict (`docs: SAC 판정 결과 (#35)`): `gate.md`, `gate/*.csv`, `gate/*-gate.json`, `gate/bootstrap-output.md`, this doc.
+2. Publish all 6 runs (all 6 so the viewer shows the seed spread; about 15 MB of episode JSON, models excluded): from the worktree root, for each run id `uv run python scripts/publish_run.py <run_id> --issue 35` (issue #35 has the `training` label). Commit `published/` with its own work-log section.
+3. `uv run pytest`; remove this branch's pointer from `AGENTS.md` as the last commit; `git push -u origin 35-feature-sac-aimer-training`; open the PR (`Closes #35`); report to the user with the PR URL.
 
 ### Today's traps
 - PyPI download of the CUDA torch wheel stalled at ~120 KB/s on the instance → the host's PyPI path was slow, download.pytorch.org was 3 MB/s → install torch 2.15.0+cpu from download.pytorch.org (`runs/_ops/remote_launch2.sh`).
@@ -82,11 +72,11 @@ The instance costs $0.167/h while it runs (about $1.5 overnight). It cannot stop
 | `remote_launch2.sh` | `runs/_ops/` | instance setup with CPU torch and the 6 launches (rough; instance-specific) | 2026-11-12 |
 | `katex-check/check.js` | `runs/_ops/katex-check/` | renders every formula of an md file with KaTeX strict; `npm install katex markdown-it @vscode/markdown-it-katex` first | 2026-11-12 |
 | `evaluate_gate.py` | `docs/issues/feature/35-feature-sac-aimer-training/` | gate CSVs for baseline / model / mean | was already in the repo |
+| `run_gate.sh` | `runs/_ops/` | copies the candidate CSVs into `gate/` and runs every bootstrap call of `gate.md` | written there 2026-11-13 |
+| `gate_details.py` | `runs/_ops/` | missed seeds, time percentiles, learning curve from TensorBoard | written there 2026-11-13 |
 
 ### Open decisions for the user
-- Commit the LF fix (`fix: 판정 기준 CSV 줄바꿈을 LF로 고정 (#35)`)? Asked 2026-11-12 23:50, not answered yet.
-- Publish runs to `published/` for the Cloudflare viewer (`scripts/publish_run.py <run> --issue 35`; issue #35 then needs the `training` label, and the copy goes in through a PR)? Which runs: all 6, or one per candidate?
-- Push the branch and open a PR once the verdict is in?
+- None open. Answered 2026-11-13 ("3개 다 진행해"): LF fix committed (060b28a, plus 6c1d084 pinning gate CSVs to LF in `.gitattributes`); publish runs (all 6 chosen; label `training` added to #35); push and open the PR once the verdict is in.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -160,8 +150,27 @@ The instance costs $0.167/h while it runs (about $1.5 overnight). It cannot stop
 #### Notes
 - The rule covers every issue's `gate/` folder, so later gates get the same guarantee.
 
+### docs: SAC 판정 결과 (#35)
+> why: the 6 runs finished; the pre-registered gate decides whether SAC beats the rule baseline
+#### Scope
+- `gate.md` (candidate hashes, Verdict), `gate/sac-fs{1,4}.csv`, `gate/sac-fs{1,4}-s{0,1,2}.csv`, `gate/sac-fs{1,4}-gate.json`, `gate/bootstrap-output.md` (all new except `gate.md`), this doc.
+#### Changes
+- Verdict: both `sac-fs1` (2.1836 s, Δ −1.9163 s, CI [−2.1957, −1.6234]) and `sac-fs4` (2.1232 s, Δ −1.9767 s, CI [−2.2707, −1.6688]) beat the baseline's 4.0999 s with P 1.000; every training seed P 1.000; no exclusion fired (sac-fs4 capture 0.9717 vs the 0.97 floor). Decision adopt, no choice between the two settings.
+- Written down with it: SAC's miss rate 2.0 % / 2.8 % vs 0.5 % (significant for fs4, CI [+0.0033, +0.0450]); seed 20112 missed by all 6 models; 5 seeds where the baseline is faster than every model; learning curves flat from 500k steps.
+- Current State refreshed: instance destroyed, results and backup locations, remaining steps.
+#### Verification
+- 6 runs reached 1,000,000 steps (`[step_1000000]` lines in each training log, 21 checkpoints each); auto-eval on the instance 15:51:01-15:51:19 UTC.
+- `fetch_and_release.sh`: `sha256sum -c` OK for both tarballs after download and again after the backup copy; 6 `model.zip`; 8 gate CSVs with 201 lines each; instance destroyed, `vastai show instances` empty.
+- Gate commands run as written in `gate.md` (`runs/_ops/run_gate.sh`); output pasted unedited into `gate/bootstrap-output.md`.
+#### Notes
+- On the instance, `remote_eval.sh` copied the training logs into `gate_out/` under the same file names as the evaluation logs, so the per-model evaluation logs in `gate_out.tgz` are training logs; the evaluation output itself is in `eval.log` (kept in the backup folder).
+- The in-training evaluation (seeds 10000-10002, 3 episodes per checkpoint) printed 3/3 captures at 1M steps for `sac-fs1-s2` before the gate ran; it is not gate data.
+
 ## Management Notes
 ### Follow-up Candidates
+- Seed 20112: missed by all 6 SAC models, caught by the baseline. Replay it in the viewer and find what the policy does there (the published runs do not contain gate episodes; record one with `EpisodeRecorder` and seed 20112).
+- SAC's miss rate (2.0-2.8 % vs the baseline's 0.5 %): a reward or observation change aimed at it would be a new gate.
+- `sac-fs1` vs `sac-fs4` on fresh seeds, if a single reference setting is needed (this gate made no choice).
 - DQN with a 5×5 joint discrete action set as a comparison (the current 5 actions turn one axis per step).
 ### References
 - Haarnoja et al., 2018, "Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor" (ICML).
