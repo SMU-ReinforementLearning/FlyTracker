@@ -149,6 +149,17 @@ The instance costs $0.167/h while it runs (about $1.5 overnight). It cannot stop
 #### Notes
 - No candidate had been measured, so this is still the first gate.
 
+### fix: 판정 CSV를 checkout에서도 LF로 두기 (#35)
+> why: with `core.autocrlf=true` (this laptop) a Windows checkout turns the LF blobs back into CRLF, so the hashes in `gate.md` would still break there
+#### Scope
+- `.gitattributes`, this doc.
+#### Changes
+- `docs/issues/**/gate/*.csv text eol=lf`, next to the existing `.githooks/** text eol=lf` line.
+#### Verification
+- Fresh clone of this branch with `core.autocrlf=true`: `sha256sum` of both gate CSVs equals the hashes in `gate.md` (see the commit body for the output).
+#### Notes
+- The rule covers every issue's `gate/` folder, so later gates get the same guarantee.
+
 ## Management Notes
 ### Follow-up Candidates
 - DQN with a 5×5 joint discrete action set as a comparison (the current 5 actions turn one axis per step).
