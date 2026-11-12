@@ -42,7 +42,7 @@ Prepares the environment so the aimer and a learned fly can be trained in turns,
 - [x] `check_env` passes for both sides; SB3 trains a few steps on each side and the saved models load back as opponents. (2026-11-12)
 - [x] `scripts/match.py` prints the table for baseline × rule and for small saved models, and refuses a model from another environment version. (2026-11-12)
 - [x] Baseline re-measured on seeds 10000–10199 with the 89° limit; README updated. (2026-11-12)
-- [ ] `uv run pytest` passes.
+- [x] `uv run pytest` passes. (2026-11-12)
 
 ## Current State
 - Issue, branch and worktree created from `origin/main` @ 0cda845.
@@ -113,6 +113,22 @@ Prepares the environment so the aimer and a learned fly can be trained in turns,
 - A copy of the fly run with `envVersion` 1 is refused: "환경 버전 1에서 학습한 모델이라, 지금 환경(버전 2)과 견줄 수 없다", exit code 2.
 #### Notes
 - Main moved on (15f5ac6, #36 README restructure) and conflicts with this branch's README; it is merged in the next commit with the resolution the #36 session proposed and the user approved.
+
+### docs: README에 초파리 쪽 state와 R, 대전표 넣기 (#34)
+> why: the user asked the README to document the fly side (state, action, R); the new scripts and options need instructions; sentences this branch made false had to be corrected
+#### Scope
+- `README.md`.
+#### Changes
+- New `### 초파리의 state와 action` and `### 초파리의 R` after `### 조준기의 R` (placement agreed with the #36 session), `### 대전표` under 학습 코드, `--side` / `--opponent` in `### 학습`.
+- "Gymnasium에서 가져다 쓴 것" moved out of `### 조준기의 R` into its own `### Gymnasium 규격` section, since it covers both envs (both cold readers stumbled on it).
+- Corrected sentences this branch made false: the fly-does-not-know-the-aim assumption now applies to the rule fly only; "checkpoint끼리 같은 초파리" holds only against the rule fly; "no script runs checkpoints on hundreds of seeds" now points to `match.py`; the `turret`/`aimer` naming rule matches the code; episode-file `reward`/`summary`/`meta` say whose R and policy they hold; env-version paragraph says option/config changes do not bump the version.
+#### Verification
+- `readme_check.py README.md`: 0 fail, 0 warn.
+- `ko-writing check.py` on 환경 to viewer: no forbidden patterns, one register, no paragraph over 6 sentences; two 16-char heading warnings are the #36-agreed heading names.
+- Two cold-reader passes (fresh subagents, manuscript only); every item in text this branch wrote was fixed.
+- `uv run pytest`: 53 passed.
+#### Notes
+- Pre-existing items the cold readers raised, left out of scope: what "z 정면" faces; "0.25초 to full speed" holds for yaw only (pitch ≈ 0.17 s); the training-speed table lacks env version and side; the baseline goes by `baseline`, `rule-baseline` and 기준선.
 
 ## Management Notes
 ### Follow-up Candidates
