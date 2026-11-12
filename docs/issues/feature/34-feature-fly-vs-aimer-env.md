@@ -36,10 +36,10 @@ Prepares the environment so the aimer and a learned fly can be trained in turns,
 - The detection model (#13).
 
 ## Done Criteria
-- [ ] Rule fly v0 flies the same path as before for the same seed (checked against `origin/main` on 50 seeds).
+- [x] Rule fly v0 flies the same path as before for the same seed (checked against the pre-change package on 600 episodes, 16 with rule escapes). (2026-11-12)
 - [x] A fly directly above the turret can be captured; pitch stops at 89°. (2026-11-12)
-- [ ] Fly observation at step k equals the undelayed observation at step k−3; an escape command turns and speeds the fly within the limits and respects the cooldown.
-- [ ] `check_env` passes for both sides; SB3 trains a few steps on each side and the saved models load back as opponents.
+- [x] Fly observation at step k equals the undelayed observation at step k−3; an escape command turns and speeds the fly within the limits and respects the cooldown. (2026-11-12)
+- [x] `check_env` passes for both sides; SB3 trains a few steps on each side and the saved models load back as opponents. (2026-11-12)
 - [ ] `scripts/match.py` prints the table for baseline × rule and for small saved models, and refuses a model from another environment version.
 - [x] Baseline re-measured on seeds 10000–10199 with the 89° limit; README updated. (2026-11-12)
 - [ ] `uv run pytest` passes.
@@ -77,6 +77,25 @@ Prepares the environment so the aimer and a learned fly can be trained in turns,
 - Rule fly paths for seeds 0–49 (zero aimer action, 25,050 frames) saved from the pre-change code in the session scratchpad, for the next unit's refactor check.
 #### Notes
 - The published baseline run (`published/2026-11-11_133858_baseline`) has no `envVersion`; README states that means version 1.
+
+### feat: 학습한 초파리를 넣는 자리와 초파리 쪽 환경 만들기 (#34)
+> why: the fly side (#31) needs an environment to train in, and the aimer side needs to train and be checked against a frozen learned fly
+#### Scope
+- `flytracker/fly.py`, `flytracker/env.py`, `flytracker/fly_env.py` (new), `flytracker/players.py` (new), `flytracker/wrappers.py`, `flytracker/__init__.py`, `scripts/train.py`, `tests/test_fly_side.py` (new), `tests/test_players.py` (new).
+#### Changes
+- `Fly`: `external_escape` skips the threat rule; `command_escape(turn, climb, speed_gain)` starts an escape with the rule fly's turn duration, boost time and cooldown, gain clipped to 1–`evade_speed_gain`; `escape_ready`, `effective_speed`. The boost gain became a field so the rule path multiplies by the same value as before.
+- `env.py`: `FLY_OBS_FIELDS` (17 dims, body frame right/up/forward: turret direction and distance, nearest point on the beam, aim error, climb, speed, room position, heading sin/cos, escape ready), delayed by `fly_reaction_delay` = 0.06 s (3 steps) through a deque; `FLY_ACTION_NAMES` (escape, turn ×180°, climb ×max_climb, speed gain); `FlyRewardWeights` (sign-flipped aimer reward without the action-change term) in `EnvConfig`; `FlyChaseEnv(fly=player)`; `ENV_VERSION` history line extended.
+- `fly_env.FlyEscapeEnv`: the fly-side env; the aimer slot is a player (baseline by default); a relay passes the fly action into `FlyChaseEnv`; `info["aimer_reward"]`.
+- `players.py`: `PolicyPlayer` (frame stack padded like `FrameStackObservation(padding_type="reset")`, DQN index → continuous action), `load_opponent(spec, side, config)` for `baseline` / `rule` / run folder / checkpoint; refuses another env version or the other side's model; warns when the run's env config differs (rewards ignored).
+- `train.py`: `--side aimer|fly`, `--opponent`; training and evaluation load separate opponent instances so they do not share frame stacks or baseline search state; `config.json` `algo` gains `side` and `opponent`; episode meta gains `side` and `opponent`.
+#### Verification
+- `uv run pytest`: 51 passed (new: 3-step lag, observation values in a hand-checked pose, learned fly ignores the threat rule, escape turn/gain/cooldown, action mapping, `check_env` on `FlyEscapeEnv`, reward identity with the aimer reward, capture penalty, frame stack equals the Gymnasium wrapper, rule opponents, PPO models saved and loaded back on both sides, other env version refused).
+- Rule fly unchanged: package from f8cfa78 vs this tree, zero aimer action, turret at (0, 0.1, 0) and (0, 1.25, 0), seeds 0–299 each: 600/600 episodes bit-identical (300,600 frames), 16 of them contain a rule escape. (The first 50-seed check had no rule escape, so it was repeated with the centre turret.)
+- `train.py` smoke runs in the scratchpad: `--side fly --algo ppo`; `--side aimer --opponent <that fly run> --algo sac`; `--algo dqn --frame-stack 2`. All finished and saved.
+- Constant-action flies vs baseline, seeds 10000–10039: never escape 40/40, 4.11 s; always escape 90° left fast 40/40, 3.90 s; always escape 180° fast climbing 40/40, 4.33 s — the escape slot changes outcomes.
+#### Notes
+- All fly observations are delayed, including `escape_ready`, as agreed; a command in the 3 steps after an escape is ignored by the cooldown.
+- PPO trains in multiples of `n_steps` (2048), so `--steps 256` runs 2048 steps; unchanged behaviour.
 
 ## Management Notes
 ### Follow-up Candidates
