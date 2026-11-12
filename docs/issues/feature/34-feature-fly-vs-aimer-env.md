@@ -4,8 +4,8 @@
 - Issue: #34
 - Branch: `34-feature-fly-vs-aimer-env`
 - Umbrella: (none) — no umbrella issue exists yet
-- Related: #31 (connectome fly model; the plan agreed there is the source of this issue's scope, https://github.com/SMU-ReinforementLearning/FlyTracker/issues/31#issuecomment-6823169259), #9 (fly flight model and its limits), #7 (fixed turret)
-- Status: in progress
+- Related: #31 (connectome fly model; the plan agreed there is the source of this issue's scope, https://github.com/SMU-ReinforementLearning/FlyTracker/issues/31#issuecomment-6823169259), #9 (fly flight model and its limits), #7 (fixed turret), #36 (README restructure merged into this branch)
+- Status: done
 
 ## Summary
 Prepares the environment so the aimer and a learned fly can be trained in turns, each against a frozen version of the other. The aimer side is the repo owner's work; the fly side (a connectome-shaped network trained to evade, #31) is a teammate's. This issue does the shared environment work the #31 plan listed under "먼저 바꿀 환경", before the first aimer is trained.
@@ -47,7 +47,8 @@ Prepares the environment so the aimer and a learned fly can be trained in turns,
 ## Current State
 - Issue, branch and worktree created from `origin/main` @ 0cda845.
 - Fly-side starting defaults approved by the user (2026-11-12) and announced on #31 (https://github.com/SMU-ReinforementLearning/FlyTracker/issues/31#issuecomment-6823604205): observation 17 dims delayed 0.06 s (turret direction and distance, nearest point on the laser beam, aim error, speed and climb, room position, heading, escape ready); action 4 dims (escape or not, turn relative to heading ±180°, climb, speed gain 1–1.6); reward = sign-flipped aimer reward without the action-change term. README must document the fly-side observation, action and reward (user request).
-- Commit plan: (1) this doc; (2) pitch 89°, env version, baseline re-measure; (3) fly escape slot, fly-side env, `train.py --side/--opponent`; (4) `scripts/match.py`; (5) README.
+- All five work units committed (c998454, f8cfa78, c937749, aa91ffe, 017a8b2) plus the merge of origin/main 15f5ac6 (50c05b7). All done criteria ticked. The user asked to push, open the PR and merge it (2026-11-12).
+- Next for whoever picks this up: the fly side (#31) replaces the starting fly observation, action and reward; the aimer side trains aimer v1 against the rule fly with `scripts/train.py` and checks it with `scripts/match.py`. Opponent mixing for aimer v2 is a follow-up candidate below.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -129,6 +130,17 @@ Prepares the environment so the aimer and a learned fly can be trained in turns,
 - `uv run pytest`: 53 passed.
 #### Notes
 - Pre-existing items the cold readers raised, left out of scope: what "z 정면" faces; "0.25초 to full speed" holds for yaw only (pitch ≈ 0.17 s); the training-speed table lacks env version and side; the baseline goes by `baseline`, `rule-baseline` and 기준선.
+
+### chore: #34 관리 문서를 완료로 바꾸고 AGENTS.md 줄 지우기 (#34)
+> why: git-rules post-PR gate — the pointer line goes in the branch's last commit, together with Status done, because main takes PRs only
+#### Scope
+- `AGENTS.md`, `docs/issues/README.md`, this doc.
+#### Changes
+- `AGENTS.md` Recent Active Context back to `- (none)`; registry row #34 → done; Status → done; Current State and Related updated.
+#### Verification
+- `grep 34 AGENTS.md` finds no pointer line; registry row reads done.
+#### Notes
+- Push, PR (squash merge) and merge requested by the user in the same turn.
 
 ## Management Notes
 ### Follow-up Candidates
