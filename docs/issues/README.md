@@ -18,3 +18,4 @@ One row per management document, added in the same commit that creates the doc.
 | #25 | docs/issues/docs/25-docs-readme-agent-tools.md | done | README의 agent 안내를 Claude Code 외 도구에도 맞게 고치기 |
 | #27 | docs/issues/feature/27-feature-viewer-run-browser.md | done | viewer 실행 목록을 issue별로 묶고 학습 곡선과 에피소드 격자 넣기 |
 | #29 | docs/issues/fix/29-fix-viewer-episode-list.md | done | viewer 실행 패널의 에피소드를 checkpoint별 세로 목록으로 바꾸기 |
+| #32 | docs/issues/docs/32-docs-readme-state-reward.md | in progress | README에 state와 R 항목 설명 넣기 |

@@ -62,7 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- (none)
+- `32-docs-readme-state-reward` — `docs/issues/docs/32-docs-readme-state-reward.md` — README에 state와 R 항목 설명 넣기
 
 ## Environment (repo slot)
 
