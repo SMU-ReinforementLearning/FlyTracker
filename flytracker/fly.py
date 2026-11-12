@@ -1,4 +1,4 @@
-"""초파리. 규칙대로 움직이는 상대다.
+"""초파리. 평소 비행은 규칙대로 하고, 회피는 규칙(규칙 초파리) 또는 밖에서 준 명령(학습한 초파리)으로 한다.
 
 비행은 실제 초파리 자유비행 측정값을 따른다. 값마다 출처는 FlyParams 주석과
 docs/issues/feature/9-feature-fly-realism-search/fly-flight-and-search-model.md 에 있다.
@@ -17,6 +17,10 @@ docs/issues/feature/9-feature-fly-realism-search/fly-flight-and-search-model.md 
 거리는 초파리가 조준기 쪽으로 날아갈 때만 준다. 조준선이 자기를 겨누는지는 초파리가 알 수 없으므로 세지 않는다.
 
 초파리는 거의 모든 방향을 본다고 두어서 조준기 위치를 늘 안다.
+
+학습한 초파리(external_escape=True)는 위 위협 규칙을 쓰지 않는다. 언제, 어느 쪽으로, 얼마나 빨리 피할지를
+command_escape 로 받는다. 선회 시간, 회피 가속 시간, 다시 피할 수 있을 때까지의 시간은 규칙 초파리와 같고,
+속도 배율은 1 ~ evade_speed_gain 사이다. 학습한 초파리가 무엇을 보고 정하는지는 env.py 의 FLY_OBS_FIELDS 에 있다.
 """
 
 from __future__ import annotations
@@ -89,7 +93,9 @@ class Fly:
         self._react_in: float | None = None
         self._cooldown = 0.0
         self._boost_left = 0.0
+        self._boost_gain = params.evade_speed_gain  # 회피 가속 중 속도 배율
         self._prev_aimer_dist: float | None = None
+        self.external_escape = False  # True 면 위협 규칙 대신 command_escape 로 피한다
 
     @property
     def alarmed(self) -> bool:
@@ -99,6 +105,35 @@ class Fly:
     @property
     def turning(self) -> bool:
         return self._turn is not None
+
+    @property
+    def escape_ready(self) -> bool:
+        """지금 회피를 시작할 수 있으면 True. 반응을 기다리는 중이 아니고, 직전 회피 뒤 cooldown 이 지났다."""
+        return self._react_in is None and self._cooldown <= 0.0
+
+    @property
+    def effective_speed(self) -> float:
+        """회피 가속까지 반영한 지금 속도 (m/s)."""
+        return self.speed * (self._boost_gain if self._boost_left > 0.0 else 1.0)
+
+    def command_escape(self, turn: float, climb: float, speed_gain: float) -> bool:
+        """학습한 초파리의 회피 명령. 시작했으면 True, cooldown 중이라 무시했으면 False.
+
+        turn: 지금 진행 방향에서 수평으로 돌 각도 (rad). + 가 왼쪽(위에서 볼 때 반시계)이다.
+        climb: 회피 방향의 y 성분. ±max_climb 안으로 자른다.
+        speed_gain: 회피 가속 동안의 속도 배율. 1 ~ evade_speed_gain 안으로 자른다.
+        """
+        p = self.p
+        if not self.escape_ready:
+            return False
+        horiz = unit(np.array([self.heading[0], 0.0, self.heading[2]]))
+        c = float(np.clip(climb, -p.max_climb, p.max_climb))
+        target = rotate_about_y(horiz, turn) * math.sqrt(1.0 - c * c) + np.array([0.0, c, 0.0])
+        self._start_turn(target, p.escape_turn_duration)
+        self._boost_left = p.evade_boost_time
+        self._boost_gain = float(np.clip(speed_gain, 1.0, p.evade_speed_gain))
+        self._cooldown = p.evade_cooldown
+        return True
 
     def reset(self, pos: np.ndarray, heading: np.ndarray) -> None:
         self.pos = np.asarray(pos, dtype=float).copy()
@@ -110,13 +145,15 @@ class Fly:
         self._react_in = None
         self._cooldown = 0.0
         self._boost_left = 0.0
+        self._boost_gain = self.p.evade_speed_gain
         self._prev_aimer_dist = None
 
     def step(self, dt: float, room: Room, aimer_pos: np.ndarray) -> None:
         p = self.p
         self._cooldown = max(0.0, self._cooldown - dt)
         self._boost_left = max(0.0, self._boost_left - dt)
-        self._update_threat(dt, room, aimer_pos)
+        if not self.external_escape:
+            self._update_threat(dt, room, aimer_pos)
 
         if self._turn is None:
             ahead = self.pos + self.heading * p.wall_lookahead
@@ -136,7 +173,7 @@ class Fly:
             target *= 1.0 - p.saccade_speed_dip
         self.speed += (target - self.speed) * min(dt / p.speed_tau, 1.0)
 
-        speed = self.speed * (p.evade_speed_gain if self._boost_left > 0.0 else 1.0)
+        speed = self.effective_speed
         new_pos = self.pos + self.heading * speed * dt
         self.pos, hit = room.clamp(new_pos, margin=0.02)
         if self._turn is None:  # 직선 구간 길이는 급선회 사이에서만 센다
@@ -198,6 +235,7 @@ class Fly:
                 self._react_in = None
                 self._start_turn(self._escape_dir(room, aimer_pos), p.escape_turn_duration)
                 self._boost_left = p.evade_boost_time
+                self._boost_gain = p.evade_speed_gain
                 self._cooldown = p.evade_cooldown
             return
         if prev is None or self._cooldown > 0.0:
