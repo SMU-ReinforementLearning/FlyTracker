@@ -57,6 +57,19 @@ First reinforcement-learning run for the aimer: train SAC with `scripts/train.py
 #### Notes
 - No umbrella issue exists, so `--parent` was not passed.
 
+### feat: 환경 버전 2(pitch 89°) 가져오기 (#35)
+> why: the user asked to train on environment version 2, which lives on #34's unmerged branch
+#### Scope
+- `flytracker/__init__.py`, `flytracker/aimer.py`, `flytracker/baseline.py`, `flytracker/env.py`, `flytracker/record.py`, `tests/test_env.py`, `tests/test_record_and_baseline.py`.
+#### Changes
+- The code part of #34's commit f8cfa78, applied unchanged with `git diff c998454 f8cfa78 -- flytracker tests | git apply` (c998454 is its parent; both branches start at `origin/main` @ 0cda845): `AimerLimits.max_pitch_deg` 80 → 89, `RuleAimer` stops adding sweep bands once the zenith is in view, `ENV_VERSION = 2`, `RunStore.create_run` writes `envVersion` into `config.json`, tests for both.
+- README and #34's management doc from that commit are not taken; they belong to #34.
+#### Verification
+- `uv run pytest`: 37 passed (f8cfa78's own record: 37 passed).
+- Gate baseline on seeds 20000-20199 with this code and with branch 34 HEAD 50c05b7's `flytracker` package (learned-fly slot added): byte-identical CSVs, so the aimer's environment against the rule fly is the same in both.
+#### Notes
+- When #34 merges first, rebasing this branch may stop on the `ENV_VERSION` history comment, which #34 extended after f8cfa78; take #34's line.
+
 ## Management Notes
 ### Follow-up Candidates
 - DQN with a 5×5 joint discrete action set as a comparison (the current 5 actions turn one axis per step).

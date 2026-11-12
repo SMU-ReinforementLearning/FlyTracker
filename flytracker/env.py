@@ -19,6 +19,12 @@ from .fly import Fly, FlyParams
 from .geometry import unit
 from .world import Room
 
+# 환경 버전. 관측, 행동, 보상, 물리 제한처럼 학습한 모델이 기대는 가정이 바뀌면 올린다.
+# 실행마다 config.json 의 envVersion 에 적히고, 버전이 다른 모델끼리는 견주지 않는다.
+# 1: #33 까지. pitch 제한 80°.
+# 2: #34. pitch 제한 89°.
+ENV_VERSION = 2
+
 
 @dataclass(frozen=True)
 class RewardWeights:
