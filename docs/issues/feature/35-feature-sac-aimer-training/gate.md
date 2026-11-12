@@ -138,6 +138,7 @@ them is adopted from these 200 seeds; picking one would need a new gate on fresh
 ### Decision
 
 - Exclusions fired: none (sac-fs4's capture exclusion missed firing by 0.0017).
+- Platform check (after merging `origin/main` with #34): the same 6 models evaluated on a Windows laptop give identical capture on all 200 seeds and mean times within 0.013 s of the Linux numbers above; the baseline is byte-identical. The decision does not depend on the platform.
 - Deployed gate: not applicable.
 - Decision: **adopt** — SAC passes for both frame-stack settings: it catches the fly in about half the baseline's time (2.12-2.18 s vs 4.10 s), consistently over 3 training seeds each. SAC becomes the reference RL aimer for later issues (#34), and the rule baseline stays as the comparison. Its weakness is written down with it: SAC misses more flies than the baseline (2.0-2.8 % vs 0.5 %), significantly so for frame stack 4.
 - No choice between `sac-fs1` and `sac-fs4` is made from these seeds, as pre-declared; picking one is a new gate on fresh seeds. Of the two, `sac-fs1` has the simpler observation and the lower miss rate.

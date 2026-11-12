@@ -179,6 +179,20 @@ Nothing. vast.ai instance 60356096 destroyed at 00:52 KST by `runs/_ops/fetch_an
 #### Notes
 - `sac-fs1-s0` was missing from the local `runs/index.json`: the 6 parallel `train.py` processes started in the same second, and `RunStore.create_run` reads and rewrites `index.json` without a lock, so one append was lost. The run folder itself was complete. The entry was rebuilt in the siblings' shape from the folder's own files (`runs/_ops/restore_index_entry.py`, local only), then published. The race is listed under Follow-up Candidates; no library change here.
 
+### chore: origin/main(#34) 받아오기 (#35)
+> why: #34 merged into main (64c60ff) while this branch waited; it contains f8cfa78 and later environment changes, and the registry gained rows
+#### Scope
+- Merge of `origin/main` @ 64c60ff; conflicts in `docs/issues/README.md` and `flytracker/__init__.py`; this doc.
+#### Changes
+- `docs/issues/README.md`: rows #34, #35, #36 kept in number order.
+- `flytracker/__init__.py` and `flytracker/env.py`: main's versions. The auto-merge of `env.py` reported no conflict but left the `ENV_VERSION` block twice; it was replaced by main's file. After the merge `flytracker/`, `scripts/`, `tests/`, `pyproject.toml` and `uv.lock` are identical to `origin/main`.
+#### Verification
+- `pytest` on the merged tree: 53 passed (37 before plus #34's tests).
+- Re-measurement on the merged tree (this laptop): `evaluate_gate.py baseline` is byte-identical to `gate/baseline.csv`.
+- The 6 SAC models on the merged tree: capture identical on all 200 seeds for every model; 18-68 rows differ in time; mean time changes by at most 0.013 s (sac-fs4-s1 2.152 → 2.139 s). Cause: platform, not the merge. `sac-fs4-s1` evaluated with the pre-merge package (12a9112) on this laptop is byte-identical to the post-merge laptop result; the gate CSVs were made on the Linux instance. The gate decision does not move: Δ is about −1.9 s with CI half-widths near 0.3 s.
+#### Notes
+- The gate CSVs stay as measured on the instance; `gate.md` names that platform (torch 2.15.0+cpu, Linux).
+
 ## Management Notes
 ### Follow-up Candidates
 - Seed 20112: missed by all 6 SAC models, caught by the baseline. Replay it in the viewer and find what the policy does there (the published runs do not contain gate episodes; record one with `EpisodeRecorder` and seed 20112).
