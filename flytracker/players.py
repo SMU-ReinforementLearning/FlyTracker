@@ -91,7 +91,7 @@ def load_opponent(spec: str, side: str, config: EnvConfig) -> Opponent:
     run_cfg = json.loads((run_dir / "config.json").read_text(encoding="utf-8"))
     version = run_cfg.get("envVersion", 1)
     if version != ENV_VERSION:
-        raise ValueError(f"{spec}: 환경 버전 {version} 에서 학습한 모델이다. 지금 환경은 버전 {ENV_VERSION} 이라 견줄 수 없다")
+        raise ValueError(f"{spec}: 환경 버전 {version}에서 학습한 모델이라, 지금 환경(버전 {ENV_VERSION})과 견줄 수 없다")
     algo = run_cfg.get("algo", {})
     run_side = algo.get("side", "aimer")
     if run_side != side:

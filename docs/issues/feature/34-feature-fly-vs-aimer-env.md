@@ -40,7 +40,7 @@ Prepares the environment so the aimer and a learned fly can be trained in turns,
 - [x] A fly directly above the turret can be captured; pitch stops at 89°. (2026-11-12)
 - [x] Fly observation at step k equals the undelayed observation at step k−3; an escape command turns and speeds the fly within the limits and respects the cooldown. (2026-11-12)
 - [x] `check_env` passes for both sides; SB3 trains a few steps on each side and the saved models load back as opponents. (2026-11-12)
-- [ ] `scripts/match.py` prints the table for baseline × rule and for small saved models, and refuses a model from another environment version.
+- [x] `scripts/match.py` prints the table for baseline × rule and for small saved models, and refuses a model from another environment version. (2026-11-12)
 - [x] Baseline re-measured on seeds 10000–10199 with the 89° limit; README updated. (2026-11-12)
 - [ ] `uv run pytest` passes.
 
@@ -96,6 +96,23 @@ Prepares the environment so the aimer and a learned fly can be trained in turns,
 #### Notes
 - All fly observations are delayed, including `escape_ready`, as agreed; a command in the 3 steps after an escape is ignored by the cooldown.
 - PPO trains in multiples of `n_steps` (2048), so `--steps 256` runs 2048 steps; unchanged behaviour.
+
+### feat: 조준기 버전과 초파리 버전을 맞붙이는 대전표 스크립트 만들기 (#34)
+> why: the #31 plan compares every aimer version against every fly version on the same seeds; v0 row and column stay as the fixed yardstick
+#### Scope
+- `flytracker/matchup.py` (new), `scripts/match.py` (new), `scripts/_common.py`, `flytracker/players.py`, `tests/test_matchup.py` (new).
+#### Changes
+- `matchup.py`: `play_cell` (one aimer × one fly over a seed range: captures and capture times), `play_table` (rows aimers, columns flies), `format_table` (Markdown, cell = "captured/episodes, mean capture time").
+- `scripts/match.py`: repeatable `--aimer` / `--fly` (defaults `baseline` / `rule`), `--episodes` 200, `--seed` 10000, `--json`; load errors (other env version, wrong side, missing file) exit through `argparse` with the message.
+- `_common.py`: stderr is reconfigured to UTF-8 like stdout, so `argparse` errors in Korean are readable in UTF-8 terminals.
+- `players.py`: env-version refusal message reworded.
+#### Verification
+- `uv run pytest`: 53 passed (new: a `play_cell` result equals the recorded baseline episodes on seeds 3–7; table shape and header).
+- `scripts/match.py` defaults (baseline × rule, seeds 10000–10199): 200/200, 4.20 s — same as `record_baseline.py`.
+- 2×2 table with the scratchpad smoke models (seeds 10000–10019): baseline × rule 20/20 4.17 s; baseline × fly-ppo 20/20 4.14 s; sac(300 steps) × both 0/20.
+- A copy of the fly run with `envVersion` 1 is refused: "환경 버전 1에서 학습한 모델이라, 지금 환경(버전 2)과 견줄 수 없다", exit code 2.
+#### Notes
+- Main moved on (15f5ac6, #36 README restructure) and conflicts with this branch's README; it is merged in the next commit with the resolution the #36 session proposed and the user approved.
 
 ## Management Notes
 ### Follow-up Candidates

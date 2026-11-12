@@ -9,9 +9,10 @@ from dataclasses import replace
 from flytracker import EnvConfig, EpisodeRecorder
 from flytracker.camera import CameraIntrinsics
 
-# Windows 콘솔이 cp949 여도 한국어 출력이 깨지지 않게 한다
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8")
+# Windows 콘솔이 cp949 여도 한국어 출력이 깨지지 않게 한다. argparse 오류는 stderr 로 나간다
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8")
 
 
 def add_env_args(p: argparse.ArgumentParser) -> None:
