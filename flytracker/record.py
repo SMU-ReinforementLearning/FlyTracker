@@ -28,6 +28,7 @@ from typing import Callable
 
 import gymnasium as gym
 
+from .env import ENV_VERSION
 from .world import AXES, UNIT
 
 EPISODE_FORMAT = "flytracker.episode/1"
@@ -160,10 +161,11 @@ class RunStore:
         self.root = Path(root)
 
     def create_run(self, name: str, algo: str, action_mode: str, config: dict, notes: str = "") -> Run:
+        """config.json 에는 넘긴 설정에 환경 버전(envVersion)을 더해 쓴다."""
         now = datetime.now()
         run_id = f"{now:%Y-%m-%d_%H%M%S}_{_slug(name)}"
         run = Run(self, run_id)
-        _write_json(run.dir / "config.json", config)
+        _write_json(run.dir / "config.json", {"envVersion": ENV_VERSION, **config})
         _write_json(run.dir / "episodes.json", {"run": run_id, "episodes": []})
         index = self._index()
         index["runs"].append(

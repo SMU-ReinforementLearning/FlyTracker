@@ -37,11 +37,11 @@ Prepares the environment so the aimer and a learned fly can be trained in turns,
 
 ## Done Criteria
 - [ ] Rule fly v0 flies the same path as before for the same seed (checked against `origin/main` on 50 seeds).
-- [ ] A fly directly above the turret can be captured; pitch stops at 89°.
+- [x] A fly directly above the turret can be captured; pitch stops at 89°. (2026-11-12)
 - [ ] Fly observation at step k equals the undelayed observation at step k−3; an escape command turns and speeds the fly within the limits and respects the cooldown.
 - [ ] `check_env` passes for both sides; SB3 trains a few steps on each side and the saved models load back as opponents.
 - [ ] `scripts/match.py` prints the table for baseline × rule and for small saved models, and refuses a model from another environment version.
-- [ ] Baseline re-measured on seeds 10000–10199 with the 89° limit; README updated.
+- [x] Baseline re-measured on seeds 10000–10199 with the 89° limit; README updated. (2026-11-12)
 - [ ] `uv run pytest` passes.
 
 ## Current State
@@ -62,6 +62,21 @@ Prepares the environment so the aimer and a learned fly can be trained in turns,
 - `issue-start`: issue #34, branch from `origin/main` @ 0cda845.
 #### Notes
 - No umbrella issue exists, so `--parent` was not passed.
+
+### feat: 조준기 pitch 제한을 89°로 올리고 환경 버전 기록하기 (#34)
+> why: with an 80° limit a fly straight above the turret (elevation > 83°) could never be captured; a learned fly would camp there. Runs also need a version number so models trained under different assumptions are not compared.
+#### Scope
+- `flytracker/aimer.py`, `flytracker/baseline.py`, `flytracker/env.py`, `flytracker/record.py`, `flytracker/__init__.py`, `tests/test_env.py`, `tests/test_record_and_baseline.py`, `README.md`.
+#### Changes
+- `AimerLimits.max_pitch_deg` 80 → 89 (90 degenerates `camera_basis`). `RuleAimer` default follows; its sweep bands now also stop once a band's top edge reaches the zenith, so the bands stay 10°/45°/80° instead of gaining a useless 89° band.
+- `ENV_VERSION = 2` in `env.py` with a per-version history comment; `RunStore.create_run` writes `envVersion` into every `config.json` (the viewer's comparison table shows it as a column when runs differ).
+- README: 89° in the observation and action text, baseline table re-measured, environment version paragraph.
+#### Verification
+- `uv run pytest`: 37 passed (new: overhead fly captured at 89°, not at 80°; `envVersion` in `config.json`; sweep bands unchanged).
+- `scripts/record_baseline.py --episodes 200 --seed 10000 --no-save`: before 200/200, 4.21 s, 18 %, −19.22; after 200/200, 4.20 s, 18 %, −19.21.
+- Rule fly paths for seeds 0–49 (zero aimer action, 25,050 frames) saved from the pre-change code in the session scratchpad, for the next unit's refactor check.
+#### Notes
+- The published baseline run (`published/2026-11-11_133858_baseline`) has no `envVersion`; README states that means version 1.
 
 ## Management Notes
 ### Follow-up Candidates

@@ -5,6 +5,7 @@ import pytest
 from gymnasium.utils.env_checker import check_env
 
 from flytracker import OBS, OBS_DIM, EnvConfig, FlyChaseEnv, make_env
+from flytracker.aimer import AimerLimits
 from flytracker.fly import FlyParams
 
 
@@ -108,3 +109,17 @@ def test_capture_range_none_captures_far_fly():
         _, _, terminated, _, info = env.step(np.zeros(2))
         steps += 1
     assert info["captured"]
+
+
+@pytest.mark.parametrize("max_pitch, captured", [(89.0, True), (80.0, False)])
+def test_fly_straight_above_turret_is_capturable_only_with_89_deg_limit(max_pitch, captured):
+    env = FlyChaseEnv(static_fly_config(aimer=AimerLimits(max_pitch_deg=max_pitch)))
+    env.reset(seed=0)
+    env.fly.pos = env.aimer.pos + np.array([0.0, 1.9, 0.0])  # 바로 위 1.9m. 위협 반경(1m) 밖이라 피하지 않는다
+    env._update_vision()
+    info = {"captured": False}
+    for _ in range(150):  # 3초 동안 위로 돌린다
+        _, _, terminated, _, info = env.step(np.array([0.0, 1.0]))
+        if terminated:
+            break
+    assert info["captured"] is captured
