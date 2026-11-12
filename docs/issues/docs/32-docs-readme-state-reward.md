@@ -23,15 +23,15 @@ Renames the README's `### 관측과 행동` to `### state와 action` and `### �
 - Renaming 관측/행동/보상 elsewhere in the README body.
 
 ## Done Criteria
-- [ ] Both headings renamed; no link in the repo pointed at the old anchors (`#관측과-행동`, `#보상`).
-- [ ] Every row of both tables has an explanation in its `<details>`, and each stated number matches the code.
-- [ ] State layout and R are marked as assumptions with the date.
-- [ ] ko-writing `check.py README.md` shows no new finding in the changed text; `readme_check.py` passes.
-- [ ] The user approved the text at the review gate.
+- [x] Both headings renamed; no link in the repo pointed at the old anchors (`#관측과-행동`, `#보상`). (2026-11-12)
+- [x] Every row of both tables has an explanation in its `<details>`, and each stated number matches the code. (2026-11-12)
+- [x] State layout and R are marked as assumptions with the date. (2026-11-12)
+- [x] ko-writing `check.py README.md` shows no new finding in the changed text; `readme_check.py` passes. (2026-11-12)
+- [x] The user approved the text at the review gate. (2026-11-12, "머지해놔")
 
 ## Current State
 - Issue, branch and worktree created from `origin/main` @ 7237428; this document seeded and filled.
-- README change written and checked; waiting for the user's approval at the review gate.
+- README change committed after the user's approval ("머지해놔").
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
