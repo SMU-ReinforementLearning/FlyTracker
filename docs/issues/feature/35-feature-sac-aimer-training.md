@@ -70,6 +70,25 @@ First reinforcement-learning run for the aimer: train SAC with `scripts/train.py
 #### Notes
 - When #34 merges first, rebasing this branch may stop on the `ENV_VERSION` history comment, which #34 extended after f8cfa78; take #34's line.
 
+### docs: SAC 설명과 학습 판정 기준 (#35)
+> why: the user asked for a plain Korean explanation of SAC in the issue docs; the comparison with the baseline is pre-registered before any candidate exists
+#### Scope
+- `docs/issues/feature/35-feature-sac-aimer-training/` — `sac.md`, `gate.md`, `evaluate_gate.py`, `gate/truth.csv`, `gate/baseline.csv` (all new); this doc.
+#### Changes
+- `sac.md` (Korean): the aimer as the learner (step, capture, 13-dim observation, 2-dim action), actor and critic, entropy bonus and automatic α with target entropy −2, the DQN-family parts (replay buffer, soft target update, two critics), the loss functions, the training settings table marking which values are SB3 defaults.
+- Formulas in KaTeX syntax (`$...$`, `$$...$$`; `\mid` instead of `|` so table cells do not split), each followed by a table of what every term means: entropy, the max-entropy objective, critic target and loss, actor loss with the reparameterised sample and the tanh log-prob correction, α loss, soft target update. The update order is explained as critic → actor → α; SB3 computes the α loss first but uses the pre-update α in both other losses, so the result is the same.
+- `gate.md`: question, baseline (frozen sha256), two candidates (`sac-fs1`, `sac-fs4`, 3 training seeds each, final model only), metric = mean time to capture with misses counted as 10 s, 200 seeds 20000-20199, threshold P ≥ 0.90, exclusions (capture < 0.97; a training seed with P < 0.50; unfinished run), decision rule.
+- `evaluate_gate.py`: one row per seed (`id`, `capture`, `time`) for the baseline or a saved SAC model, deterministic policy, default `EnvConfig`; `mean` averages the three training seeds.
+#### Verification
+- Baseline (env v2): 199/200 captures, 4.100 s mean time. Env v1, before the switch: 198/200, 4.127 s (replaced before any candidate existed).
+- SB3 2.9.2 SAC defaults read from the installed source (`inspect.signature`, `SACPolicy`, `_setup_model`): lr 3e-4, buffer 1e6, learning_starts 100, batch 256, tau 0.005, gamma 0.99, train_freq 1, gradient_steps 1, ent_coef auto, target_entropy = −dim(A), net_arch [256, 256], n_critics 2.
+- Loss formulas checked against the installed SB3 source (`SAC.train`, `SquashedDiagGaussianDistribution.log_prob`, `ReplayBuffer.add`): min over target critics minus α·logπ for the target, `0.5 * sum(mse)` critic loss, `(α·logπ − min Q).mean()` actor loss, `−(log α · (logπ + target_entropy)).mean()` α loss, tanh correction `−Σ log(1 − a² + ε)`, α starts at 1.0, time-limit truncations stored as not-done (`handle_timeout_termination=True`).
+- KaTeX 0.19.1 (`throwOnError`, `strict: "error"`): 9 display and 121 inline formulas, 0 errors; markdown-it 15 + `@vscode/markdown-it-katex` HTML: 0 `katex-error`, 10 tables intact. Rendered page screenshotted with headless Chrome and looked at.
+- ko-writing `check.py` on `sac.md`: one sentence ending, no heading or demonstrative warnings; the 2 semicolon hits are `\mathcal{N}(u;\, …)` inside formulas.
+- Six cold-reader reviews by fresh subagents, findings fixed after each: undefined aimer/yaw/pitch, "점수" ambiguous, two critics appearing unannounced, α direction, "기본값 그대로" vs "바꾼 것", "목표값" clashing with target network, actor "outputs an action" vs "outputs a distribution", "상태" vs "관측", 13-dim breakdown, screen motion caused by the aimer's own rotation; after the formulas: ε used for both ε-greedy and the Gaussian noise (noise renamed ξ), SAC's Q including the entropy bonus, α's initial value, $a'$ vs $\tilde a$, $\bar\theta$ undefined, list order vs section order, "first term" pointing at the wrong term of the actor loss, no term table for the tanh correction, gradient step vs environment step. Left as is: tanh, off-policy, Double DQN, discount γ, TensorBoard (course material for the readers), "issue #35" (the doc sits in that issue's folder), "목표" in 목표 각속도 / 목표 entropy / 목표값 (each is the standard term).
+#### Notes
+- Capture rate was planned as the gate metric; the baseline's 0.99 left no room, so the metric is time to capture. The change was made after seeing the baseline only.
+
 ## Management Notes
 ### Follow-up Candidates
 - DQN with a 5×5 joint discrete action set as a comparison (the current 5 actions turn one axis per step).
