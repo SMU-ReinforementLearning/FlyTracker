@@ -166,12 +166,26 @@ Nothing. vast.ai instance 60356096 destroyed at 00:52 KST by `runs/_ops/fetch_an
 - On the instance, `remote_eval.sh` copied the training logs into `gate_out/` under the same file names as the evaluation logs, so the per-model evaluation logs in `gate_out.tgz` are training logs; the evaluation output itself is in `eval.log` (kept in the backup folder).
 - The in-training evaluation (seeds 10000-10002, 3 episodes per checkpoint) printed 3/3 captures at 1M steps for `sac-fs1-s2` before the gate ran; it is not gate data.
 
+### feat: SAC 학습 실행 6개를 viewer에 올리기 (#35)
+> why: the user approved publishing the runs for the Cloudflare viewer; all 6 so the seed spread is visible
+#### Scope
+- `published/2026-11-12_131635_sac-fs{1,4}-s{0,1,2}/` (new), this doc.
+#### Changes
+- `scripts/publish_run.py <run_id> --issue 35` for each run: config, `episodes.json`, 63 episodes per run (21 checkpoints × 3 in-training evaluation episodes), `run.json` with issue #35 and author. Models, checkpoints and TensorBoard files are not copied. 66 files and 0.9-2.4 MB per run; `published/` is 9.5 MB in total.
+- Issue #35 got the `training` label that `publish_run.py` expects.
+#### Verification
+- Every `run.json` has the same keys as the existing baseline's; issue 35, 63 episodes each.
+- `viewer`: `npm ci`, `npm run build` succeed; `dist/runs/index.json` lists 7 runs, the 6 SAC runs under issue 35 with 21 checkpoints each. `vite preview` screenshot at 1440 × 1000: the sidebar shows the "#35 SAC로 조준기 학습하기" group with the 6 runs, the capture-rate curve over checkpoints, and episode playback.
+#### Notes
+- `sac-fs1-s0` was missing from the local `runs/index.json`: the 6 parallel `train.py` processes started in the same second, and `RunStore.create_run` reads and rewrites `index.json` without a lock, so one append was lost. The run folder itself was complete. The entry was rebuilt in the siblings' shape from the folder's own files (`runs/_ops/restore_index_entry.py`, local only), then published. The race is listed under Follow-up Candidates; no library change here.
+
 ## Management Notes
 ### Follow-up Candidates
 - Seed 20112: missed by all 6 SAC models, caught by the baseline. Replay it in the viewer and find what the policy does there (the published runs do not contain gate episodes; record one with `EpisodeRecorder` and seed 20112).
 - SAC's miss rate (2.0-2.8 % vs the baseline's 0.5 %): a reward or observation change aimed at it would be a new gate.
 - `sac-fs1` vs `sac-fs4` on fresh seeds, if a single reference setting is needed (this gate made no choice).
 - DQN with a 5×5 joint discrete action set as a comparison (the current 5 actions turn one axis per step).
+- `RunStore.create_run` / `_update_run` lose entries of `runs/index.json` when several `train.py` processes share one `runs/` (read-modify-write without a lock; seen here with 6 runs started in the same second). Fix with a file lock, or give each process its own `--runs-dir`.
 ### References
 - Haarnoja et al., 2018, "Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor" (ICML).
 - Haarnoja et al., 2018, "Soft Actor-Critic Algorithms and Applications" (arXiv:1812.05905) — automatic entropy temperature.
