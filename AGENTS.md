@@ -62,7 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- (none)
+- `34-feature-fly-vs-aimer-env` — `docs/issues/feature/34-feature-fly-vs-aimer-env.md` — 조준기와 초파리를 번갈아 학습하는 환경 만들기
 
 ## Environment (repo slot)
 
