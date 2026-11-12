@@ -17,6 +17,8 @@ from .aimer import ACTION_DIM, Aimer, AimerLimits
 from .camera import CameraIntrinsics, Projection, camera_basis, project
 from .fly import Fly, FlyParams
 from .geometry import unit
+from .neural_fly import NeuralConfig, NeuralFly
+from .stimulus import StimulusConfig, StimulusScheduler
 from .world import Room
 
 
@@ -51,19 +53,38 @@ class EnvConfig:
     min_start_distance: float = 1.5  # m. 시작할 때 초파리와 조준기 사이 최소 거리
     start_facing_fly: bool = False  # True 면 초파리를, False 면 방 가운데 쪽(바로 아래면 −z)을 수평으로 바라보며 시작한다
     memory_horizon: float = 2.0  # s. 놓친 뒤 지난 시간을 이 값으로 나눈다
+    fly_model: str = "rule"
+    neural: NeuralConfig = field(default_factory=NeuralConfig)
+    stimulus: StimulusConfig = field(default_factory=StimulusConfig)
+    capture_enabled: bool = True
+
+    def __post_init__(self):
+        if type(self.capture_enabled) is not bool:
+            raise ValueError("capture_enabled must be boolean")
+        if self.fly_model not in ("rule", "neural"):
+            raise ValueError("fly_model must be rule or neural")
+        if self.fly_model == "neural":
+            if self.dt != 0.01 or type(self.frame_skip) is not int or self.frame_skip != 2:
+                raise ValueError("Neural mode requires dt=0.01 and frame_skip=2 (10 ms capture / 20 ms actions)")
+            ticks = self.max_seconds / 0.01
+            if not math.isfinite(ticks) or ticks <= 0 or not math.isclose(ticks, round(ticks), rel_tol=0, abs_tol=1e-8):
+                raise ValueError("Neural max_seconds must be a positive multiple of 10 ms")
 
     def to_dict(self) -> dict:
         return asdict(self)
 
     @classmethod
     def from_dict(cls, d: dict) -> "EnvConfig":
-        nested = {"room": Room, "camera": CameraIntrinsics, "aimer": AimerLimits, "fly": FlyParams, "reward": RewardWeights}
+        nested = {"room": Room, "camera": CameraIntrinsics, "aimer": AimerLimits, "fly": FlyParams, "reward": RewardWeights,
+                  "neural": NeuralConfig, "stimulus": StimulusConfig}
         kwargs = {}
         for f in fields(cls):
             if f.name not in d:
                 continue
             if f.name in nested:
-                kwargs[f.name] = nested[f.name](**d[f.name])
+                kwargs[f.name] = (NeuralConfig.from_dict(d[f.name]) if f.name == "neural" else\
+                                  StimulusConfig.from_dict(d[f.name]) if f.name == "stimulus" else\
+                                  nested[f.name](**d[f.name]))
             elif f.name == "turret_pos":
                 kwargs[f.name] = tuple(d[f.name])  # JSON 에서는 list 로 돌아온다
             else:
@@ -111,7 +132,8 @@ class FlyChaseEnv(gym.Env):
         self.observation_space = spaces.Box(low, high, dtype=np.float32)
         self._obs_low, self._obs_high = low, high
         self.aimer = Aimer(self.config.aimer)
-        self.fly: Fly | None = None
+        self.fly: Fly | NeuralFly | None = None
+        self._stimulus: StimulusScheduler | None = None
         self._proj: Projection | None = None
 
     # Gymnasium API
@@ -121,7 +143,8 @@ class FlyChaseEnv(gym.Env):
         cfg, rng = self.config, self.np_random
         room = cfg.room
         aimer_pos = np.asarray(cfg.turret_pos, dtype=float)
-        self.fly = Fly(cfg.fly, rng)
+        self.fly = Fly(cfg.fly, rng) if cfg.fly_model == "rule" else NeuralFly(cfg.neural, rng)
+        self._stimulus = StimulusScheduler(cfg.stimulus) if cfg.fly_model == "neural" else None
         fly_pos = room.sample(rng, margin=0.4)
         for _ in range(100):
             if np.linalg.norm(fly_pos - aimer_pos) >= cfg.min_start_distance:
@@ -154,12 +177,29 @@ class FlyChaseEnv(gym.Env):
         cfg = self.config
         a = np.clip(np.asarray(action, dtype=float).reshape(ACTION_DIM), -1.0, 1.0)
         for _ in range(cfg.frame_skip):
-            self.aimer.step(a, cfg.dt)
-            self.fly.step(cfg.dt, cfg.room, self.aimer.pos)
-            self.t += cfg.dt
+            if self._stimulus is None:
+                # Preserve the original rule path, including RNG and integration.
+                self.aimer.step(a, cfg.dt)
+                self.fly.step(cfg.dt, cfg.room, self.aimer.pos)
+                self.t += cfg.dt
+            else:
+                for _ in range(2):
+                    tick = self.fly.sim.clock.tick
+                    view = project(self.fly.pos, self.aimer.pos, self.aimer.look, cfg.camera)
+                    event = self._stimulus.advance(tick, view.visible, view.angle_error, self.aimer.pos)
+                    self.fly.present_stimulus(event, cfg.stimulus)
+                    self.fly.step(0.005, cfg.room)
+                    self.aimer.step(a, 0.005)
+                    if self._stimulus.tick_ms != self.fly.sim.clock.tick:
+                        raise RuntimeError("Stimulus/body clock mismatch")
+                self.t = self.fly.sim.clock.tick / 1000
             self._update_vision()
-            if self._capture_timer >= cfg.capture_hold - 1e-9:
+            if cfg.capture_enabled and self._capture_timer >= cfg.capture_hold - 1e-9:
                 self.captured = True
+                break
+            if (self._stimulus is not None or not cfg.capture_enabled) and self.t >= cfg.max_seconds - 1e-9:
+                # Neural horizons are on the 10 ms grid, including an odd final
+                # half-action. Do not overrun a supported 30 ms horizon to 40 ms.
                 break
         self.steps += 1
 
@@ -189,6 +229,25 @@ class FlyChaseEnv(gym.Env):
 
     # 내부 계산
 
+    def recording_metadata(self) -> dict:
+        observation = {} if self.config.capture_enabled else {
+            "mode": "tracking-observation", "aimerEnabled": True, "captureEnabled": False,
+            "flyModel": self.config.fly_model,
+        }
+        if self._stimulus is None:
+            return observation
+        return {**observation, "flyModel": "neural", "neural": self.fly.provenance(),
+                "stimulus": asdict(self.config.stimulus),
+                "aimerIntegrationDt": 0.005, "visionCaptureDt": 0.01,
+                "policyDependentTrajectory": self.config.stimulus.enabled and self.config.stimulus.max_events > 0}
+
+    def recording_diagnostics(self) -> dict:
+        if self._stimulus is None:
+            return {}
+        return {"stimulus": self._stimulus.diagnostics(),
+                "phaseEvents": [e.copy() for e in self.fly.phase_events],
+                "finalNeural": self.fly.diagnostics()}
+
     def _update_vision(self) -> None:
         cfg = self.config
         proj = project(self.fly.pos, self.aimer.pos, self.aimer.look, cfg.camera)
@@ -199,7 +258,8 @@ class FlyChaseEnv(gym.Env):
         else:
             self._time_since_seen = min(self._time_since_seen + cfg.dt, cfg.memory_horizon)
         in_capture = (
-            proj.visible
+            cfg.capture_enabled
+            and proj.visible
             and proj.angle_error <= math.radians(cfg.capture_angle_deg)
             and (cfg.capture_range is None or proj.distance <= cfg.capture_range)
         )
@@ -239,7 +299,7 @@ class FlyChaseEnv(gym.Env):
 
     def _info(self) -> dict:
         proj = self._proj
-        return {
+        info = {
             "t": self.t,
             "visible": proj.visible,
             "angle_error_deg": math.degrees(proj.angle_error),
@@ -247,3 +307,7 @@ class FlyChaseEnv(gym.Env):
             "captured": self.captured,
             "fly_alarmed": self.fly.alarmed,
         }
+        if self._stimulus is not None:
+            info["neural"] = self.fly.diagnostics()
+            info["stimulus"] = {"event_count": len(self._stimulus.events), "charge": self._stimulus.charge}
+        return info

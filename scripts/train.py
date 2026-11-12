@@ -26,7 +26,7 @@ ALGOS = {"sac": SAC, "td3": TD3, "ppo": PPO, "dqn": DQN}
 class RecordEvalCallback(BaseCallback):
     """학습 시작, eval_every step 마다, 학습 끝에 평가 에피소드를 저장하고 모델을 체크포인트로 남긴다.
 
-    평가 에피소드는 매번 같은 seed 로 시작한다. 그래서 체크포인트끼리 같은 상황에서 비교된다.
+    평가 에피소드는 매번 같은 seed 로 시작한다. 시선 연동 자극에서는 정책에 따라 비행 경로가 달라진다.
     """
 
     def __init__(self, run: Run, cfg: EnvConfig, action_mode: str, frame_stack: int, every: int, episodes: int, seed: int, algo: str):

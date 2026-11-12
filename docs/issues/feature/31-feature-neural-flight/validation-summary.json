@@ -1,0 +1,371 @@
+{
+  "issue": 31,
+  "scope": "코드 리뷰용 집계. 원본 코드, 연결 행, 뉴런 식별자, 외부 행동 원자료와 상세 궤적을 포함하지 않음",
+  "tests": {
+    "with_local_source": {
+      "passed": 129,
+      "skipped": 0,
+      "wall_s": 33.89
+    },
+    "without_local_source": {
+      "passed": 84,
+      "skipped": 45,
+      "wall_s": 1.23
+    },
+    "command": "python -B -m pytest -q --disable-warnings",
+    "environment": {
+      "python": "3.12.16",
+      "numpy": "2.5.4"
+    },
+    "distinction": "45개 신경 통합 검사는 권한을 확인한 로컬 코드와 자료가 있어야 실행 가능",
+    "format_only_postvalidation": {
+      "file": "tests/test_neural_demo_suite.py",
+      "change": "커밋 공백 검사에서 파일 끝의 불필요한 빈 줄만 제거. 실행 코드와 테스트 논리는 동일함",
+      "tested_sha256": "431e0cdf93370850f53245322b6fc5b03d871a9c6b045949580a64c731024177",
+      "published_sha256": "cdb6c521b4ceb657485a187384b537a1b4df39c787ff50bff1c25aab0aafc52b"
+    }
+  },
+  "viewer": {
+    "build_modules": 589,
+    "loader_episodes": 8,
+    "warning": "Bundle >500kB, unchanged warning",
+    "screenshots": {
+      "viewports": [
+        "1600x900",
+        "390x844 mobile dpr2"
+      ],
+      "pages": [
+        "current-neural",
+        "published-baseline"
+      ],
+      "all_horizontal_overflow": false,
+      "visual_review": "All four PNGs opened and inspected; retained run list and baseline episodes present",
+      "reports": [
+        "cleanup-ui-20261112/neural/evidence.md",
+        "cleanup-ui-20261112/baseline/evidence.md"
+      ],
+      "remaining_console": "favicon.ico 404; THREE.Clock deprecation and software WebGL performance warnings; no episode loading failure"
+    }
+  },
+  "replay": {
+    "recordings": [
+      {
+        "run": "2026-11-12_180641_01-30",
+        "mode": "free-flight",
+        "duration_s": 30,
+        "frames": 1501,
+        "wall_s": 27.33780839998508,
+        "mismatches": [],
+        "matched": true
+      },
+      {
+        "run": "2026-11-12_180710_02-30",
+        "mode": "tracking-observation",
+        "duration_s": 30,
+        "frames": 1501,
+        "wall_s": 27.337589800008573,
+        "mismatches": [],
+        "matched": true
+      },
+      {
+        "run": "2026-11-12_180717_03",
+        "mode": "tracking-capture",
+        "duration_s": 6.08,
+        "frames": 305,
+        "wall_s": 7.393146099988371,
+        "mismatches": [],
+        "matched": true
+      }
+    ],
+    "all_matched": true,
+    "comparison": "Every frame field except removed diagnostic keys; active diagnostic states and exact stimulus/phase events compared separately"
+  },
+  "preservation": {
+    "checks": {
+      "baseline_unchanged": true,
+      "baseline_file_set_unchanged": true,
+      "source_all_file_sizes_mtimes_unchanged": true,
+      "source_raw_hashes_unchanged": true,
+      "current_recording_files_unchanged": true,
+      "user_registry_unchanged": true,
+      "only_manifest_paths_deleted": true,
+      "no_HEAD_tracked_file_deleted": true,
+      "branch_unchanged": true,
+      "run_index_matches_retained_set": true,
+      "runs_directory_matches_retained_set": true
+    },
+    "baseline_files": 8,
+    "source_files": 3061,
+    "remaining_runs": 3,
+    "deleted_runs": 9,
+    "deleted_episodes": 17
+  },
+  "prior_physics": {
+    "provenance": "정리 전 최종 물리 모델의 측정. 현재 코드의 60조건/240초 재측정으로 해석하지 않음",
+    "results_sha256": "b177b8066ac6324d0d5337588b7a0b7021cb9d9a69393c03dda11ab10d69ce7d",
+    "integration_sha256": {
+      "flytracker/neural_fly.py": "d442acad60f320d2467bd4678c9448fe147bfc5bfeeefc5d62668b4d60a54189",
+      "flytracker/flight_network.py": "b077268fe1c2cbd3a9ee1e04ab4f8c60a669e0a8ffd5b97120bfa07f3a6d15a2",
+      "flytracker/neuromechanics.py": "c381199a91147722a7c767499a4b3c0dbb92391cb099c73f21dea569448e699d",
+      "flytracker/stimulus.py": "bd9410ca30879b66847a2387a93ad453b69f316ed77b0d65a77208a322a18831",
+      "scripts/validate_neuromechanics.py": "e50b5a40c8a42621b42cc4117358d011d2eb3f80cb76240c048a1aff341bd0ed"
+    },
+    "conditions": "seed 801..805, 각 12개 거리/방위/고도 조건, 1초 준비 + 250ms 자극 포함 1초 관찰",
+    "response_trials": 60,
+    "sensory_detected": 55,
+    "escape_phase": 55,
+    "kinematic_over_15deg": 55,
+    "nonresponse": "후방 1m, 180도, 5개 seed에서 감각/phase/운동 반응 없음",
+    "controls": [
+      {
+        "lesion": "DNg02",
+        "trials": 5,
+        "escape_phase": 0,
+        "kinematic_over_15deg": 0,
+        "interpretation": "자극 반응은 같은 억제 회로와 seed의 무자극 실행에 비교. 무자극 억제는 운동 반응 성공률로 해석하지 않음"
+      },
+      {
+        "lesion": "DNp06",
+        "trials": 5,
+        "escape_phase": 5,
+        "kinematic_over_15deg": 5,
+        "interpretation": "자극 반응은 같은 억제 회로와 seed의 무자극 실행에 비교. 무자극 억제는 운동 반응 성공률로 해석하지 않음"
+      },
+      {
+        "lesion": "SGU",
+        "trials": 5,
+        "escape_phase": 0,
+        "kinematic_over_15deg": 0,
+        "interpretation": "자극 반응은 같은 억제 회로와 seed의 무자극 실행에 비교. 무자극 억제는 운동 반응 성공률로 해석하지 않음"
+      },
+      {
+        "lesion": "disconnected",
+        "trials": 5,
+        "escape_phase": 0,
+        "kinematic_over_15deg": 0,
+        "interpretation": "자극 반응은 같은 억제 회로와 seed의 무자극 실행에 비교. 무자극 억제는 운동 반응 성공률로 해석하지 않음"
+      },
+      {
+        "lesion": "escape",
+        "trials": 5,
+        "escape_phase": 0,
+        "kinematic_over_15deg": 2,
+        "interpretation": "자극 반응은 같은 억제 회로와 seed의 무자극 실행에 비교. 무자극 억제는 운동 반응 성공률로 해석하지 않음"
+      },
+      {
+        "lesion": "none",
+        "trials": 5,
+        "escape_phase": 0,
+        "kinematic_over_15deg": 0,
+        "interpretation": "자극 반응은 같은 억제 회로와 seed의 무자극 실행에 비교. 무자극 억제는 운동 반응 성공률로 해석하지 않음"
+      }
+    ],
+    "additional_matched_no_stimulus": 15,
+    "long_flights": [
+      {
+        "seed": 0,
+        "simulated_s": 30.0,
+        "checks": {
+          "samples": 6000,
+          "nonfinite": 0,
+          "outside": 0,
+          "bad_quaternion": 0,
+          "speed_min": 0.21738095179586328,
+          "speed_max": 0.5121644641879464,
+          "angular_max": 14.011020040493648,
+          "quaternion_error": 2.220446049250313e-16,
+          "bank_max": 0.13403826663402876,
+          "height_min": 0.7908602163733762,
+          "height_max": 1.4270083516119325
+        },
+        "boundary_corrections": 0
+      },
+      {
+        "seed": 801,
+        "simulated_s": 30.0,
+        "checks": {
+          "samples": 6000,
+          "nonfinite": 0,
+          "outside": 0,
+          "bad_quaternion": 0,
+          "speed_min": 0.13998919814940414,
+          "speed_max": 0.5434217939805996,
+          "angular_max": 15.944355676726099,
+          "quaternion_error": 2.220446049250313e-16,
+          "bank_max": 0.16640383258285288,
+          "height_min": 0.8559250385077397,
+          "height_max": 1.6085955526239346
+        },
+        "boundary_corrections": 0
+      },
+      {
+        "seed": 802,
+        "simulated_s": 30.0,
+        "checks": {
+          "samples": 6000,
+          "nonfinite": 0,
+          "outside": 0,
+          "bad_quaternion": 0,
+          "speed_min": 0.21625616286808413,
+          "speed_max": 0.6252440225793785,
+          "angular_max": 8.984814383116317,
+          "quaternion_error": 2.220446049250313e-16,
+          "bank_max": 0.26349769794437705,
+          "height_min": 1.0652811117986425,
+          "height_max": 1.5756730568777018
+        },
+        "boundary_corrections": 0
+      },
+      {
+        "seed": 803,
+        "simulated_s": 30.0,
+        "checks": {
+          "samples": 6000,
+          "nonfinite": 0,
+          "outside": 0,
+          "bad_quaternion": 0,
+          "speed_min": 0.20842196295690615,
+          "speed_max": 0.49759351445272854,
+          "angular_max": 10.875218572778195,
+          "quaternion_error": 2.220446049250313e-16,
+          "bank_max": 0.24282910195213017,
+          "height_min": 1.0550914768146864,
+          "height_max": 1.4162184090922072
+        },
+        "boundary_corrections": 0
+      },
+      {
+        "seed": 804,
+        "simulated_s": 30.0,
+        "checks": {
+          "samples": 6000,
+          "nonfinite": 0,
+          "outside": 0,
+          "bad_quaternion": 0,
+          "speed_min": 0.18277103214801838,
+          "speed_max": 1.07181733047448,
+          "angular_max": 25.889112744152605,
+          "quaternion_error": 2.220446049250313e-16,
+          "bank_max": 0.1737958850406126,
+          "height_min": 1.4127648329931417,
+          "height_max": 1.6260947901498943
+        },
+        "boundary_corrections": 0
+      },
+      {
+        "seed": 805,
+        "simulated_s": 30.0,
+        "checks": {
+          "samples": 6000,
+          "nonfinite": 0,
+          "outside": 0,
+          "bad_quaternion": 0,
+          "speed_min": 0.2091805552930498,
+          "speed_max": 0.5031806428351246,
+          "angular_max": 11.875418762453608,
+          "quaternion_error": 2.220446049250313e-16,
+          "bank_max": 0.18045507426663665,
+          "height_min": 0.5455045863847833,
+          "height_max": 1.2786576374396355
+        },
+        "boundary_corrections": 0
+      },
+      {
+        "seed": 806,
+        "simulated_s": 60.0,
+        "checks": {
+          "samples": 12000,
+          "nonfinite": 0,
+          "outside": 0,
+          "bad_quaternion": 0,
+          "speed_min": 0.10838372176685747,
+          "speed_max": 0.5780976939292266,
+          "angular_max": 20.67672753592083,
+          "quaternion_error": 3.3306690738754696e-16,
+          "bank_max": 0.28152056711542894,
+          "height_min": 0.6834039899240516,
+          "height_max": 1.7444533817472079
+        },
+        "boundary_corrections": 0
+      }
+    ],
+    "biological_status": "실제 초파리 행동 일치는 미검증"
+  },
+  "source_sha256": {
+    "flysim/core.py": "51601ed47401210a2fc66756de3e4c840b55a0fc21ce66568c7b43ad25b77dc3",
+    "flysim/neural.py": "d08776c3f880bd99edd2020ac0e0f4c92b1fffd832ca1d31a5af105a1c15cd37",
+    "flysim/neural_state.py": "fbfbd99fc988a5e481377c90675b2bc6edcf9c7d01501e51daab42cec7c7a050",
+    "flysim/physics.py": "1e7012b521cced43bbc73d20064ce3be4ed1cb6ace9aa15145af563194dd7fe5",
+    "flysim/behavior.py": "14b0a138289e2685652a4947d36044a156100f10b999d7519c49cd45f2e7a22d",
+    "data/neurons.csv": "284e7f01145aad39540beeb6b355bf8d0790478a5785d8aa53d892a6866383ac",
+    "data/edges.csv": "cbac9429f8c67636a541b9fec22239d18fcb8308d8f92224549650da600eb362",
+    "data/selection.json": "9c044f989e1c3290d7e5f31a86124aec8df6d576d282d2e790dc0d9d0c4e4595",
+    "data/zenodo_licenses.json": "136704f5e64b630a92732001d1b3e75f3c237fcaa09056a70160e564e0e084c5",
+    "data/raw/manifest.json": "66cad9ce08da4b8f811ef7e5f56623a1fdf5ea6748f47c74761b74d386adec42",
+    "data/raw/Drosophila_brain_model/LICENSE": "3621f6d6476189190e2960fa43f11b275ba4eca848fdac50a1ba2925de6223e8",
+    "raw_connectivity": "efeb23fb99098e9c390f6869969b2a121a2ee92c833cfc45ecb2c1d8e1af0347",
+    "raw_annotations": "b214970b55d2fbe0853bba536fdcb9e28730f4eb7ab06f600491df795da683cd"
+  },
+  "current_code_sha256": {
+    "flytracker\\aimer.py": "84630da2f2e6340103cc181576e454a42b0b7414ebf3956e019b47c795b6cfea",
+    "flytracker\\baseline.py": "0ae0f9e2a50c177047a178174d7c8d2436394f7985b2916dca1dfefcf38bcdcf",
+    "flytracker\\camera.py": "a3e5564ffe0715c095848aee6726630edc0e84f92b3dd596aada4b4a5986a1a4",
+    "flytracker\\env.py": "43d1df128c21bc3ac377587f9c9a340a31aa9dce79dd44c66eab1732755e537a",
+    "flytracker\\flight_network.py": "b077268fe1c2cbd3a9ee1e04ab4f8c60a669e0a8ffd5b97120bfa07f3a6d15a2",
+    "flytracker\\fly.py": "78baebb25dca454a2a0d1bd9e1c94fe9af2bac3bf8f747e787b7eb931cd6f33a",
+    "flytracker\\free_flight.py": "cfd071a21357ff33730b8a066fdc27b0767b06e2ab475e15faa22d219df9e51f",
+    "flytracker\\geometry.py": "60fc166c9c91ce05ad8eeda776e2fd81efab9df1ae11de3f0092e1ddb51f6744",
+    "flytracker\\neural_fly.py": "84b0ede957a2502b662e970ec308c49de8ad225cb1bf3805d140969ec7511634",
+    "flytracker\\neuromechanics.py": "c706c05c3ed5de95d4a1aa72106b7b8ade6057bf7cd26e0955dd029bcea6ee23",
+    "flytracker\\record.py": "32ba91a1974b4c1ad68985dfa62169159c6d32f1615c425d245b7d2967d7b13e",
+    "flytracker\\stimulus.py": "9bd3976f031d4c3e27056517252cfc916927526f84a973765c694e993071d91e",
+    "flytracker\\world.py": "50ac49e50e403fce233ec6a6f9ccd929463220de3807aa3b03ae59a77c90b87e",
+    "flytracker\\wrappers.py": "eeb46ec4767404acf67147141d6e39bb9fa7175212b2417da01bff1169bdac32",
+    "flytracker\\__init__.py": "431e89d1cfb1799e92f674bb0bf4d0c647e768297d843c4efa88cef25c506119",
+    "scripts\\build_fly_model.py": "944ed49cb182a737ba1c21b32f008294a3ff3e7a103f1947121127eea4fa18a2",
+    "scripts\\inspect_flight_reference.py": "1f2f8f6fe2bd02ac1b90dc11c17fb14fe6e48ef1de128f1b181cf61b51da631f",
+    "scripts\\publish_run.py": "ca2906ee43bc9ec76cf04448624c5689f2566117661173d8b713c697f6ea4a7d",
+    "scripts\\record_baseline.py": "a24626ea15cc00d8bc96469ac9321cba1610c7854d920b35feccc2e4a4bedf93",
+    "scripts\\record_free_flight.py": "cc515ef8baa4fee7fbb6d8bec1044d43526474d342ce9570128dd55721320ecd",
+    "scripts\\record_neural_demo_suite.py": "c122ea444581d2cfa863917a13bf71b94f557eaf61174ec201cd9bc695598374",
+    "scripts\\train.py": "393b4d124fc1c48368d922fc591ada72c15131d65709b2f527d624f6f6af3aa4",
+    "scripts\\validate_neuromechanics.py": "ed7b33e5addef68912a17d2062507a773e7d3562f97809a54c07646cddf5d8a3",
+    "scripts\\_common.py": "51e92ca8d9baf12af1c7738cb7eb03eebd7ad7b59534f8da4d82fffc390226f1",
+    "tests\\test_aimer.py": "3e5fa88647ba06bbccdc79a17e5a89c7243f2a677fd1e8ed046731cdefc322c4",
+    "tests\\test_baseline_search.py": "e86e7318237000fccbb7240645e26dc02f29355f9a813b1996680399ad7839f9",
+    "tests\\test_camera.py": "4682941c3b9cb3d0e2d520cde9f2c1449a6630737532555cb334991b465135f5",
+    "tests\\test_env.py": "2ac0bf93e52ea9899b7426a20b7fe71c78a660f96879b685f04164a3e766bc65",
+    "tests\\test_flight_reference.py": "5f43a4f2a2f16ef8e5fa9c8d221c68097b2637112e697c939ca56154a2a76a91",
+    "tests\\test_fly.py": "aaa09a814176f05c32f988e5d908b5a477c2729b6cde85325b1d21c075abed2f",
+    "tests\\test_free_flight.py": "c27c9eb9cd3cfda9566dc21f9cc8e640248c13e5e4048195f4897cc83263217d",
+    "tests\\test_neural_demo_suite.py": "cdb6c521b4ceb657485a187384b537a1b4df39c787ff50bff1c25aab0aafc52b",
+    "tests\\test_neural_fly.py": "1d5670922abc1b2cc8fe2ecb013430c4973fc9d0dc88a9b06fefb0fd09a39766",
+    "tests\\test_neural_mechanism.py": "6e13024266f79e8030ad81de5757477e7c8602ad268b347cf2abcd06003b1aaf",
+    "tests\\test_neural_validation.py": "ee0ffd66b8f71a5f59e567471adf33af73936c22aa214fb540e839190a4c7025",
+    "tests\\test_neuromechanics.py": "9699778eb353a6a47118ff5426e144ab6d32907ac00514e8db3531a24dcf6ad3",
+    "tests\\test_publish.py": "dff5da3916aa740a86c951606c9fffb249e16e4e77271bd7e091dd0e045e1dc3",
+    "tests\\test_record_and_baseline.py": "5ff3ad2f741d8f8b6436bab9ccae0447c30796e3fb5b3f5804656057f34f22e9",
+    "tests\\test_viewer_attitude.py": "11920acefad46640bda68ab02263d299d21144c09d427ab3026224d2965cf92b",
+    "viewer/src/components/Readouts.jsx": "619425b04466086bb72df2c629a370731e59b1c5c790479562fce70126fadb9a"
+  },
+  "publication": {
+    "excluded": [
+      "runs/",
+      "source flysim code",
+      "derived CSV/raw connectivity/annotations",
+      "detailed local validation traces",
+      "whole source-file inventory",
+      "external behavior aggregate JSON",
+      "writing ledgers",
+      "review scratch files"
+    ],
+    "local_files_preserved": true,
+    "known_limits": "로컬 원본/가공 CSV/주석 재배포 조건, 발화-날개 독립 보정, 장시간 학습 미완료"
+  },
+  "review_base": {
+    "head_base_commit": "7237428bafbdbe0ed91b528164863146acaa1c72",
+    "upstream_main_observed": "64c60ff675a8294b5163a2a34d16e7647c5ad108",
+    "upstream_commits_ahead": 3,
+    "integration_status": "현재 브랜치의 검증이다. 최신 main의 양측 환경 변경과 통합 검증하지 않았으며 merge/rebase하지 않음"
+  }
+}

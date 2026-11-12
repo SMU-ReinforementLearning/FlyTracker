@@ -1,0 +1,20 @@
+{
+  "구분": "로컬 사용과 저장소 재배포 권한을 구분한다. 이 파일은 권리 허가서가 아니다.",
+  "확인": [
+    "로컬 raw/Drosophila_brain_model/LICENSE에 MIT 문구와 2023 Philip Shiu 및 Nico Spiller 저작권 고지가 있다.",
+    "설치한 PyArrow 26.0.1의 배포 메타데이터는 Apache-2.0 및 LICENSE.txt/NOTICE.txt를 명시한다.",
+    "연결 자료, 주석, 가공 CSV는 로컬 경로에서 읽으며 원자료 행이나 뉴런 식별자를 저장소에 복사하지 않았다. 출처와 파일 해시 및 선별 집계만 기록한다."
+  ],
+  "미확인": [
+    "외부 MIT LICENSE가 로컬 flysim 코드 전체에 적용된다는 증거는 없다.",
+    "로컬 flysim 코드와 가공 neurons.csv/edges.csv의 재배포 조건은 확정하지 못했다.",
+    "외부 연결 데이터와 뉴런 주석에 적용되는 모든 조건 및 가공물 재배포 권한은 확정하지 못했다. 공개 저장소에 있다는 이유로 허가를 추정하지 않는다."
+  ],
+  "출처": {
+    "모델": "https://github.com/philshiu/Drosophila_brain_model/tree/91bdd1e7dcf193f3e7ca5a8933497fcef63b7960",
+    "주석": "https://github.com/flyconnectome/flywire_annotations/tree/a83b2776d60d5764cef36b927f5f9679c16c47a2",
+    "연결_자료": "https://zenodo.org/records/10676866",
+    "이용_조건": "https://flywire.ai/tos"
+  },
+  "적용": "원본 코드·생물학적 원자료를 복사하거나 공개하지 않는다. 원본 경로·내용·버전이 달라지면 결과가 달라질 수 있으므로 기록된 해시를 확인한다."
+}

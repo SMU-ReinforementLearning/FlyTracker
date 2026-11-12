@@ -6,3 +6,13 @@ runs/
 viewer/node_modules/
 viewer/dist/
 .ui-evidence/
+
+# Issue #31: 로컬 상세 기록과 공개 준비 파일은 보존하되 Git에서 제외한다.
+/docs/issues/feature/31-feature-neural-flight/neuromechanics-trim-check-20261112/
+/docs/issues/feature/31-feature-neural-flight/cleanup-audit-20261112.json
+/docs/issues/feature/31-feature-neural-flight/cleanup-replay-20261112.json
+/docs/issues/feature/31-feature-neural-flight/cleanup-verification-20261112.json
+/docs/issues/feature/31-feature-neural-flight/empirical-reference-20261112.json
+/docs/issues/feature/31-feature-neural-flight/current-model.facts.md
+/docs/issues/feature/31-feature-neural-flight/current-model.terms.md
+/docs/issues/feature/31-feature-neural-flight/.local-review/

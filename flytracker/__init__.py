@@ -3,6 +3,8 @@
 from .baseline import RuleAimer
 from .env import OBS, OBS_DIM, EnvConfig, FlyChaseEnv, RewardWeights
 from .record import EpisodeRecorder, RunStore
+from .neural_fly import NeuralConfig, NeuralFly
+from .stimulus import StimulusConfig
 from .wrappers import DISCRETE_ACTIONS, DiscreteActions, make_env
 
 __all__ = [
@@ -17,4 +19,7 @@ __all__ = [
     "RuleAimer",
     "RunStore",
     "make_env",
+    "NeuralConfig",
+    "NeuralFly",
+    "StimulusConfig",
 ]

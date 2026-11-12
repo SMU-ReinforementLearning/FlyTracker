@@ -36,10 +36,23 @@ function ExternalIcon() {
 
 function Charts({ ep }) {
   const { t } = useClock(15)
+  if (ep.meta.mode === 'free-flight') {
+    return (
+      <div className="charts charts-flight">
+        <LineChart ep={ep} values={ep.speed} label="비행 속도" format={(v) => `${v.toFixed(2)}m/s`} tickFormat={(v) => v.toFixed(1)} t={t} zeroBased />
+      </div>
+    )
+  }
   return (
     <div className="charts">
-      <LineChart ep={ep} values={ep.returns} label="누적 보상" format={(v) => signed(v, 2)} tickFormat={(v) => signed(v, 0)} t={t} zeroBased />
+      {ep.meta.mode === 'tracking-observation'
+        ? <LineChart ep={ep} values={ep.speed} label="비행 속도" format={(v) => `${v.toFixed(2)}m/s`} tickFormat={(v) => v.toFixed(1)} t={t} zeroBased />
+        : <LineChart ep={ep} values={ep.returns} label="누적 보상" format={(v) => signed(v, 2)} tickFormat={(v) => signed(v, 0)} t={t} zeroBased />}
       <LineChart ep={ep} values={ep.angle} label="조준 오차" format={(v) => `${v.toFixed(1)}°`} tickFormat={(v) => `${v}°`} t={t} zeroBased />
+      {ep.meta.mode === 'tracking-observation' && ep.normalRate && <>
+        <LineChart ep={ep} values={ep.normalRate} label="평상 회로 출력" format={(v) => `${v.toFixed(1)}Hz`} tickFormat={(v) => v.toFixed(0)} t={t} zeroBased />
+        <LineChart ep={ep} values={ep.escapeRate} label="도피 회로 출력" format={(v) => `${v.toFixed(1)}Hz`} tickFormat={(v) => v.toFixed(0)} t={t} zeroBased />
+      </>}
     </div>
   )
 }
@@ -150,9 +163,9 @@ export default function App() {
                 <span>{tagLabel(episode.tag)}</span>
                 <span>에피소드 {sel.k + 1}</span>
                 <span className={episode.summary.captured ? 'outcome outcome-capture' : 'outcome'}>
-                  {episode.summary.captured ? `포획 ${seconds(episode.summary.duration)}` : '시간 초과'}
+                  {episode.summary.result === 'observation_complete' ? `관찰 ${seconds(episode.summary.duration)}` : episode.summary.captured ? `포획 ${seconds(episode.summary.duration)}` : '시간 초과'}
                 </span>
-                <span>보상 {signed(episode.summary.return)}</span>
+                {episode.summary.result !== 'observation_complete' && <span>보상 {signed(episode.summary.return)}</span>}
               </span>
             )}
           </div>
@@ -177,8 +190,8 @@ export default function App() {
                 <div className="scene">
                   <ThirdPersonView key={file} ep={ep} scheme={scheme} />
                 </div>
-                <aside className="inspector" aria-label="조준기 화면과 현재 상태">
-                  <FirstPersonView key={file} ep={ep} />
+                <aside className="inspector" aria-label={ep.meta.mode === 'free-flight' ? '초파리 비행 상태' : '조준기 화면과 현재 상태'}>
+                  {ep.meta.aimerEnabled !== false && <FirstPersonView key={file} ep={ep} />}
                   <Readouts ep={ep} scheme={scheme} />
                 </aside>
                 <div className="dock">

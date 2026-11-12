@@ -8,6 +8,8 @@ from dataclasses import replace
 
 from flytracker import EnvConfig, EpisodeRecorder
 from flytracker.camera import CameraIntrinsics
+from flytracker.neural_fly import NeuralConfig
+from flytracker.stimulus import StimulusConfig
 
 # Windows 콘솔이 cp949 여도 한국어 출력이 깨지지 않게 한다
 if hasattr(sys.stdout, "reconfigure"):
@@ -16,6 +18,14 @@ if hasattr(sys.stdout, "reconfigure"):
 
 def add_env_args(p: argparse.ArgumentParser) -> None:
     g = p.add_argument_group("환경")
+    g.add_argument("--fly-model", choices=("rule", "neural"), default="rule")
+    g.add_argument("--neural-source", default=None, help="로컬 flysim 프로젝트 경로. 지정한 Python 코드를 실행하며 FLYTRACKER_NEURAL_SOURCE도 사용할 수 있습니다.")
+    g.add_argument("--neural-data", default=None, help="neurons.csv와 edges.csv가 있는 로컬 폴더")
+    g.add_argument("--no-stimulus", action="store_true", help="신경 비행의 가상 자극 끄기")
+    for name in ("align_deg", "charge_ms", "discharge_ms", "pulse_ms", "cooldown_ms", "max_events",
+                 "min_radius_m", "max_radius_m", "contrast"):
+        default = getattr(StimulusConfig(), name)
+        g.add_argument("--stimulus-" + name.replace("_", "-"), type=type(default), default=default)
     g.add_argument(
         "--turret-pos",
         type=float,
@@ -43,6 +53,12 @@ def config_from_args(args: argparse.Namespace) -> EnvConfig:
         camera=CameraIntrinsics(fov_v_deg=args.fov),
         max_seconds=args.max_seconds,
         start_facing_fly=args.start_facing_fly,
+        fly_model=args.fly_model,
+        neural=NeuralConfig(source_root=args.neural_source, data_dir=args.neural_data),
+        stimulus=StimulusConfig(enabled=not args.no_stimulus, **{
+            name: getattr(args, "stimulus_" + name) for name in (
+                "align_deg", "charge_ms", "discharge_ms", "pulse_ms", "cooldown_ms", "max_events",
+                "min_radius_m", "max_radius_m", "contrast")}),
     )
 
 

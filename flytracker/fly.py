@@ -112,11 +112,15 @@ class Fly:
         self._boost_left = 0.0
         self._prev_aimer_dist = None
 
-    def step(self, dt: float, room: Room, aimer_pos: np.ndarray) -> None:
+    def step(self, dt: float, room: Room, aimer_pos: np.ndarray | None = None) -> None:
         p = self.p
         self._cooldown = max(0.0, self._cooldown - dt)
         self._boost_left = max(0.0, self._boost_left - dt)
-        self._update_threat(dt, room, aimer_pos)
+        if aimer_pos is not None:
+            self._update_threat(dt, room, aimer_pos)
+        else:
+            self._prev_aimer_dist = None
+            self._react_in = None
 
         if self._turn is None:
             ahead = self.pos + self.heading * p.wall_lookahead

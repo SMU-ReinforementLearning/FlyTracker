@@ -1,0 +1,71 @@
+{
+  "python": "3.12.16",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "cpu": "Intel64 Family 6 Model 189 Stepping 1, GenuineIntel",
+  "numpy": "2.5.4",
+  "gymnasium": "1.4.0",
+  "pyarrow": "26.0.1",
+  "rows": [
+    {
+      "model": "rule",
+      "seed": 701,
+      "reset_s": 0.0005896000075154006,
+      "step_wall_s": 0.039540500001749024,
+      "step_cpu_s": 0.046875,
+      "actions": 250,
+      "simulated_s": 4.999999999999938
+    },
+    {
+      "model": "neural",
+      "seed": 701,
+      "reset_s": 1.791130700003123,
+      "step_wall_s": 4.15531520001241,
+      "step_cpu_s": 3.96875,
+      "actions": 250,
+      "simulated_s": 5.0
+    },
+    {
+      "model": "rule",
+      "seed": 702,
+      "reset_s": 0.0009203000226989388,
+      "step_wall_s": 0.05078310001408681,
+      "step_cpu_s": 0.0625,
+      "actions": 250,
+      "simulated_s": 4.999999999999938
+    },
+    {
+      "model": "neural",
+      "seed": 702,
+      "reset_s": 0.11995920000481419,
+      "step_wall_s": 4.358039699989604,
+      "step_cpu_s": 4.265625,
+      "actions": 250,
+      "simulated_s": 5.0
+    },
+    {
+      "model": "rule",
+      "seed": 703,
+      "reset_s": 0.0004957999917678535,
+      "step_wall_s": 0.057170100015355274,
+      "step_cpu_s": 0.0625,
+      "actions": 250,
+      "simulated_s": 4.999999999999938
+    },
+    {
+      "model": "neural",
+      "seed": 703,
+      "reset_s": 0.16049690000363626,
+      "step_wall_s": 4.085868900001515,
+      "step_cpu_s": 4.046875,
+      "actions": 250,
+      "simulated_s": 5.0
+    }
+  ],
+  "own_concurrent_simulations": 0,
+  "other_process_load_controlled": false,
+  "code_sha256": {
+    "flytracker\\neural_fly.py": "d442acad60f320d2467bd4678c9448fe147bfc5bfeeefc5d62668b4d60a54189",
+    "flytracker\\neuromechanics.py": "c381199a91147722a7c767499a4b3c0dbb92391cb099c73f21dea569448e699d",
+    "flytracker\\env.py": "2d560cc513efa9d07b4d2ad025fe12b1820e7c88824f4d24d46b28072b7aafb7"
+  }
+}

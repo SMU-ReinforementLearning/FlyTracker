@@ -57,7 +57,7 @@ export function FirstPersonView({ ep }) {
         <FollowAimer ep={ep} />
         <FrameCounter />
       </Canvas>
-      <div className="vf-ring" style={{ height: `${ringPct}%` }} aria-hidden="true" />
+      {ep.meta.captureEnabled !== false && <div className="vf-ring" style={{ height: `${ringPct}%` }} aria-hidden="true" />}
       <div ref={focus} className="vf-focus" aria-hidden="true" />
     </div>
   )

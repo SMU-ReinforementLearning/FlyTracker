@@ -982,6 +982,10 @@ code {
   color: var(--accent);
 }
 
+.charts-flight {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 /* 좁은 화면에서는 위에서 아래로 쌓는다 */
 
 @media (max-width: 1360px) {
