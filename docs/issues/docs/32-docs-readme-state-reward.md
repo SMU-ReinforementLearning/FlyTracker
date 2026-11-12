@@ -4,7 +4,7 @@
 - Issue: #32
 - Branch: `32-docs-readme-state-reward`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 Renames the README's `### 관측과 행동` to `### state와 action` and `### 보상` to `### R`, and adds a folded per-row explanation under the state table and the R table. The user asked on 2026-11-12, after walking through the 13-dim observation and the reward terms in chat, for "토글로 쉽게 각 설명 … 사람이 읽히게, 간단명료하게", and for the state layout and reward to be marked as assumptions that may change.
@@ -32,6 +32,7 @@ Renames the README's `### 관측과 행동` to `### state와 action` and `### �
 ## Current State
 - Issue, branch and worktree created from `origin/main` @ 7237428; this document seeded and filled.
 - README change committed after the user's approval ("머지해놔").
+- `AGENTS.md` pointer removed in the branch's last commit; PR opened and squash-merged at the user's request.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -61,6 +62,18 @@ Renames the README's `### 관측과 행동` to `### state와 action` and `### �
 - `grep` for `#관측과-행동` and `#보상`: no links; only historical mentions in the #19, #21, #25 docs.
 #### Notes
 - 관측/행동/보상 stay in the rest of the README body; the two opening sentences tie state, action and R to them.
+
+### chore: #32 마무리 (#32)
+> why: the branch's last commit before the PR; `main` takes PRs only, so the pointer must go now
+#### Scope
+- `AGENTS.md`, this doc's Status and Current State, the registry row.
+#### Changes
+- `AGENTS.md` Recent Active Context: pointer line removed, `- (none)` placeholder restored.
+- Status: in progress → done, here and in `docs/issues/README.md`.
+#### Verification
+- `grep -c 32-docs-readme-state-reward AGENTS.md` prints 0.
+#### Notes
+- The user asked to merge ("머지해놔"), which covers push, PR and merge.
 
 ## Management Notes
 ### Follow-up Candidates
