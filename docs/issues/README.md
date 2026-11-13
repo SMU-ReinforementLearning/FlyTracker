@@ -20,4 +20,5 @@ One row per management document, added in the same commit that creates the doc.
 | #29 | docs/issues/fix/29-fix-viewer-episode-list.md | done | viewer 실행 패널의 에피소드를 checkpoint별 세로 목록으로 바꾸기 |
 | #32 | docs/issues/docs/32-docs-readme-state-reward.md | done | README에 state와 R 항목 설명 넣기 |
 | #34 | docs/issues/feature/34-feature-fly-vs-aimer-env.md | done | 조준기와 초파리를 번갈아 학습하는 환경 만들기 |
+| #35 | docs/issues/feature/35-feature-sac-aimer-training.md | done | SAC로 조준기 학습하기 |
 | #36 | docs/issues/docs/36-docs-readme-aimer-side.md | done | README에서 조준기 쪽 state와 R을 공통 부분과 나누기 |

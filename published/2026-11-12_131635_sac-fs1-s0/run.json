@@ -1,0 +1,1 @@
+{"id":"2026-11-12_131635_sac-fs1-s0","name":"sac-fs1-s0","createdAt":"2026-11-12T13:16:35","algo":"sac","actionMode":"continuous","notes":"issue #35 gate candidate sac-fs1, training seed 0","episodeCount":63,"issue":{"number":35,"title":"SAC로 조준기 학습하기","url":"https://github.com/SMU-ReinforementLearning/FlyTracker/issues/35"},"author":"lhk0721"}
