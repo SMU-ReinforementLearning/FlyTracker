@@ -6,6 +6,7 @@ import { VIEWFINDER } from '../theme.js'
 import { FlyMarker } from './FlyMarker.jsx'
 import { FrameCounter } from './FrameCounter.jsx'
 import { Room } from './Room.jsx'
+import styles from './FirstPersonView.module.css'
 
 function FollowAimer({ ep }) {
   const camera = useThree((st) => st.camera)
@@ -49,7 +50,7 @@ export function FirstPersonView({ ep }) {
 
   const vf = VIEWFINDER
   return (
-    <div className="viewfinder" style={{ aspectRatio: String(ep.meta.aspect) }}>
+    <div className={styles.viewfinder} style={{ aspectRatio: String(ep.meta.aspect) }}>
       <Canvas dpr={[1, 2]} camera={{ fov: ep.meta.fovV }}>
         <color attach="background" args={[vf.background]} />
         <Room size={ep.meta.room} colors={{ grid: vf.grid, room: vf.room }} showAxes={false} />
@@ -57,8 +58,8 @@ export function FirstPersonView({ ep }) {
         <FollowAimer ep={ep} />
         <FrameCounter />
       </Canvas>
-      <div className="vf-ring" style={{ height: `${ringPct}%` }} aria-hidden="true" />
-      <div ref={focus} className="vf-focus" aria-hidden="true" />
+      <div className={styles.ring} style={{ height: `${ringPct}%` }} aria-hidden="true" />
+      <div ref={focus} className={styles.focus} aria-hidden="true" />
     </div>
   )
 }

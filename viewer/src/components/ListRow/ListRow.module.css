@@ -1,0 +1,27 @@
+/* 고를 수 있는 줄의 목록 */
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  display: block;
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  text-align: left;
+  cursor: default;
+}
+
+.row:hover {
+  background: var(--color-fill);
+}
+
+.row[aria-current='true'] {
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+}

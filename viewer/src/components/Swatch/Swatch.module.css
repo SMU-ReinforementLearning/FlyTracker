@@ -1,0 +1,9 @@
+/* 실행 색 점 */
+
+.swatch {
+  flex: none;
+  display: inline-block;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+}

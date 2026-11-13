@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
-import { fetchConfig } from '../data/api.js'
-import { algoLabel, percent, seconds, signed, tagLabel } from '../data/labels.js'
-import { differingKeys, flattenConfig, lastCheckpoint, rateOf, steppedCheckpoints } from '../data/runs.js'
-import { CurveChart } from './CurveChart.jsx'
-import { METRICS, MetricSwitch } from './RunPanel.jsx'
+import { fetchConfig } from '../../data/api.js'
+import { algoLabel, percent, seconds, signed, tagLabel } from '../../data/labels.js'
+import { differingKeys, flattenConfig, lastCheckpoint, rateOf, steppedCheckpoints } from '../../data/runs.js'
+import { CurveChart } from '../CurveChart/CurveChart.jsx'
+import { METRICS, MetricSwitch } from '../RunPanel/RunPanel.jsx'
+import { Swatch } from '../Swatch/Swatch.jsx'
+import styles from './IssuePage.module.css'
 
-const SERIES_COLORS = 8 // styles.css 의 --series-1 … --series-8
+const SERIES_COLORS = 8 // assets/styles/variables.css 의 --color-series-1 … --color-series-8
 
 function useConfigs(runs) {
   const [configs, setConfigs] = useState({})
@@ -30,7 +32,7 @@ export function IssuePage({ group, onSelectRun }) {
 
   // 색은 만든 순서로 준다. 실행이 새로 올라와도 앞선 실행의 색은 바뀌지 않는다.
   const runs = useMemo(() => [...group.runs].sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt))), [group])
-  const colorOf = (i) => `var(--series-${(i % SERIES_COLORS) + 1})`
+  const colorOf = (i) => `var(--color-series-${(i % SERIES_COLORS) + 1})`
 
   const series = useMemo(
     () =>
@@ -54,26 +56,26 @@ export function IssuePage({ group, onSelectRun }) {
   const keys = useMemo(() => (loaded && runs.length > 1 ? differingKeys(runs.map((r) => configs[r.id])) : []), [loaded, runs, configs])
 
   return (
-    <div className="issue-page">
+    <div className={styles.page}>
       {hasCurve && (
-        <section className="card" aria-label="학습 곡선">
+        <section className={styles.card} aria-label="학습 곡선">
           <MetricSwitch metric={metric} onChange={setMetric} />
           <CurveChart series={series} label={m.label} format={m.format} tickFormat={m.tickFormat} domain={m.domain} height={260} />
         </section>
       )}
-      <div className="card table-wrap">
-        <table className="run-table">
+      <div className={`${styles.card} ${styles.tableWrap}`}>
+        <table className={styles.table}>
           <thead>
             <tr>
               <th scope="col">실행</th>
               <th scope="col">알고리즘</th>
               <th scope="col">올린 사람</th>
               <th scope="col">checkpoint</th>
-              <th scope="col" className="num">포획률</th>
-              <th scope="col" className="num">평균 보상</th>
-              <th scope="col" className="num">포획 시간</th>
+              <th scope="col" className={styles.num}>포획률</th>
+              <th scope="col" className={styles.num}>평균 보상</th>
+              <th scope="col" className={styles.num}>포획 시간</th>
               {keys.map((k) => (
-                <th key={k} scope="col" className="num">
+                <th key={k} scope="col" className={styles.num}>
                   <code>{k}</code>
                 </th>
               ))}
@@ -85,19 +87,19 @@ export function IssuePage({ group, onSelectRun }) {
               return (
                 <tr key={run.id}>
                   <th scope="row">
-                    <button type="button" className="run-link" onClick={() => onSelectRun(run.id)}>
-                      <i className="swatch" style={{ background: colorOf(i) }} />
+                    <button type="button" className={styles.runLink} onClick={() => onSelectRun(run.id)}>
+                      <Swatch color={colorOf(i)} />
                       {run.name}
                     </button>
                   </th>
                   <td>{algoLabel(run.algo)}</td>
                   <td>{run.author ?? ''}</td>
                   <td>{last ? tagLabel(last.tag) : ''}</td>
-                  <td className="num">{last ? percent(rateOf(last)) : ''}</td>
-                  <td className="num">{last ? signed(last.meanReturn, 1) : ''}</td>
-                  <td className="num">{last ? (last.meanCaptureTime === null ? '없음' : seconds(last.meanCaptureTime)) : ''}</td>
+                  <td className={styles.num}>{last ? percent(rateOf(last)) : ''}</td>
+                  <td className={styles.num}>{last ? signed(last.meanReturn, 1) : ''}</td>
+                  <td className={styles.num}>{last ? (last.meanCaptureTime === null ? '없음' : seconds(last.meanCaptureTime)) : ''}</td>
                   {keys.map((k) => (
-                    <td key={k} className="num">
+                    <td key={k} className={styles.num}>
                       {cell(configs[run.id]?.[k])}
                     </td>
                   ))}

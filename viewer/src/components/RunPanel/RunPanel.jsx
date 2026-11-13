@@ -1,24 +1,22 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { percent, seconds, signed, tagLabel } from '../data/labels.js'
-import { rateOf, steppedCheckpoints } from '../data/runs.js'
-import { togglePlay } from '../playback/clock.js'
-import { CurveChart } from './CurveChart.jsx'
+import { percent, seconds, signed, tagLabel } from '../../data/labels.js'
+import { rateOf, steppedCheckpoints } from '../../data/runs.js'
+import { togglePlay } from '../../playback/clock.js'
+import { CurveChart } from '../CurveChart/CurveChart.jsx'
+import { ListRow, RowList } from '../ListRow/ListRow.jsx'
+import { Outcome } from '../Outcome/Outcome.jsx'
+import { Segmented } from '../Segmented/Segmented.jsx'
+import styles from './RunPanel.module.css'
 
 export const METRICS = {
   rate: { label: '포획률', value: rateOf, format: percent, tickFormat: percent, domain: [0, 1] },
   reward: { label: '평균 보상', value: (c) => c.meanReturn, format: (v) => signed(v, 1), tickFormat: (v) => signed(v, 0) },
 }
 
+const METRIC_OPTIONS = Object.entries(METRICS).map(([value, m]) => ({ value, label: m.label }))
+
 export function MetricSwitch({ metric, onChange }) {
-  return (
-    <div className="segmented" role="radiogroup" aria-label="학습 곡선 값">
-      {Object.entries(METRICS).map(([key, m]) => (
-        <button key={key} type="button" role="radio" aria-checked={metric === key} onClick={() => onChange(key)}>
-          {m.label}
-        </button>
-      ))}
-    </div>
-  )
+  return <Segmented label="학습 곡선 값" options={METRIC_OPTIONS} value={metric} onChange={onChange} />
 }
 
 /** 고른 checkpoint 의 수치. 어느 checkpoint 인지는 제목이 말한다. */
@@ -30,10 +28,10 @@ function Stats({ checkpoint }) {
   ]
   return (
     <section aria-label={tagLabel(checkpoint.tag)}>
-      <h2 className="panel-title">{tagLabel(checkpoint.tag)}</h2>
-      <dl className="stats">
+      <h2 className={styles.title}>{tagLabel(checkpoint.tag)}</h2>
+      <dl className={styles.stats}>
         {rows.map(([label, value]) => (
-          <div key={label} className="stat">
+          <div key={label} className={styles.stat}>
             <dt>{label}</dt>
             <dd>{value}</dd>
           </div>
@@ -73,7 +71,7 @@ function EpisodeList({ grid, sel, onSelect }) {
   }, [selTag])
 
   useEffect(() => {
-    const row = root.current?.querySelector('.ep-item[aria-current="true"]')
+    const row = root.current?.querySelector(`.${CSS.escape(styles.item)}[aria-current="true"]`)
     if (!row) return
     row.scrollIntoView({ block: 'nearest' })
     // 키보드로 옮겼을 때만 focus 를 따라 옮긴다. 목록 밖에 있던 focus 는 건드리지 않는다.
@@ -115,39 +113,37 @@ function EpisodeList({ grid, sel, onSelect }) {
   }
 
   return (
-    <div className="ep-list" ref={root} onKeyDown={onKey}>
+    <div className={styles.episodes} ref={root} onKeyDown={onKey}>
       {grid.map((row, r) => {
         const open = isOpen(row.tag)
         const captured = row.items.filter((e) => e.summary.captured).length
         return (
-          <section key={row.tag} className="ep-group" aria-label={tagLabel(row.tag)}>
+          <section key={row.tag} className={styles.group} aria-label={tagLabel(row.tag)}>
             <button
               type="button"
-              className="ep-head"
+              className={styles.head}
               aria-expanded={open}
               aria-current={r === sel.r}
               onClick={() => setToggled((prev) => ({ ...prev, [row.tag]: !open }))}
             >
               <Chevron />
-              <span className="ep-tag">{tagLabel(row.tag)}</span>
-              <span className="ep-count" aria-label={`포획 ${captured}, 전체 ${row.items.length}`}>
+              <span className={styles.tag}>{tagLabel(row.tag)}</span>
+              <span className={styles.count} aria-label={`포획 ${captured}, 전체 ${row.items.length}`}>
                 {captured} / {row.items.length}
               </span>
             </button>
             {open && (
-              <ul className="source-list">
+              <RowList>
                 {row.items.map((e, k) => (
-                  <li key={e.file}>
-                    <button type="button" className="row ep-item" aria-current={r === sel.r && k === sel.k} onClick={() => onSelect(r, k, false)}>
-                      <span className="ep-num">{k + 1}</span>
-                      <span className={e.summary.captured ? 'ep-outcome outcome outcome-capture' : 'ep-outcome outcome'}>
-                        {e.summary.captured ? `포획 ${seconds(e.summary.duration)}` : '시간 초과'}
-                      </span>
-                      <span className="ep-return">{signed(e.summary.return)}</span>
-                    </button>
-                  </li>
+                  <ListRow key={e.file} current={r === sel.r && k === sel.k} onClick={() => onSelect(r, k, false)} className={styles.item}>
+                    <span className={styles.num}>{k + 1}</span>
+                    <Outcome captured={e.summary.captured} className={styles.outcome}>
+                      {e.summary.captured ? `포획 ${seconds(e.summary.duration)}` : '시간 초과'}
+                    </Outcome>
+                    <span className={styles.return}>{signed(e.summary.return)}</span>
+                  </ListRow>
                 ))}
-              </ul>
+              </RowList>
             )}
           </section>
         )
@@ -174,10 +170,10 @@ export function RunPanel({ run, grid, sel, onSelect }) {
   }
 
   return (
-    <aside className="run-panel" aria-label="실행 요약과 에피소드">
+    <aside className={styles.panel} aria-label="실행 요약과 에피소드">
       {checkpoint && <Stats checkpoint={checkpoint} />}
       {stepped.length >= 2 && (
-        <section className="panel-section" aria-label="학습 곡선">
+        <section className={styles.section} aria-label="학습 곡선">
           <MetricSwitch metric={metric} onChange={setMetric} />
           <CurveChart series={series} label={m.label} format={m.format} tickFormat={m.tickFormat} domain={m.domain} marker={checkpoint?.step ?? null} onPick={pickStep} />
         </section>

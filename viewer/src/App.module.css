@@ -1,0 +1,172 @@
+/* 창 구조: 사이드바, 도구 막대, 실행 화면 */
+
+.app {
+  display: grid;
+  grid-template-columns: 26.4rem minmax(0, 1fr);
+  height: 100%;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* 도구 막대 */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  height: 5.2rem;
+  padding: 0 var(--space-4) 0 var(--space-6);
+  border-bottom: 1px solid var(--color-separator);
+}
+
+.toolbarLead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.toolbarTitle {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-title);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toolbarNum {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-lg);
+  font-variant-numeric: tabular-nums;
+}
+
+.toolbarMeta {
+  display: flex;
+  gap: var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.toolbarActions {
+  display: flex;
+  gap: var(--space-1);
+}
+
+/* 실행 화면: 실행 패널과 재생 화면 */
+
+.workspace {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.stage {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 32rem;
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'scene inspector'
+    'dock inspector';
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--color-bg-stage);
+}
+
+.scene {
+  grid-area: scene;
+  min-height: 32rem;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+.inspector {
+  grid-area: inspector;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.dock {
+  grid-area: dock;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.charts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.empty {
+  margin: auto;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-lg);
+}
+
+/* 좁은 화면에서는 위에서 아래로 쌓는다. media query 의 rem 은 html 글자 크기를 따르지 않아 px 로 쓴다. */
+
+@media (max-width: 1360px) {
+  .stage {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    grid-template-areas: 'scene' 'inspector' 'dock';
+    overflow-y: auto;
+  }
+  .scene {
+    height: 56vh;
+  }
+}
+
+@media (max-width: 1080px) {
+  .workspace {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .stage {
+    flex: none;
+    overflow-y: visible;
+  }
+}
+
+@media (max-width: 760px) {
+  .toolbar {
+    height: auto;
+    min-height: 5.2rem;
+    padding: var(--space-2) var(--space-3) var(--space-2) var(--space-4);
+  }
+  .toolbarLead,
+  .toolbarMeta {
+    flex-wrap: wrap;
+    row-gap: 0.2rem;
+  }
+  .workspace {
+    overflow-y: visible;
+  }
+  .app {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    height: auto;
+    min-height: 100%;
+  }
+  .charts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

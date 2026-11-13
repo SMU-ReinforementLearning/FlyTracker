@@ -1,6 +1,8 @@
 import { useState } from 'react'
-import { algoLabel, percent, shortDate } from '../data/labels.js'
-import { lastCheckpoint, matchesQuery, NO_ISSUE, rateOf, steppedCheckpoints } from '../data/runs.js'
+import { algoLabel, percent, shortDate } from '../../data/labels.js'
+import { lastCheckpoint, matchesQuery, NO_ISSUE, rateOf, steppedCheckpoints } from '../../data/runs.js'
+import { ListRow, RowList } from '../ListRow/ListRow.jsx'
+import styles from './Sidebar.module.css'
 
 const SPARK_W = 40
 const SPARK_H = 14
@@ -19,7 +21,7 @@ function Sparkline({ run }) {
     })
     .join('')
   return (
-    <svg className="spark" width={SPARK_W} height={SPARK_H} aria-hidden="true">
+    <svg className={styles.spark} width={SPARK_W} height={SPARK_H} aria-hidden="true">
       <path d={d} />
     </svg>
   )
@@ -38,21 +40,19 @@ function RunRow({ run, selected, onSelect }) {
   const rate = rateOf(last)
   const meta = [algoLabel(run.algo), run.author].filter(Boolean).join(' · ')
   return (
-    <li>
-      <button type="button" className="row" aria-current={selected} onClick={() => onSelect(run.id)}>
-        <span className="row-line">
-          <span className="row-title">{run.name}</span>
-          <span className="row-aside row-rate">
-            <Sparkline run={run} />
-            {rate !== null && <span aria-label={`포획률 ${percent(rate)}`}>{percent(rate)}</span>}
-          </span>
+    <ListRow current={selected} onClick={() => onSelect(run.id)} className={styles.row}>
+      <span className={styles.line}>
+        <span className={styles.title}>{run.name}</span>
+        <span className={`${styles.aside} ${styles.rate}`}>
+          <Sparkline run={run} />
+          {rate !== null && <span aria-label={`포획률 ${percent(rate)}`}>{percent(rate)}</span>}
         </span>
-        <span className="row-line row-sub">
-          <span className="row-meta">{meta}</span>
-          <span>{shortDate(run.createdAt)}</span>
-        </span>
-      </button>
-    </li>
+      </span>
+      <span className={`${styles.line} ${styles.sub}`}>
+        <span className={styles.meta}>{meta}</span>
+        <span>{shortDate(run.createdAt)}</span>
+      </span>
+    </ListRow>
   )
 }
 
@@ -61,22 +61,22 @@ export const groupTitle = (group) => (group.key === NO_ISSUE ? 'issue 없음' : 
 function Group({ group, open, onToggle, runId, issueKey, onSelectRun, onOpenIssue }) {
   const title = groupTitle(group)
   return (
-    <section className="group" aria-label={title}>
-      <div className="group-head">
-        <button type="button" className="disclosure" aria-expanded={open} aria-label={`${title} ${open ? '접기' : '펼치기'}`} onClick={onToggle}>
+    <section className={styles.group} aria-label={title}>
+      <div className={styles.groupHead}>
+        <button type="button" className={styles.disclosure} aria-expanded={open} aria-label={`${title} ${open ? '접기' : '펼치기'}`} onClick={onToggle}>
           <Chevron />
         </button>
-        <button type="button" className="group-name" aria-current={issueKey === group.key} title={title} onClick={() => onOpenIssue(group.key)}>
-          {group.key !== NO_ISSUE && <span className="group-num">#{group.issue.number}</span>}
-          <span className="group-text">{title}</span>
+        <button type="button" className={styles.groupName} aria-current={issueKey === group.key} title={title} onClick={() => onOpenIssue(group.key)}>
+          {group.key !== NO_ISSUE && <span className={styles.groupNum}>#{group.issue.number}</span>}
+          <span className={styles.groupText}>{title}</span>
         </button>
       </div>
       {open && (
-        <ul className="source-list">
+        <RowList>
           {group.runs.map((run) => (
             <RunRow key={run.id} run={run} selected={run.id === runId} onSelect={onSelectRun} />
           ))}
-        </ul>
+        </RowList>
       )}
     </section>
   )
@@ -96,12 +96,12 @@ export function Sidebar({ groups, error, runId, issueKey, onSelectRun, onOpenIss
 
   let body
   if (error) {
-    body = <p className="sidebar-note">runs 폴더를 읽지 못했어요. 저장소의 viewer 폴더에서 npm run dev로 실행했는지 확인해 주세요.</p>
+    body = <p className={styles.note}>runs 폴더를 읽지 못했어요. 저장소의 viewer 폴더에서 npm run dev로 실행했는지 확인해 주세요.</p>
   } else if (!groups) {
-    body = <p className="sidebar-note">불러오는 중</p>
+    body = <p className={styles.note}>불러오는 중</p>
   } else if (groups.length === 0) {
     body = (
-      <p className="sidebar-note">
+      <p className={styles.note}>
         기록된 실행이 없어요. <code>scripts/record_baseline.py</code>로 에피소드를 만들어 주세요.
       </p>
     )
@@ -112,7 +112,7 @@ export function Sidebar({ groups, error, runId, issueKey, onSelectRun, onOpenIss
       .filter((g) => g.runs.length > 0)
     body =
       shown.length === 0 ? (
-        <p className="sidebar-note">맞는 실행이 없어요. 검색어를 바꿔 주세요.</p>
+        <p className={styles.note}>맞는 실행이 없어요. 검색어를 바꿔 주세요.</p>
       ) : (
         shown.map((g) => (
           <Group
@@ -130,8 +130,8 @@ export function Sidebar({ groups, error, runId, issueKey, onSelectRun, onOpenIss
   }
 
   return (
-    <nav className="sidebar" aria-label="실행">
-      <input className="search" type="search" placeholder="실행 검색" aria-label="실행 검색" value={query} onChange={(e) => setQuery(e.target.value)} />
+    <nav className={styles.sidebar} aria-label="실행">
+      <input className={styles.search} type="search" placeholder="실행 검색" aria-label="실행 검색" value={query} onChange={(e) => setQuery(e.target.value)} />
       {body}
     </nav>
   )

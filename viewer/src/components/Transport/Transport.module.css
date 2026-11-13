@@ -1,0 +1,91 @@
+/* 재생 조작 */
+
+.transport {
+  display: flex;
+  align-items: center;
+  gap: 1.4rem;
+  padding: 1rem var(--space-4);
+  background: var(--color-bg-window);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.playButton {
+  display: grid;
+  place-items: center;
+  width: 3.6rem;
+  height: 3.6rem;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-text-primary);
+  color: var(--color-bg-window);
+}
+
+.scrubber {
+  flex: 1;
+  min-width: 8rem;
+  height: 2rem;
+  margin: 0;
+  appearance: none;
+  background: transparent;
+}
+
+.scrubber::-webkit-slider-runnable-track {
+  height: 0.4rem;
+  border-radius: 0.2rem;
+  background: linear-gradient(var(--color-accent), var(--color-accent)) 0 / var(--progress) 100% no-repeat, var(--color-fill-strong);
+}
+
+.scrubber::-moz-range-track {
+  height: 0.4rem;
+  border-radius: 0.2rem;
+  background: var(--color-fill-strong);
+}
+
+.scrubber::-moz-range-progress {
+  height: 0.4rem;
+  border-radius: 0.2rem;
+  background: var(--color-accent);
+}
+
+.scrubber::-webkit-slider-thumb {
+  appearance: none;
+  width: 1.4rem;
+  height: 1.4rem;
+  margin-top: -0.5rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: var(--shadow-thumb);
+}
+
+.scrubber::-moz-range-thumb {
+  width: 1.4rem;
+  height: 1.4rem;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: var(--shadow-thumb);
+}
+
+.time {
+  min-width: 9.6rem;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* 좁은 화면에서는 두 줄로 나누고 재생 속도를 오른쪽 끝에 붙인다. media query 의 rem 은 html 글자 크기를 따르지 않아 px 로 쓴다. */
+@media (max-width: 760px) {
+  .transport {
+    flex-wrap: wrap;
+  }
+  .speeds {
+    margin-left: auto;
+  }
+}

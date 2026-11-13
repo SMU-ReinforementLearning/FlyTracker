@@ -1,0 +1,26 @@
+/* 여럿 중 하나를 고르는 버튼 묶음 */
+
+.segmented {
+  display: inline-flex;
+  padding: 0.2rem;
+  border-radius: 0.8rem;
+  background: var(--color-fill);
+}
+
+.segmented button {
+  min-width: 4.2rem;
+  padding: 0.3rem var(--space-2);
+  border: 0;
+  border-radius: 0.6rem;
+  background: none;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.segmented button[aria-checked='true'] {
+  background: var(--color-bg-window);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+  box-shadow: var(--shadow-control);
+}
