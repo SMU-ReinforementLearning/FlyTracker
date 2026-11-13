@@ -1,0 +1,16 @@
+/* 에피소드 결과. 포획이면 앞에 점 */
+
+.capture::before {
+  content: '';
+  display: inline-block;
+  width: 0.6rem;
+  height: 0.6rem;
+  margin: 0 0.6rem 1px 0;
+  border-radius: 50%;
+  background: var(--color-capture);
+}
+
+/* 고른 줄의 강조색 바탕 위에서는 글자색을 따른다 */
+[aria-current='true'] .capture::before {
+  background: currentColor;
+}

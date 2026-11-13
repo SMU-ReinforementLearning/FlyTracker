@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { frameAt } from '../data/episode.js'
-import { clock, seek } from '../playback/clock.js'
+import { frameAt } from '../../data/episode.js'
+import { clock, seek } from '../../playback/clock.js'
+import { Tooltip } from '../Tooltip/Tooltip.jsx'
+import styles from './LineChart.module.css'
 
 const H = 112
 const M = { top: 26, right: 12, bottom: 20, left: 40 }
@@ -83,8 +85,8 @@ export function LineChart({ ep, values, label, format, tickFormat = format, t, z
   const last = values[ep.n - 1]
   const aria = `${label} 그래프. 마지막 값 ${format(last)}.`
   return (
-    <figure className="chart" ref={box}>
-      <figcaption className="chart-label">{label}</figcaption>
+    <figure className={styles.chart} ref={box}>
+      <figcaption className={styles.label}>{label}</figcaption>
       {geo && (
         <svg
           width={width}
@@ -101,21 +103,21 @@ export function LineChart({ ep, values, label, format, tickFormat = format, t, z
         >
           {geo.yTicks.map((v) => (
             <g key={`y${v}`}>
-              <line className="grid" x1={M.left} x2={M.left + geo.iw} y1={geo.y(v)} y2={geo.y(v)} />
-              <text className="tick" x={M.left - 8} y={geo.y(v)} textAnchor="end" dominantBaseline="middle">
+              <line className={styles.grid} x1={M.left} x2={M.left + geo.iw} y1={geo.y(v)} y2={geo.y(v)} />
+              <text className={styles.tick} x={M.left - 8} y={geo.y(v)} textAnchor="end" dominantBaseline="middle">
                 {tickFormat(v)}
               </text>
             </g>
           ))}
           {geo.xTicks.map((v) => (
-            <text key={`x${v}`} className="tick" x={geo.x(v)} y={H - 4} textAnchor="middle">
+            <text key={`x${v}`} className={styles.tick} x={geo.x(v)} y={H - 4} textAnchor="middle">
               {v}초
             </text>
           ))}
-          <path className="series" d={geo.d} />
-          <line className="playhead" x1={geo.x(t)} x2={geo.x(t)} y1={M.top} y2={M.top + geo.ih} />
+          <path className={styles.series} d={geo.d} />
+          <line className={styles.playhead} x1={geo.x(t)} x2={geo.x(t)} y1={M.top} y2={M.top + geo.ih} />
           {hover !== null && (
-            <g className="crosshair">
+            <g className={styles.crosshair}>
               <line x1={geo.x(ep.t[hover])} x2={geo.x(ep.t[hover])} y1={M.top} y2={M.top + geo.ih} />
               <circle cx={geo.x(ep.t[hover])} cy={geo.y(values[hover])} r={4} />
             </g>
@@ -123,14 +125,10 @@ export function LineChart({ ep, values, label, format, tickFormat = format, t, z
         </svg>
       )}
       {geo && hover !== null && (
-        <div
-          className="tooltip"
-          style={{ left: Math.min(Math.max(geo.x(ep.t[hover]), 60), width - 60), top: M.top - 6 }}
-          role="status"
-        >
+        <Tooltip style={{ left: Math.min(Math.max(geo.x(ep.t[hover]), 60), width - 60), top: M.top - 6 }}>
           <strong>{format(values[hover])}</strong>
           <span>{ep.t[hover].toFixed(2)}초</span>
-        </div>
+        </Tooltip>
       )}
     </figure>
   )

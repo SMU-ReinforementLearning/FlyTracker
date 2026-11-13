@@ -1,0 +1,40 @@
+/* 현재 상태 */
+
+.readouts {
+  margin: 0;
+  padding: var(--space-1) var(--space-4);
+  background: var(--color-bg-window);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+.readout {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 1rem 0;
+}
+
+.readout + .readout {
+  border-top: 1px solid var(--color-separator);
+}
+
+.readout dt {
+  color: var(--color-text-secondary);
+}
+
+.readout dd {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  font-variant-numeric: tabular-nums;
+}
+
+.dot {
+  display: inline-block;
+  width: 0.8rem;
+  height: 0.8rem;
+  margin-right: 0.7rem;
+  border-radius: 50%;
+  vertical-align: 1px;
+}

@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
-import { frameAt } from '../data/episode.js'
-import { useClock } from '../playback/clock.js'
-import { SCENE } from '../theme.js'
+import { frameAt } from '../../data/episode.js'
+import { useClock } from '../../playback/clock.js'
+import { SCENE } from '../../theme.js'
+import styles from './Readouts.module.css'
 
 /** 지금 프레임의 상태. 3D 장면의 색이 뜻하는 상태를 글자로도 보여 준다. */
 export function Readouts({ ep, scheme }) {
@@ -22,12 +23,12 @@ export function Readouts({ ep, scheme }) {
     ['프레임', `${i + 1} / ${ep.n}`],
   ]
   return (
-    <dl className="readouts">
+    <dl className={styles.readouts}>
       {rows.map(([label, value, dot]) => (
-        <div key={label} className="readout">
+        <div key={label} className={styles.readout}>
           <dt>{label}</dt>
           <dd>
-            {dot && <span className="dot" style={{ background: dot }} aria-hidden="true" />}
+            {dot && <span className={styles.dot} style={{ background: dot }} aria-hidden="true" />}
             {value}
           </dd>
         </div>

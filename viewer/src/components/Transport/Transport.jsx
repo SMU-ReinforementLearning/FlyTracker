@@ -1,7 +1,11 @@
-import { frameAt } from '../data/episode.js'
-import { clock, seek, setSpeed, togglePlay, useClock } from '../playback/clock.js'
+import { frameAt } from '../../data/episode.js'
+import { clock, seek, setSpeed, togglePlay, useClock } from '../../playback/clock.js'
+import { IconButton } from '../IconButton/IconButton.jsx'
+import { Segmented } from '../Segmented/Segmented.jsx'
+import styles from './Transport.module.css'
 
-const SPEEDS = [0.25, 0.5, 1, 2]
+// 숫자와 × 를 따로 둔다. 한 문자열로 합치면 글자 폭이 1/64px 달라진다.
+const SPEEDS = [0.25, 0.5, 1, 2].map((s) => ({ value: s, label: <>{s}×</> }))
 
 export function stepFrame(ep, delta) {
   const i = frameAt(ep, clock.t + 1e-9)
@@ -33,20 +37,20 @@ export function Transport({ ep }) {
   const c = useClock(20)
   const progress = c.duration > 0 ? (c.t / c.duration) * 100 : 0
   return (
-    <div className="transport">
-      <div className="transport-buttons">
-        <button type="button" className="icon-button" aria-label="이전 프레임" onClick={() => stepFrame(ep, -1)}>
+    <div className={styles.transport}>
+      <div className={styles.buttons}>
+        <IconButton label="이전 프레임" onClick={() => stepFrame(ep, -1)}>
           <Icon name="prev" />
-        </button>
-        <button type="button" className="play-button" aria-label={c.playing ? '일시정지' : '재생'} onClick={togglePlay}>
+        </IconButton>
+        <button type="button" className={styles.playButton} aria-label={c.playing ? '일시정지' : '재생'} onClick={togglePlay}>
           <Icon name={c.playing ? 'pause' : 'play'} />
         </button>
-        <button type="button" className="icon-button" aria-label="다음 프레임" onClick={() => stepFrame(ep, 1)}>
+        <IconButton label="다음 프레임" onClick={() => stepFrame(ep, 1)}>
           <Icon name="next" />
-        </button>
+        </IconButton>
       </div>
       <input
-        className="scrubber"
+        className={styles.scrubber}
         type="range"
         min={0}
         max={c.duration}
@@ -56,16 +60,10 @@ export function Transport({ ep }) {
         aria-label="재생 위치"
         onChange={(e) => seek(Number(e.target.value))}
       />
-      <span className="time">
+      <span className={styles.time}>
         {c.t.toFixed(2)} / {c.duration.toFixed(2)}초
       </span>
-      <div className="segmented" role="radiogroup" aria-label="재생 속도">
-        {SPEEDS.map((s) => (
-          <button key={s} type="button" role="radio" aria-checked={c.speed === s} onClick={() => setSpeed(s)}>
-            {s}×
-          </button>
-        ))}
-      </div>
+      <Segmented label="재생 속도" options={SPEEDS} value={c.speed} onChange={setSpeed} className={styles.speeds} />
     </div>
   )
 }

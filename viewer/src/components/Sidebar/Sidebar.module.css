@@ -1,0 +1,162 @@
+/* 사이드바: 검색, issue 묶음, 실행 줄 */
+
+.sidebar {
+  background: var(--color-bg-sidebar);
+  border-right: 1px solid var(--color-separator);
+  padding: 1.8rem 1rem var(--space-6);
+  overflow-y: auto;
+}
+
+.search {
+  display: block;
+  width: 100%;
+  height: 2.8rem;
+  margin: 0 0 1rem;
+  padding: 0 1rem;
+  border: 0;
+  border-radius: 0.8rem;
+  background: var(--color-fill-strong);
+  color: var(--color-text-primary);
+  font: inherit;
+}
+
+.search::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.note {
+  margin: var(--space-1) 1rem;
+  color: var(--color-text-secondary);
+}
+
+/* issue 묶음 */
+
+.group + .group {
+  margin-top: 1rem;
+}
+
+.groupHead {
+  display: flex;
+  align-items: center;
+}
+
+.disclosure {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2.6rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text-tertiary);
+}
+
+.disclosure svg {
+  transition: transform 0.15s;
+}
+
+.disclosure[aria-expanded='true'] svg {
+  transform: rotate(90deg);
+}
+
+.groupName {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem 0.6rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-align: left;
+  cursor: default;
+}
+
+.groupName:hover,
+.disclosure:hover {
+  background: var(--color-fill);
+}
+
+.groupName[aria-current='true'] {
+  background: var(--color-fill-strong);
+  color: var(--color-text-primary);
+}
+
+.groupNum {
+  flex: none;
+  color: var(--color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.groupText {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 실행 줄. 줄 모양은 ListRow 가 맡고, 여기서는 들여쓰기와 줄 안의 배치만 정한다. */
+
+.group .row {
+  padding-left: 2.6rem;
+}
+
+.line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.title {
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rate {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.meta {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spark path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.aside,
+.sub {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.row[aria-current='true'] .aside,
+.row[aria-current='true'] .sub {
+  color: var(--color-text-on-accent-secondary);
+}
+
+/* media query 의 rem 은 html 글자 크기를 따르지 않아 px 로 쓴다 */
+@media (max-width: 760px) {
+  .sidebar {
+    max-height: 40vh;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-separator);
+  }
+}

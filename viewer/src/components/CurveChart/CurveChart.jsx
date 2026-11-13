@@ -1,6 +1,9 @@
 import { useMemo, useRef, useState } from 'react'
-import { stepLabel } from '../data/labels.js'
-import { niceStep, ticks, useWidth } from './LineChart.jsx'
+import { stepLabel } from '../../data/labels.js'
+import { niceStep, ticks, useWidth } from '../LineChart/LineChart.jsx'
+import { Swatch } from '../Swatch/Swatch.jsx'
+import { Tooltip, TooltipRow } from '../Tooltip/Tooltip.jsx'
+import styles from './CurveChart.module.css'
 
 const M = { top: 10, right: 14, bottom: 22, left: 40 }
 
@@ -63,7 +66,7 @@ export function CurveChart({ series, label, format, tickFormat = format, domain,
   const aria = `${label} 학습 곡선. ${series.map((s) => `${s.label} 마지막 값 ${format(lastOf(s))}`).join(', ')}.`
 
   return (
-    <div className="curve" ref={box}>
+    <div className={styles.curve} ref={box}>
       {geo && (
         <svg
           width={width}
@@ -81,41 +84,41 @@ export function CurveChart({ series, label, format, tickFormat = format, domain,
         >
           {geo.yTicks.map((v) => (
             <g key={`y${v}`}>
-              <line className="grid" x1={M.left} x2={M.left + geo.iw} y1={geo.y(v)} y2={geo.y(v)} />
-              <text className="tick" x={M.left - 8} y={geo.y(v)} textAnchor="end" dominantBaseline="middle">
+              <line className={styles.grid} x1={M.left} x2={M.left + geo.iw} y1={geo.y(v)} y2={geo.y(v)} />
+              <text className={styles.tick} x={M.left - 8} y={geo.y(v)} textAnchor="end" dominantBaseline="middle">
                 {tickFormat(v)}
               </text>
             </g>
           ))}
           {geo.xTicks.map((v) => (
-            <text key={`x${v}`} className="tick" x={geo.x(v)} y={height - 4} textAnchor="middle">
+            <text key={`x${v}`} className={styles.tick} x={geo.x(v)} y={height - 4} textAnchor="middle">
               {stepLabel(v)}
             </text>
           ))}
-          {hover !== null && <line className="crosshair-line" x1={geo.x(hover)} x2={geo.x(hover)} y1={M.top} y2={M.top + geo.ih} />}
+          {hover !== null && <line className={styles.crosshair} x1={geo.x(hover)} x2={geo.x(hover)} y1={M.top} y2={M.top + geo.ih} />}
           {series.map((s, k) => (
             <g key={s.id} style={s.color ? { '--series': s.color } : undefined}>
-              {s.flat != null && <line className="series-flat" x1={M.left} x2={M.left + geo.iw} y1={geo.y(s.flat)} y2={geo.y(s.flat)} />}
-              <path className="series" d={geo.paths[k]} />
+              {s.flat != null && <line className={styles.flat} x1={M.left} x2={M.left + geo.iw} y1={geo.y(s.flat)} y2={geo.y(s.flat)} />}
+              <path className={styles.series} d={geo.paths[k]} />
               {s.points.map((p) => (
-                <circle key={p.x} className="series-point" cx={geo.x(p.x)} cy={geo.y(p.y)} r={p.x === hover ? 4 : 2.5} />
+                <circle key={p.x} className={styles.point} cx={geo.x(p.x)} cy={geo.y(p.y)} r={p.x === hover ? 4 : 2.5} />
               ))}
-              {k === 0 && s.points.filter((p) => p.x === marker).map((p) => <circle key="marker" className="series-marker" cx={geo.x(p.x)} cy={geo.y(p.y)} r={5} />)}
+              {k === 0 && s.points.filter((p) => p.x === marker).map((p) => <circle key="marker" className={styles.marker} cx={geo.x(p.x)} cy={geo.y(p.y)} r={5} />)}
             </g>
           ))}
         </svg>
       )}
       {geo && rows.length > 0 && (
-        <div className="tooltip tooltip-side" data-flip={geo.x(hover) > width / 2} style={{ left: geo.x(hover), top: M.top }} role="status">
+        <Tooltip side flip={geo.x(hover) > width / 2} style={{ left: geo.x(hover), top: M.top }}>
           <span>{stepLabel(hover)} step</span>
           {rows.map(({ s, y }) => (
-            <span key={s.id} className="tooltip-row">
-              {series.length > 1 && <i className="swatch" style={{ background: s.color }} />}
+            <TooltipRow key={s.id}>
+              {series.length > 1 && <Swatch color={s.color} />}
               {series.length > 1 && <span>{s.label}</span>}
               <strong>{format(y)}</strong>
-            </span>
+            </TooltipRow>
           ))}
-        </div>
+        </Tooltip>
       )}
     </div>
   )
