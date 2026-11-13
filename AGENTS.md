@@ -62,7 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `18-refactor-viewer-css-modules` — `docs/issues/refactor/18-refactor-viewer-css-modules.md` — viewer 스타일을 CSS module로 나누기
+- (none)
 
 ## Environment (repo slot)
 

@@ -5,7 +5,7 @@
 - Branch: `18-refactor-viewer-css-modules`
 - Umbrella: (none) — no umbrella issue exists yet
 - Related: #1 (created `viewer/src/styles.css`)
-- Status: in progress
+- Status: done
 
 ## Summary
 Splits the viewer's single 1,053-line `viewer/src/styles.css` into one CSS module per component plus two shared files, `variables.css` (design tokens) and `global.css` (reset and base elements), following the layout of the user's wenivBlog project (`origin/develop:app/src/assets/styles/`, `app/src/components/<name>/<Name>.module.css`). Sizes move to rem on a 62.5% root (1rem = 10px) with the same pixel values, so the rendered page does not change. Restarted on 2026-11-12 from `origin/main` @ 15f5ac6: the first attempt (2026-11-10, on 74818f1, never committed) targeted a 594-line stylesheet that #22, #27 and #29 have since replaced.
@@ -46,8 +46,8 @@ Splits the viewer's single 1,053-line `viewer/src/styles.css` into one CSS modul
 
 ## Current State
 - Branch reset to `origin/main` @ 15f5ac6 on 2026-11-12; the 2026-11-10 attempt was saved outside the repo before the reset (patch and 11 untracked files) and used only as a reference for token names and the `IconButton` split.
-- Module split done and verified on dev and production (112 cases each). The user approved on 2026-11-13 and asked for the merge.
-- The comparison harness stays in the session scratchpad and is not committed; the user was not asked to keep it in the repo before the merge.
+- Done. Module split verified on dev and production (112 cases each); rebased onto `origin/main` @ 8e63f40 (#34, #35 touch no viewer file) and `npm run build` passes there. The user approved on 2026-11-13 and asked for the merge.
+- The comparison harness stays in the session scratchpad and is not committed; whether to keep it in the repo is still open for the user.
 - The fixture runs used for the comparison were removed from `runs/` afterwards; `runs/index.json` is back to its three baseline runs.
 
 ## Work Log
@@ -88,6 +88,19 @@ Splits the viewer's single 1,053-line `viewer/src/styles.css` into one CSS modul
 #### Notes
 - Claude Code stopped the background servers and one capture midway because the machine ran low on memory (1.3 GB free of 15.6 GB). The user said to continue; the rest ran in the foreground, one width at a time.
 - Two vite processes from the old `FlyTracker-22` folder hold ports 5191 and 5192. They are not from this work and were left running.
+
+### chore: #18 마무리 (#18)
+> why: the branch's last commit before the PR; `main` takes PRs only, so the pointer must go now
+#### Scope
+- `AGENTS.md`, this doc's Status and Current State, the registry row.
+#### Changes
+- `AGENTS.md` Recent Active Context: pointer line removed, `- (none)` placeholder restored.
+- Status: in progress → done, here and in `docs/issues/README.md`.
+#### Verification
+- Branch rebased onto `origin/main` @ 8e63f40 without conflicts; `git diff --stat 15f5ac6 origin/main -- viewer ui-evidence.config.json` is empty, so the before/after comparison still holds. `npm run build` passes after the rebase.
+- `grep -c 18-refactor-viewer-css-modules AGENTS.md` prints 0.
+#### Notes
+- The user asked to merge ("머지까지 해놔"), which covers the two commits, push, PR and merge.
 
 ## Management Notes
 ### Follow-up Candidates
