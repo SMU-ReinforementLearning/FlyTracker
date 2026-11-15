@@ -50,6 +50,20 @@ The weights are starting values chosen by reasoning, not by experiment: `beam` 0
 #### Notes
 - None.
 
+### feat: 보일 때의 벌점을 빔까지 거리의 log 눈금으로 (#49)
+> why: the aim-error penalty differs by 0.0024 per step between 1° and a hit, a quarter of the time penalty, so nothing but the sparse capture reward rewards closing the last millimetres
+#### Scope
+`flytracker/env.py`, `scripts/_common.py`, `tests/test_reward.py`.
+#### Changes
+- `RewardWeights.beam` 0.1, `beam_far` 1.0 m, `angle` 0.05 → 0; `_beam_ratio()`; `FlyRewardWeights` mirrors `beam` and `angle`. `ENV_VERSION` 5.
+- `--reward item=value ...` (shared env options) builds `RewardWeights`; unknown items stop with a message.
+#### Verification
+- `uv run python -m pytest -q`: 122 passed, 45 skipped. New `tests/test_reward.py` (10 cases).
+- `runs/_ops/check_rollout.py` (local): the rollout that `tests/test_neural_fly.py::test_default_rule_matches_prechange_rollout` pins gives −4.99468802723724 for seeds 0 and 123, unchanged, because the fly is not visible in those steps.
+- `scripts/record_baseline.py --episodes 200 --seed 10000 --no-save`: 200/200, mean return −23.13, visible 30 %, 4.95 s. With `--reward beam=0 angle=0.05`, seed 10000 returns −23.57, the version-4 value.
+#### Notes
+- Penalty values: 0 on the beam, 0.010 at 1.25 mm, 0.036 at 12.5 mm, 0.069 at 125 mm, 0.1 from 1 m.
+
 ## Management Notes
 ### Follow-up Candidates
 - SAC training under version 5 with several conditions and a pre-registered gate (next issue).
