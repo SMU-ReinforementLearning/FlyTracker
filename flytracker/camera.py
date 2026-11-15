@@ -43,15 +43,20 @@ class Projection:
 
 
 def camera_basis(look: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """카메라 오른쪽 r, 위 u, 앞 f. 굴림(roll)은 없다. pitch 를 ±90° 미만으로 제한해 퇴화를 피한다."""
+    """카메라 오른쪽 r, 위 u, 앞 f. 굴림(roll)은 없다.
+
+    바라보는 방향만으로는 바로 위나 아래를 볼 때 오른쪽을 정할 수 없다(r 이 0 이 된다).
+    조준기처럼 yaw 를 아는 쪽은 `geometry.aim_basis` 로 만든 축을 `project` 에 넘긴다.
+    """
     f = unit(look)
     r = unit(np.cross(f, UP))
     u = np.cross(r, f)
     return r, u, f
 
 
-def project(point: np.ndarray, C: np.ndarray, look: np.ndarray, intr: CameraIntrinsics) -> Projection:
-    r, u, f = camera_basis(look)
+def project(point: np.ndarray, C: np.ndarray, look: np.ndarray, intr: CameraIntrinsics, basis=None) -> Projection:
+    """basis 는 카메라 축 (r, u, f) 이다. 주지 않으면 look 으로 만든다."""
+    r, u, f = basis if basis is not None else camera_basis(look)
     p = point - C
     xc, yc, zc = float(p @ r), float(p @ u), float(p @ f)
     distance = float(np.linalg.norm(p))

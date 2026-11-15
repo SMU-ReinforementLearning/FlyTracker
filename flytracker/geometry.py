@@ -31,6 +31,17 @@ def yaw_pitch_of(d: np.ndarray) -> tuple[float, float]:
     return math.atan2(-d[0], -d[2]), math.asin(float(np.clip(d[1], -1.0, 1.0)))
 
 
+def aim_basis(yaw: float, pitch: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """yaw, pitch 로 바라보는 카메라의 오른쪽 r, 위 u, 앞 f. 굴림(roll)은 없다.
+
+    오른쪽을 yaw 로 정하므로 바로 위나 아래(pitch ±90°)를 볼 때도 축이 정해진다.
+    바로 위를 보면 화면의 위쪽은 수평 앞 방향의 반대쪽이다.
+    """
+    f = look_dir(yaw, pitch)
+    r = np.array([math.cos(yaw), 0.0, -math.sin(yaw)])
+    return r, np.cross(r, f), f
+
+
 def horizontal_basis(yaw: float) -> tuple[np.ndarray, np.ndarray]:
     """yaw 만 반영한 수평 앞 방향과 오른쪽 방향."""
     forward = np.array([-math.sin(yaw), 0.0, -math.cos(yaw)])

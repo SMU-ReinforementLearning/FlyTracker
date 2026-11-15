@@ -61,3 +61,45 @@
 .focus[data-capture='true'] {
   --c: #30d158;
 }
+
+/* 가운데를 확대한 화면. 조준기 화면 아래에 같은 폭으로 둔다. */
+.zoom {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #000;
+  box-shadow: var(--shadow-card);
+}
+
+.zoom canvas {
+  display: block;
+}
+
+/* 초파리가 있는 거리에서 빔이 차지하는 범위. 높이는 프레임마다 바뀐다. */
+.beam {
+  --c: rgba(255, 255, 255, 0.7);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--c);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.beam[data-capture='true'] {
+  --c: #30d158;
+}
+
+.zoomLabel {
+  position: absolute;
+  left: var(--space-3);
+  top: var(--space-2);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.1rem;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}

@@ -1,0 +1,1 @@
+{"id":"2026-11-15_223016_baseline","name":"baseline","createdAt":"2026-11-15T22:30:16","algo":"rule-baseline","actionMode":"continuous","notes":"","episodeCount":5,"issue":{"number":49,"title":"레이저 명중에 맞춰 조준기 보상 바꾸기","url":"https://github.com/SMU-ReinforementLearning/FlyTracker/issues/49"},"author":"lhk0721"}
