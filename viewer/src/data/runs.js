@@ -25,6 +25,14 @@ export function groupByIssue(runs) {
   return [...list.filter((g) => g.key !== NO_ISSUE), ...list.filter((g) => g.key === NO_ISSUE)]
 }
 
+/** 설명 파일의 compare 가 가리키는 issue 묶음. 적지 않았거나 그 issue 에 올라온 실행이 없으면 null. */
+export function compareGroup(groups, group, compare) {
+  if (compare == null || String(compare) === group.key) return null
+  return (groups ?? []).find((g) => g.key !== NO_ISSUE && g.key === String(compare)) ?? null
+}
+
+export const byCreatedAt = (a, b) => String(a.createdAt).localeCompare(String(b.createdAt)) || String(a.name).localeCompare(String(b.name))
+
 export function matchesQuery(run, query) {
   const q = query.trim().toLowerCase()
   if (!q) return true
@@ -40,26 +48,4 @@ export function gridOf(episodes) {
     rows.get(e.tag).items.push(e)
   }
   return [...rows.values()]
-}
-
-/** config.json 을 `env.camera.fov_v_deg` 같은 한 줄 key 로 편다. 배열은 값 하나로 본다. */
-export function flattenConfig(value, prefix = '', out = {}) {
-  if (value && typeof value === 'object' && !Array.isArray(value)) {
-    for (const [k, v] of Object.entries(value)) flattenConfig(v, prefix ? `${prefix}.${k}` : k, out)
-  } else if (prefix) {
-    out[prefix] = value
-  }
-  return out
-}
-
-const SKIP_KEYS = new Set(['algo.name']) // 알고리즘은 표에 따로 열이 있다
-
-/**
- * 실행끼리 값이 다른 config key. 그 key 가 있는 실행들 사이에서만 비교한다.
- * 기준선에는 algo.steps 같은 key 가 아예 없는데, 그것만으로 열이 생기면 표가 같은 값으로 채워지기 때문이다.
- */
-export function differingKeys(flatConfigs) {
-  const keys = new Set(flatConfigs.flatMap((c) => Object.keys(c)))
-  const distinct = (k) => new Set(flatConfigs.filter((c) => k in c).map((c) => JSON.stringify(c[k]))).size
-  return [...keys].filter((k) => !SKIP_KEYS.has(k) && distinct(k) > 1).sort()
 }

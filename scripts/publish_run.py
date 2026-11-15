@@ -18,7 +18,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from flytracker.record import publish_run
+from flytracker.record import issue_info_path, publish_run
 
 TRAINING_LABEL = "training"
 
@@ -79,6 +79,13 @@ def main() -> None:
     dest = Path(args.dest) / run_id
     print(f"{dest} 에 파일 {len(files)}개, {size / 1024:.0f} KB 를 복사했다.")
     print(f"issue #{issue['number']} {issue['title']}")
+    info = issue_info_path(args.dest, issue["number"])
+    if not info.is_file():
+        print(
+            f"경고: {info.as_posix()} 가 없다. viewer 의 issue 화면에 나올 실험 단계와 이유를 써서 같은 PR 에 올린다. "
+            "형식은 README 의 '실행 올리기'에 있다.",
+            file=sys.stderr,
+        )
     print(f"다음: git add {dest.as_posix()} 로 commit 하고 PR 을 연다.")
 
 
