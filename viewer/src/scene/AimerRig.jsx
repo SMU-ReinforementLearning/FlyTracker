@@ -22,7 +22,8 @@ function distanceToWall(C, f, [w, h, d]) {
 
 /**
  * 조준기 몸체, 시야 frustum, 조준선.
- * 카메라 축은 Python 의 camera_basis 와 같다. 오른쪽 r = f × up, 위 u = r × f, 굴림 없음.
+ * 카메라 축은 Python 의 aim_basis 와 같다. 오른쪽 r 은 yaw 로 정하고, 위 u = r × f, 굴림 없음.
+ * yaw 가 없는 기록(환경 버전 3까지)은 r = f × up 으로 만든다.
  * frustum 은 depth 까지 그린다. 움직이는 조준기는 포획 거리와 같아서 끝면이 포획 범위를 보여 준다.
  * 색은 포획 조건 안이면 capture, 보이면 visible, 아니면 idle 이다.
  */
@@ -52,7 +53,8 @@ export function AimerRig({ ep, colors, depth, bodyColor }) {
     sample(ep, clock.t, s)
     v.C.fromArray(s.C)
     v.f.fromArray(s.look)
-    v.r.crossVectors(v.f, UP).normalize()
+    if (s.hasAngles) v.r.set(Math.cos(s.yaw), 0, -Math.sin(s.yaw)) // 바로 위를 볼 때도 정해진다 (Python 의 aim_basis)
+    else v.r.crossVectors(v.f, UP).normalize()
     v.u.crossVectors(v.r, v.f)
 
     const corners = [

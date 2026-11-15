@@ -13,7 +13,7 @@ import { seconds, signed, tagLabel } from './data/labels.js'
 import { gridOf, groupByIssue } from './data/runs.js'
 import { load, togglePlay, useClock } from './playback/clock.js'
 import { useRoute } from './route.js'
-import { FirstPersonView } from './scene/FirstPersonView.jsx'
+import { FirstPersonView, ZoomView } from './scene/FirstPersonView.jsx'
 import { ThirdPersonView } from './scene/ThirdPersonView.jsx'
 import { useColorScheme } from './theme.js'
 import styles from './App.module.css'
@@ -195,6 +195,9 @@ export default function App() {
                 </div>
                 <aside className={styles.inspector} aria-label={ep.meta.mode === 'free-flight' ? '초파리 비행 상태' : '조준기 화면과 현재 상태'}>
                   {ep.meta.aimerEnabled !== false && <FirstPersonView key={file} ep={ep} />}
+                  {ep.meta.aimerEnabled !== false && ep.meta.captureEnabled !== false && ep.meta.captureRadius != null && (
+                    <ZoomView key={`zoom-${file}`} ep={ep} />
+                  )}
                   <Readouts ep={ep} scheme={scheme} />
                 </aside>
                 <div className={styles.dock}>

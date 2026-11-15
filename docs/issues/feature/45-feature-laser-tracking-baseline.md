@@ -75,6 +75,32 @@ Design choices made here: the fly's angular rate is a finite difference of the t
 #### Notes
 - Near straight up the fly direction's yaw rate grows without bound; `target_rate` clips at ±1 and the turret's yaw rate limit applies. No failed seed came from this in the 200.
 
+### feat: viewer에 확대 화면 넣기 (#45)
+> why: a 2.5 mm beam is smaller than a pixel in the 40° aimer view, so a viewer cannot see whether the beam is on the fly
+#### Scope
+`viewer/src/scene/FirstPersonView.jsx` + `.module.css`, `AimerRig.jsx`, `viewer/src/App.jsx`, `viewer/src/data/episode.js`, `labels.js`, `ui-text.glossary.md`, captures.
+#### Changes
+- `ZoomView`: a second 3D camera on the aimer with a 0.5° vertical field (80x), in its own 2:1 card under the aimer view. A circle shows the beam's extent at the fly's distance and turns green while hitting. Shown for recordings with `captureRadius` (version 3 and later).
+- The aimer camera and the third-person rig use `aimerAngles` when present (yaw is lost in `aimerLook` when looking straight up); older recordings use `lookAt` as before.
+- Glossary: "확대 화면".
+#### Verification
+- `npm run build --prefix viewer` passes.
+- ui-evidence, dev server from this worktree on port 5185 (`--strictPort`), working tree on 7a81d0a, Chrome 157.0.8103.52, each page sought to its last frame by the ready expression, settle 800 ms, reduced motion on. Files in `45-feature-laser-tracking-baseline/captures/`.
+
+| page | viewport | file | overflow | probes |
+| --- | --- | --- | --- | --- |
+| version-4 episode (seed 10000) | 1600x900 | `v4-1600x900.png` | none | 3 canvases, zoom label 80배, beam circle 20.1 % of height |
+| version-4 episode | 390x844 (mobile, dpr 2) | `v4-390x844.png` | none | same |
+| version-3 episode (seed 10116) | 1600x900 | `v3-1600x900.png` | none | 3 canvases, zoom label 80배 |
+| version-3 episode | 390x844 (mobile, dpr 2) | `v3-390x844.png` | none | same |
+| version-2 episode | 1600x900 | `v2-1600x900.png` | none | 2 canvases, no zoom view |
+| version-2 episode | 390x844 (mobile, dpr 2) | `v2-390x844.png` | none | same |
+
+- Looked at `v4-1600x900.png`: the fly model sits inside the green beam circle; the inspector column fits without scrolling.
+#### Notes
+- First attempt put the zoom view as an inset inside the aimer view (34 % wide, 1° field); the fly was about 8 px, so it moved to its own card with a 0.5° field.
+- The phone captures show only the top of the page, so the zoom view itself is not in them; they establish no horizontal overflow.
+
 ## Management Notes
 ### Follow-up Candidates
 - Reward that has a gradient below 0.1° (log-scale beam distance) and SAC retraining under version 4, possibly as a residual policy on top of the feed-forward tracker; fallback: learned search + rule tracking (191/200, 3.24 s in the #42 scratch run).
