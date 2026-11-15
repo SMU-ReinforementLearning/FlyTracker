@@ -24,6 +24,17 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 | checkpoint | checkpoint | 체크포인트 | 영어 그대로 쓴다 |
 | who published the run | 올린 사람 | 작성자, 업로더 | `run.json`의 `author` |
 | runs without an issue | issue 없음 | 미분류, 기타 | sidebar 묶음 이름 |
+| what an issue's runs test | 실험 | 실험 개요, 개요 | issue 화면 첫 칸 제목 |
+| step of the experiment plan | 실험 단계 | phase, 페이즈 | 설명 파일의 `phase`. 예: 조준기 v1 학습 |
+| scripted fly | 규칙 초파리 | 룰 초파리, 기본 초파리 | 버전 v0 |
+| fly agent | 학습한 초파리 | 초파리 agent, RL 초파리 | 화면 표기. README 본문은 초파리 agent |
+| neural-model fly | 신경 초파리 | 뉴럴 초파리 | `fly_model: neural` |
+| aimer agent | 학습한 조준기 | 조준기 agent, RL 조준기 | 화면 표기. README 본문은 조준기 agent |
+| model version in the alternating schedule | v0, v1 | 버전0, 1세대 | README 대전표의 번호. 환경 버전과 다르다 |
+| environment version | 환경 버전 | env 버전 | `config.json`의 `envVersion` |
+| frame stack | 함께 보는 최근 관측 | 프레임 스택, 관측 묶음 | 값은 "1개, 4개" |
+| training seed | 학습 seed | 시드 | 알고리즘 설정의 `seed` |
+| seeds of recorded episodes | 에피소드 seed | 평가 시드 | 설명 파일의 `notes`에 적는다 |
 
 ## 상태값 매핑
 코드 상태값과 화면 표기의 대응. 영어 대문자는 화면에 나오지 않는다.
@@ -45,3 +56,4 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 - 2026-11-09: 초파리 상태를 평시와 비상시로 바꾸고 초파리 모드(자유비행, 회피)를 없앰
 - 2026-11-11: 실행 패널과 issue 화면 용어 7개 추가 (#27)
 - 2026-11-15: 빔까지 거리 추가 (#42)
+- 2026-11-15: issue 화면의 실험, 초파리, 조준기, 조건 용어 11개 추가 (#47)

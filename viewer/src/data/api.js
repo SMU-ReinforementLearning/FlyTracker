@@ -28,3 +28,15 @@ export async function fetchEpisode(file) {
 export async function fetchConfig(runId) {
   return getJson(`${runId}/config.json`)
 }
+
+/**
+ * published/issues/<번호>.json. 사람이 쓴 실험 단계와 이유다. 못 읽으면 null.
+ * 없는 파일을 Cloudflare Pages 는 404 대신 index.html 로 답할 수 있어서, JSON 이 아닌 답도 없는 것으로 본다.
+ */
+export async function fetchIssueInfo(number) {
+  try {
+    return await getJson(`issues/${number}.json`)
+  } catch {
+    return null
+  }
+}

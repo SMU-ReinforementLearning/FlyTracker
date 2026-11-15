@@ -38,19 +38,19 @@ Clicking an issue name in the viewer sidebar shows what that batch of episodes i
 - Neural-fly demo runs (#31): not published; the page must not break on their configs, nothing more.
 
 ## Done Criteria
-- [ ] Issue pages #22, #35, #42 show phase, purpose, fly card, aimer card, conditions; no run table; #35 keeps its learning curve with a legend.
-- [ ] Every derived value on those pages matches the runs' `config.json` (checked field by field against the 9 published configs).
-- [ ] #35 and #42 show the changes against #22; #22 (no `compare`) shows none.
-- [ ] #35 shows variation buttons 전체 / 1개 / 4개; choosing 4개 narrows cards, record count and curve to the three frame-stack-4 runs.
-- [ ] An issue without a file shows the derived sections and a one-line empty state; checked on the build where the missing file comes back as HTML.
-- [ ] Sidebar groups start collapsed; the disclosure toggles; an issue name opens the page and its group; the player still works.
-- [ ] `npm run build` emits `runs/issues/*.json`.
-- [ ] ui-evidence screenshots at 1600px and 390px, no overflow, console clean apart from the existing favicon 404.
-- [ ] Explanation text is 한다체; README prose passes ko-writing `check.py` and `readme_check.py`.
-- [ ] `uv run pytest` passes.
+- [x] Issue pages #22, #35, #42 show phase, purpose, fly card, aimer card, conditions; no run table; #35 keeps its learning curve with a legend. (2026-11-15)
+- [x] Every derived value on those pages matches the runs' `config.json` (checked field by field against the 9 published configs). (2026-11-15)
+- [x] #35 and #42 show the changes against #22; #22 (no `compare`) shows none. (2026-11-15)
+- [x] #35 shows variation buttons 전체 / 1개 / 4개; choosing 4개 narrows cards, record count and curve to the three frame-stack-4 runs. (2026-11-15)
+- [x] An issue without a file shows the derived sections and a one-line empty state; checked on the build where the missing file comes back as HTML. (2026-11-15)
+- [x] Sidebar groups start collapsed; the disclosure toggles; an issue name opens the page and its group; the player still works. (2026-11-15)
+- [x] `npm run build` emits `runs/issues/*.json`. (2026-11-15)
+- [x] ui-evidence screenshots at 1600px and 390px, no overflow, console clean apart from the existing favicon 404. (2026-11-15)
+- [x] Explanation text is 한다체; README prose passes ko-writing `check.py` and `readme_check.py`. (2026-11-15)
+- [x] `uv run pytest` passes. (2026-11-15)
 
 ## Current State
-2026-11-15: implementation done and verified in the worktree, not committed. Waiting for the user's approval of the two commits (seed, then feature). Dev server for review: `npx vite --port 5187` in `viewer/` (port 5180 is taken by another checkout's server).
+2026-11-15: all done criteria met; feature committed. Next: the closing commit (pointer removed, Status done), then push, PR and squash merge at the user's request ("머지해"), then the post-PR cleanup gate. Open for the next issue: #44 must add `published/issues/44.json` with its runs, or pytest fails.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -67,6 +67,54 @@ Tracking only; no code.
 #### Notes
 - The issue body was rewritten in English (Goal, Done criteria) after creation; the script seeds it with the Korean title.
 
+### feat: viewer issue 화면에 실험 정보와 비교 보여 주기 (#47)
+> why: the issue page repeated the sidebar as a run table; the user wants it to say what the experiment is, how it differs from a chosen comparison issue, and to pick a variation inside one issue
+#### Scope
+viewer issue page, sidebar default, per-issue description files, publish warning and test, README, UI glossary and tone.
+#### Changes
+- `viewer/src/data/experiment.js` (new): fly and aimer cards (kind, version, 한다체 description, training rows), condition rows (environment version, capture range, capture hold, capture distance, episode length, room, turret position, field of view, pitch limit, start direction), facts (record count, file `notes`); `variationsOf` groups runs whose configs are equal except `algo.seed` and labels each by the shown values that differ; `compareExperiments` adds `prev` / `delta` per row and `was` per card.
+- `viewer/src/components/IssuePage/`: rewritten. Sections 실험 (phase, purpose, 비교 대상 link), variation buttons, 초파리, 조준기, 조건, 학습 곡선 with a legend. Changed rows get a blue dot and `old → new` plus a delta pill. Rows: label at the left edge, value from the centre line (user: names and values were too far apart; keep labels left). `word-break: keep-all`.
+- `viewer/src/data/api.js`: `fetchIssueInfo`; any failure → null, because Cloudflare Pages answers a missing file with `index.html` (reproduced with `vite preview`: 200 text/html).
+- `viewer/src/data/runs.js`: `compareGroup` (explicit `compare` only, no "previous issue" default, per the user), `byCreatedAt` with a name tie-break; table-only helpers removed.
+- `viewer/src/components/Sidebar/Sidebar.jsx`: groups start collapsed; clicking an issue name also opens its group.
+- `viewer/src/App.jsx`: passes `groups` and `openIssue` to the issue page. `CurveChart.jsx`: comment now points at the legend.
+- `published/issues/22.json`, `35.json`, `42.json` (new): drafts from the #22, #35, #42 management docs and #35 `gate.md`; #35 `aimer: v1`; #35 and #42 `compare: 22`.
+- `flytracker/record.py` `issue_info_path`; `scripts/publish_run.py` warns when the file is missing; `tests/test_published_issue_info.py` requires a well-formed file for every issue with published runs and a `compare` that points at an issue with runs.
+- `README.md` (실행 올리기 file format, 실행 목록 collapsed groups, issue 화면), `ui-text.glossary.md` (11 terms), `ui-text.config.md` (explanation text is 한다체).
+#### Verification
+- `uv run pytest`: 116 passed, 45 skipped (all skips need a local neural source; `FLYTRACKER_NEURAL_SOURCE`).
+- `npm run build`: `dist/runs/issues/{22,35,42}.json` emitted; `publishedRuns()` ignores the folder (9 runs in `index.json`).
+- Derived values checked against the 9 published `config.json`: #22 version 1, 3°/0.2 s, pitch ±80°, 1 run 5 episodes; #35 version 2, SAC 1,000,000 step, seeds 0, 1, 2, frame stack 1 and 4, 6 runs 378 episodes; #42 version 3, 1.25 mm/0.15 s, 2 runs 8 episodes.
+- Comparison (probe of changed rows): #35 vs #22 → aimer 기준선 v0, environment 1 → 2, pitch ±80° → ±89° (+9°); #42 vs #22 → environment 1 → 3, capture range 3° → 1.25 mm, hold 0.2 s → 0.15 s (−0.05초), pitch +9°; #22 → none.
+- Variation: #35 buttons 전체 / 1개 / 4개; 4개 → frame stack 4개, 실행 3개, 에피소드 189개, legend sac-fs4-s0..s2.
+- Sidebar (probes on `/`): 0 groups open at start; disclosure → 1 open; clicking #35's name → `?issue=35`, 2 open; player renders (2 canvases).
+- Missing file on the build (`dist/runs/issues/42.json` deleted, `vite preview`): empty state shown, no comparison, no errors.
+- ko-writing `check.py` on the new README prose and the 한다체 texts: no forbidden patterns, endings unified; `readme_check.py`: 0 fail.
+
+ui-evidence (Chrome 157.0.8103.52; working tree on base 7a81d0a before this commit; dev server on 127.0.0.1:5187, `vite preview` on 5189 for the missing-file case):
+
+| page | viewport | file | overflow | console |
+| --- | --- | --- | --- | --- |
+| `/?issue=35` (before, main) | 1600x900 | `47-feature-viewer-issue-info/captures/before-35-1600x900.png` | none (390px: 54 elements past the right edge, the run table) | favicon 404 |
+| `/?issue=35` | 1600x2100 | `47-feature-viewer-issue-info/captures/rows-35-1600x2100.png` | none | favicon 404 |
+| `/?issue=35`, 4개 chosen | 390x3000 | `47-feature-viewer-issue-info/captures/var4-390x3000.png` | none | favicon 404 |
+| `/?issue=42` | 1600x2100 | `47-feature-viewer-issue-info/captures/rows-42-1600x2100.png` | none | favicon 404 |
+| `/?issue=42` | 390x3000 | `47-feature-viewer-issue-info/captures/rows-42-390x3000.png` | none | clean |
+| `/?issue=22` | 1600x2100 | `47-feature-viewer-issue-info/captures/cmp-22-1600x2100.png` | none | favicon 404 |
+| `/?issue=42`, file missing (build) | 1600x1400, 390x1600 | `47-feature-viewer-issue-info/captures/no-info-*.png` | none | favicon 404 |
+| `/` (player, sidebar collapsed) | 1600x900 | `47-feature-viewer-issue-info/captures/root-1600x900.png` | none | favicon 404, three.js warnings |
+
+The favicon 404 is on main too (before capture).
+#### Notes
+- User decisions on 2026-11-15: issue name → experiment page, no run table; sidebar collapsed; 한다체 for explanation text; Apple style, no subtitles; comparison per section against an explicit `compare` flag; variation buttons; row labels left, values from the centre.
+- Not compared: results (capture rate, time), reward weights and turning speed (equal in every published run). The chosen variation is not kept in the URL.
+- Leftover dev servers: `TaskStop` ended the shell but left `vite` running on 5188 and 5189 (Windows); stopped by PID after checking the command line.
+
 ## Management Notes
 ### Follow-up Candidates
+- #44 publishes version-3 SAC runs: it must add `published/issues/44.json` (pytest requires it); a natural `compare` is 42 (same environment, baseline).
+- Keep the chosen variation in the URL (`route.js`), so a link opens the same variation.
+- Compare results (capture rate, time to capture) between an issue and its comparison target, not only settings.
 ### References
+- README `### 대전표` (version numbering v0, v1), `### 실행 올리기` (description file format), `### issue 화면`.
+- `docs/issues/feature/35-feature-sac-aimer-training/gate.md` (numbers quoted in `35.json`), `docs/issues/feature/42-feature-laser-hit-capture.md` (numbers quoted in `42.json`).

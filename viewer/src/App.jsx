@@ -184,7 +184,7 @@ export default function App() {
           </div>
         </header>
         {group ? (
-          <IssuePage key={group.key} group={group} onSelectRun={selectRun} />
+          <IssuePage key={group.key} group={group} groups={groups} onOpenIssue={openIssue} />
         ) : (
           <div className={styles.workspace}>
             {run && sel && <RunPanel key={run.id} run={run} grid={grid} sel={sel} onSelect={selectEpisode} />}

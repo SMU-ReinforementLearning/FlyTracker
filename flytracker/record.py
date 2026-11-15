@@ -261,3 +261,12 @@ def publish_run(
         shutil.rmtree(dest)
     os.replace(tmp, dest)
     return [dest / r for r in (*rels, "run.json")]
+
+
+def issue_info_path(dest_root: str | os.PathLike, number: int) -> Path:
+    """issue 하나의 설명 파일 자리. dest_root/issues/<번호>.json 이고, viewer 의 issue 화면이 읽는다.
+
+    실행 기록에 남지 않는 것을 사람이 한국어로 쓴다. phase(실험 단계 한 줄), purpose(실험 이유 문단 목록),
+    fly 와 aimer(학습한 모델의 버전 표기, 예: v1), notes(설정에 없는 조건, label 과 value)다.
+    """
+    return Path(dest_root) / "issues" / f"{number}.json"

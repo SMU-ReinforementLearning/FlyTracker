@@ -1,82 +1,248 @@
-/* issue 화면: 실행 비교 */
+/* issue 화면: 실험 이유, 초파리, 조준기, 조건, 학습 곡선 */
 
 .page {
   flex: 1;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  padding: var(--space-4);
+  padding: var(--space-6) var(--space-4);
   background: var(--color-bg-stage);
   overflow-y: auto;
+  word-break: keep-all; /* 한국어 낱말 중간에서 줄이 바뀌지 않게 띄어쓰기에서만 바꾼다 */
+  overflow-wrap: anywhere; /* 띄어쓰기 없는 긴 값(파일 경로)은 어디서든 끊는다 */
+}
+
+/* 글이 읽히는 폭에서 멈추게 가운데에 세운다 */
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-width: 92rem;
+  margin: 0 auto;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.heading {
+  margin: 0 0 0 0.2rem;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-title);
 }
 
 .card {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 1.4rem var(--space-4);
+  align-items: stretch;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-6);
   background: var(--color-bg-window);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
 }
 
-.tableWrap {
-  display: block;
-  padding: var(--space-1) 0;
-  overflow-x: auto;
+/* 초파리와 조준기를 나란히. 좁으면 위아래로 쌓인다 */
+.pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(32rem, 1fr));
+  gap: var(--space-6) var(--space-4);
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
+.pair .card:only-of-type {
+  flex: 1;
 }
 
-.table th,
-.table td {
-  padding: 0.9rem var(--space-4);
-  text-align: left;
-  white-space: nowrap;
+.phase {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-title);
+}
+
+.text {
+  margin: 0;
+  max-width: 68rem;
+  font-size: var(--font-size-lg);
+  line-height: 1.65;
+}
+
+.empty {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-lg);
+  line-height: 1.65;
+}
+
+.agentHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.agentName {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-title);
+}
+
+.version {
+  padding: 0.2rem 0.8rem;
+  border-radius: 99rem;
+  background: var(--color-fill-strong);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
   font-variant-numeric: tabular-nums;
 }
 
-.table thead th {
+/* 이름과 값 줄. 카드 안에서 위 글과 선으로 나뉜다 */
+.rows {
+  margin: 0;
+}
+
+.text + .rows,
+.empty + .rows {
+  margin-top: var(--space-1);
+  border-top: 1px solid var(--color-separator);
+}
+
+/* 이름은 왼쪽 끝에서, 값은 가운데 선에서 시작한다. 값을 오른쪽 끝에 붙이면 넓은 카드에서 이름과 값이 너무 멀어진다 */
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: var(--space-5);
+  align-items: baseline;
+  padding: 1.1rem 0;
+  font-size: var(--font-size-md);
+}
+
+.row + .row {
+  border-top: 1px solid var(--color-separator);
+}
+
+.row dt {
   color: var(--color-text-secondary);
+}
+
+.row dd {
+  margin: 0;
+  font-weight: var(--font-weight-medium);
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+
+/* 비교 대상과 다른 줄. 이름 앞의 파란 점으로 훑어보며 찾고, 값은 '비교 대상의 값 → 지금 값' 이다 */
+.changed dt::before {
+  content: '';
+  display: inline-block;
+  width: 0.6rem;
+  height: 0.6rem;
+  margin-right: 0.7rem;
+  border-radius: 50%;
+  background: var(--color-accent);
+  vertical-align: 0.1rem;
+}
+
+.prev {
+  color: var(--color-text-secondary);
+  font-weight: normal;
+}
+
+.arrow {
+  margin: 0 0.6rem;
+  color: var(--color-text-tertiary);
+  font-weight: normal;
+}
+
+.delta {
+  display: inline-block;
+  margin-left: var(--space-2);
+  padding: 0.1rem 0.7rem;
+  border-radius: 99rem;
+  background: var(--color-fill-strong);
+  color: var(--color-accent);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
 }
 
-.table tbody tr {
-  border-top: 1px solid var(--color-separator);
-}
-
-.table tbody th {
-  font-weight: var(--font-weight-medium);
-}
-
-.table .num {
-  text-align: right;
-}
-
-.runLink {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
+.issueLink {
   padding: 0;
   border: 0;
   background: none;
-  font-weight: inherit;
+  color: var(--color-accent);
+  font-weight: var(--font-weight-medium);
+  text-align: left;
   cursor: pointer;
 }
 
-.runLink:hover {
-  color: var(--color-accent);
+.issueLink:hover {
+  text-decoration: underline;
+}
+
+/* variation 고르기. 학습 seed 만 다른 실행끼리 하나다 */
+.variationBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-left: 0.2rem;
+}
+
+.variationLabel {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
+}
+
+.variationSwitch button {
+  min-width: 5.6rem;
+  padding: 0.5rem var(--space-3);
+  font-size: var(--font-size-md);
+}
+
+/* 값 전환 버튼은 제 폭만 쓰고, 그래프는 카드 폭을 다 쓴다 */
+.curveCard {
+  align-items: flex-start;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 /* media query 의 rem 은 html 글자 크기를 따르지 않아 px 로 쓴다 */
 @media (max-width: 760px) {
   .page {
     overflow-y: visible;
+    padding: var(--space-4) var(--space-3);
+  }
+
+  .card {
+    padding: var(--space-4);
+  }
+
+  .pair {
+    grid-template-columns: 1fr;
+  }
+
+  /* 좁은 화면에서는 값이 길어서 값 칸을 더 넓게 준다 */
+  .row {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    column-gap: var(--space-3);
   }
 }
