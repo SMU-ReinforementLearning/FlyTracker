@@ -94,19 +94,37 @@ class RuleAimer:
 
         if o[OBS["visible"]][0] > 0.5:
             self.mode, self._f8_t, self._local_done = "track", 0.0, False
-            u, v = o[OBS["uv"]]
-            r, up, f = aim_basis(yaw, pitch)
-            t_yaw, t_pitch = yaw_pitch_of(unit(f + r * (u * self.tan_half_h) + up * (v * self.tan_half_v)))  # 초파리 방향
-            rate = o[OBS["target_rate"]]  # 행동과 같은 눈금
-            a = np.zeros(ACTION_DIM, dtype=np.float32)
-            a[0] = np.clip(rate[0] + self.track_gain * wrap_angle(t_yaw - yaw) / self.max_yaw_rate, -1, 1)
-            a[1] = np.clip(rate[1] + self.track_gain * (t_pitch - pitch) / self.max_pitch_rate, -1, 1)
-            return a
+            return self.track(o)
 
         last = o[OBS["last_seen_dir"]]
         if np.any(last != 0) and not self._local_done:
             return self._local_search(yaw, pitch, last)
         return self._sweep(yaw, pitch, prev_yaw)
+
+    def track(self, o: np.ndarray) -> np.ndarray:
+        """초파리가 보이는 관측 하나로 추적 행동을 낸다. 탐색 상태를 쓰지도 바꾸지도 않는다."""
+        s, c = o[OBS["yaw_sincos"]]
+        yaw = math.atan2(s, c)
+        pitch = float(o[OBS["pitch"]][0]) * self.max_pitch
+        u, v = o[OBS["uv"]]
+        r, up, f = aim_basis(yaw, pitch)
+        t_yaw, t_pitch = yaw_pitch_of(unit(f + r * (u * self.tan_half_h) + up * (v * self.tan_half_v)))  # 초파리 방향
+        rate = o[OBS["target_rate"]]  # 행동과 같은 눈금
+        a = np.zeros(ACTION_DIM, dtype=np.float32)
+        a[0] = np.clip(rate[0] + self.track_gain * wrap_angle(t_yaw - yaw) / self.max_yaw_rate, -1, 1)
+        a[1] = np.clip(rate[1] + self.track_gain * (t_pitch - pitch) / self.max_pitch_rate, -1, 1)
+        return a
+
+    def assisted(self, obs, action, scale: float) -> np.ndarray:
+        """정책의 행동에 추적을 더한다. 초파리가 보이면 추적 행동 + scale × 정책 행동, 안 보이면 정책 행동 그대로다.
+
+        정책은 탐색을 온전히 맡고, 보이는 동안에는 추적을 고치는 보정만 낸다. obs 는 가장 최근 관측 하나다.
+        """
+        o = np.asarray(obs, dtype=float)
+        a = np.asarray(action, dtype=float)
+        if o[OBS["visible"]][0] > 0.5:
+            return np.clip(self.track(o) + scale * a, -1.0, 1.0)
+        return a
 
     # 탐색
 

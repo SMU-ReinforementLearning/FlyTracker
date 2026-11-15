@@ -1,0 +1,66 @@
+{
+  "truth": {
+    "path": "docs/issues/feature/51-feature-sac-laser-training/gate/truth.csv",
+    "sha256": "630ec5b311a118169c3d0a5872638c13680f0a02d3f509cf98f52238aad98089"
+  },
+  "a": {
+    "path": "docs/issues/feature/51-feature-sac-laser-training/gate/baseline.csv",
+    "sha256": "6ac2f0bd223aea7cd0d1850ae48e7ed624ccfe8b345f02352d6ade3961e259ae"
+  },
+  "b": {
+    "path": "docs/issues/feature/51-feature-sac-laser-training/gate/sac-beam.csv",
+    "sha256": "928d96dc4ace338f36f1d2e57c31f234410206090a45e1977bec72ef34c35741"
+  },
+  "n": 200,
+  "dropped": {
+    "A": 0,
+    "B": 0
+  },
+  "targets": [
+    "time"
+  ],
+  "metric": "mae · round none · no clip · lower is better",
+  "metric_args": {
+    "metric": "mae",
+    "composite": "0.5*(1-rmse)+0.5*spearman",
+    "round": "none",
+    "clip": null
+  },
+  "resamples": 10000,
+  "seed": 42,
+  "engine": "numpy",
+  "seconds": 0.1,
+  "nan_as_zero": 0,
+  "threshold": 0.9,
+  "verdict": "FAIL",
+  "rows": [
+    {
+      "target": "time",
+      "a": 4.85785,
+      "b": 9.919134,
+      "delta": 5.061284,
+      "base_a": {
+        "mae": 4.85785
+      },
+      "base_b": {
+        "mae": 9.919134
+      },
+      "boot_mean": 5.0606745041000005,
+      "ci_low": 4.852776825000001,
+      "ci_high": 5.2649038374999995,
+      "p_better": 0.0,
+      "ties": 0
+    }
+  ],
+  "macro": {
+    "target": "macro",
+    "a": 4.85785,
+    "b": 9.919134,
+    "delta": 5.061284,
+    "boot_mean": 5.0606745041000005,
+    "ci_low": 4.852776825000001,
+    "ci_high": 5.2649038374999995,
+    "p_better": 0.0,
+    "ties": 0
+  }
+}
