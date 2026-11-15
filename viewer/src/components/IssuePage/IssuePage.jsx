@@ -136,7 +136,7 @@ function Purpose({ issueKey, info, target, onOpenIssue }) {
   )
 }
 
-/** issue 하나가 어떤 실험인지 보여 준다. 실험 이유, variation, 초파리, 조준기, 조건, 학습 곡선 순서다. */
+/** issue 하나가 어떤 실험인지 보여 준다. 실험 이유, variation, 초파리, 조준기, 조건, 보상, 학습 곡선 순서다. */
 export function IssuePage({ group, groups, onOpenIssue }) {
   const [metric, setMetric] = useState('rate')
   const [variation, setVariation] = useState(ALL)
@@ -148,7 +148,7 @@ export function IssuePage({ group, groups, onOpenIssue }) {
 
   const configs = useConfigs(runs)
   const info = useIssueInfo(group.key)
-  const variations = useMemo(() => (configs ? variationsOf(runs, configs) : { label: null, items: [] }), [runs, configs])
+  const variations = useMemo(() => (configs && info !== undefined ? variationsOf(runs, configs, info) : { label: null, items: [] }), [runs, configs, info])
   const picked = variations.items.find((v) => v.key === variation) ?? null
   const shownIds = useMemo(() => (picked ? new Set(picked.runIds) : null), [picked])
 
@@ -221,6 +221,13 @@ export function IssuePage({ group, groups, onOpenIssue }) {
             <Rows rows={[...exp.conditions, ...exp.facts]} />
           </div>
         </Section>
+        {exp.rewards.length > 0 && (
+          <Section title="보상">
+            <div className={styles.card}>
+              <Rows rows={exp.rewards} />
+            </div>
+          </Section>
+        )}
         {hasCurve && (
           <Section title="학습 곡선">
             <div className={`${styles.card} ${styles.curveCard}`}>

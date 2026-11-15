@@ -1,7 +1,7 @@
 // issue 화면에 보일 초파리, 조준기, 조건을 실행들의 config.json 에서 뽑고, 비교 대상과 견준다.
 // 실행에 남지 않는 것(실험 단계, 실험 이유, 학습한 모델의 버전 번호, 비교 대상 issue)은 published/issues/<번호>.json 에서 온다.
 // 버전 번호는 README 의 대전표 규칙을 따른다. 사람이 짠 규칙인 규칙 초파리와 기준선이 v0 이다.
-import { algoLabel } from './labels.js'
+import { algoLabel, zoomLabel } from './labels.js'
 
 const LEARNED = new Set(['sac', 'td3', 'ppo', 'dqn'])
 
@@ -25,7 +25,7 @@ const AIMER = {
   baseline: {
     name: '기준선',
     version: 'v0',
-    text: '사람이 짠 규칙으로 움직이는 조준기다. 초파리가 보이면 화면 가운데로 오게 돌리고, 놓치면 마지막으로 본 쪽부터 넓혀 가며 찾는다.',
+    text: '사람이 짠 규칙으로 움직이는 조준기다. 초파리가 보이면 따라 돌고, 놓치면 마지막으로 본 쪽부터 넓혀 가며 찾는다.',
   },
   learned: {
     name: '학습한 조준기',
@@ -66,15 +66,25 @@ function sidesOf(cfg) {
   const algo = cfg.algo ?? {}
   const name = algo.name ?? cfg.policy ?? cfg.mode ?? null
   const ruleFly = { kind: cfg.env?.fly_model === 'neural' ? 'neural' : 'rule' }
+  // 기준선은 #45(환경 버전 4)부터 초파리 방향의 각속도에 맞춰 돈다. 그 전에는 조준 오차만 보고 돌았다.
+  const baseline = { kind: 'baseline', tracking: (cfg.envVersion ?? 1) >= 4 }
   if (LEARNED.has(name)) {
-    const self = { kind: 'learned', algo: name, steps: algo.steps, seed: algo.seed, frameStack: algo.frameStack }
+    const self = {
+      kind: 'learned',
+      algo: name,
+      steps: algo.steps,
+      seed: algo.seed,
+      frameStack: algo.frameStack,
+      model: algo.model, // 이미 학습한 모델을 다른 환경에서 돌린 실행(#44)이면 그 모델의 실행 id
+      trainedEnv: algo.trainedEnvVersion,
+    }
     const opponent = algo.opponent
     if (algo.side === 'fly') {
-      return { fly: self, aimer: !opponent || opponent === 'baseline' ? { kind: 'baseline' } : { kind: 'learned', model: opponent } }
+      return { fly: self, aimer: !opponent || opponent === 'baseline' ? baseline : { kind: 'learned', model: opponent } }
     }
     return { fly: !opponent || opponent === 'rule' ? ruleFly : { kind: 'learned', model: opponent }, aimer: self }
   }
-  if (name === 'rule-baseline') return { fly: ruleFly, aimer: { kind: 'baseline' } }
+  if (name === 'rule-baseline') return { fly: ruleFly, aimer: baseline }
   if (name === 'free-flight') return { fly: ruleFly, aimer: { kind: 'none' } }
   return { fly: ruleFly, aimer: { kind: 'other', name: name ? algoLabel(name) : '알 수 없음' } }
 }
@@ -92,16 +102,19 @@ function cardsOf(sides, table, versionLabel) {
   return [...groups.entries()].map(([key, list]) => {
     const first = list[0]
     const base = table[first.kind] ?? { name: first.name }
-    const rows =
-      first.kind === 'learned'
-        ? [
-            makeRow('알고리즘', list.map((s) => (has(s.algo) ? item(algoLabel(s.algo)) : null))),
-            makeRow('학습 길이', list.map((s) => (has(s.steps) ? qty(s.steps, ' step') : null))),
-            makeRow('학습 seed', list.map((s) => (has(s.seed) ? item(String(s.seed), s.seed) : null)), { delta: false }),
-            makeRow('함께 보는 최근 관측', list.map((s) => (has(s.frameStack) ? qty(s.frameStack, '개') : null))),
-            makeRow('모델', list.map((s) => (has(s.model) ? item(s.model) : null))),
-          ].filter(Boolean)
-        : []
+    let rows = []
+    if (first.kind === 'learned') {
+      rows = [
+        makeRow('알고리즘', list.map((s) => (has(s.algo) ? item(algoLabel(s.algo)) : null))),
+        makeRow('학습 길이', list.map((s) => (has(s.steps) ? qty(s.steps, ' step') : null))),
+        makeRow('학습 seed', list.map((s) => (has(s.seed) ? item(String(s.seed), s.seed) : null)), { delta: false }),
+        makeRow('함께 보는 최근 관측', list.map((s) => (has(s.frameStack) ? qty(s.frameStack, '개') : null))),
+        makeRow('학습한 환경 버전', list.map((s) => (has(s.trainedEnv) ? item(String(s.trainedEnv)) : null))),
+        makeRow('모델', list.map((s) => (has(s.model) ? item(s.model) : null))),
+      ].filter(Boolean)
+    } else if (first.kind === 'baseline') {
+      rows = [makeRow('따라가는 방식', list.map((s) => item(s.tracking ? '초파리 각속도에 맞춰 돌림' : '조준 오차만 보고 돌림')))]
+    }
     return {
       key,
       name: base.name,
@@ -142,12 +155,35 @@ function conditionsOf(configs) {
     makeRow('조준기 자리', envs.map((e) => turretOf(e.turret_pos))),
     makeRow('시야각', envs.map((e) => (has(e.camera?.fov_v_deg) ? qty(e.camera.fov_v_deg, '°', '세로 ') : null))),
     makeRow('위아래 조준 한계', envs.map((e) => (has(e.aimer?.max_pitch_deg) ? qty(e.aimer.max_pitch_deg, '°', '±') : null))),
+    // 확대 화면은 조준기 화면의 가운데를 시야각 ÷ fine_error_deg 배로 키운 것이다(#45, 환경 버전 4부터)
+    makeRow('확대 화면', envs.map((e) => (has(e.fine_error_deg) && has(e.camera?.fov_v_deg) ? item(zoomLabel(e.camera.fov_v_deg / e.fine_error_deg), e.camera.fov_v_deg / e.fine_error_deg, '배') : null))),
     makeRow('시작 방향', envs.map((e) => (has(e.start_facing_fly) ? item(e.start_facing_fly ? '초파리 쪽' : '방 가운데 쪽') : null))),
   ].filter(Boolean)
 }
 
+// 조준기 보상의 가중치. config.json 의 env.reward 에 있는 항목이고, 뜻은 flytracker/env.py 의 RewardWeights 주석에 있다.
+const REWARD = [
+  ['time', '시간 벌점', ''],
+  ['beam', '빔까지 거리 벌점', ''],
+  ['beam_far', '빔 벌점이 가장 큰 거리', 'm'],
+  ['angle', '조준 오차 벌점', ''],
+  ['lost', '놓쳤을 때 벌점', ''],
+  ['action_change', '행동 변화 벌점', ''],
+  ['capture', '포획 보상', ''],
+]
+
+/** 보상 가중치 줄. 아는 항목은 위 순서로, 모르는 항목은 key 그대로 뒤에 둔다. */
+function rewardsOf(configs) {
+  const weights = configs.map((c) => c.env?.reward ?? {})
+  const known = new Set(REWARD.map(([k]) => k))
+  const extra = [...new Set(weights.flatMap((w) => Object.keys(w)))].filter((k) => !known.has(k)).map((k) => [k, k, ''])
+  return [...REWARD, ...extra]
+    .map(([key, label, unit]) => makeRow(label, weights.map((w) => (typeof w[key] === 'number' ? qty(w[key], unit) : null))))
+    .filter(Boolean)
+}
+
 /**
- * issue 화면의 초파리 카드, 조준기 카드, 조건 줄.
+ * issue 화면의 초파리 카드, 조준기 카드, 조건 줄, 보상 줄.
  * runs 는 index.json 의 실행, configs 는 같은 순서의 config.json(못 읽은 실행은 null), info 는 issue 설명 파일(없으면 null).
  * conditions 는 비교 대상과 견주는 줄이고, facts 는 이 issue 에만 있는 사실(기록 수, 설명 파일의 notes)이라 견주지 않는다.
  */
@@ -161,6 +197,7 @@ export function experimentOf(runs, configs, info) {
     fly: cardsOf(sides.map((s) => s.fly), FLY, info?.fly),
     aimer: cardsOf(sides.map((s) => s.aimer), AIMER, info?.aimer),
     conditions: conditionsOf(cfgs),
+    rewards: rewardsOf(cfgs),
     facts: [{ label: '기록', value: record }, ...notes],
   }
 }
@@ -228,6 +265,7 @@ function shownValues(exp) {
     for (const card of exp[side]) for (const r of card.rows) if (r.label !== '학습 seed') out.set(`${side}|${r.label}`, r.value)
   }
   for (const r of exp.conditions) out.set(`조건|${r.label}`, r.value)
+  for (const r of exp.rewards) out.set(`보상|${r.label}`, r.value)
   return out
 }
 
@@ -236,7 +274,7 @@ function shownValues(exp) {
  * 돌려주는 것: { label, items: [{ key, label, runIds }] }. label 은 variation 끼리 다른 항목의 이름이고,
  * 항목 label 은 그 값이다(예: '함께 보는 최근 관측' 과 '1개', '4개'). variation 이 하나뿐이면 items 는 빈 목록이다.
  */
-export function variationsOf(runs, configs) {
+export function variationsOf(runs, configs, info) {
   const groups = new Map()
   runs.forEach((run, i) => {
     const cfg = configs[i]
@@ -248,9 +286,12 @@ export function variationsOf(runs, configs) {
   })
   const list = [...groups.values()]
   if (list.length < 2) return { label: null, items: [] }
-  const shown = list.map((g) => shownValues(experimentOf(g.runs, g.configs, null)))
+  const shown = list.map((g) => shownValues(experimentOf(g.runs, g.configs, info)))
   const keys = [...new Set(shown.flatMap((m) => [...m.keys()]))]
-  const differing = keys.filter((k) => new Set(shown.map((m) => m.get(k) ?? '없음')).size > 1)
+  const differs = (k) => new Set(shown.map((m) => m.get(k) ?? '없음')).size > 1
+  // 초파리나 조준기의 종류가 다르면 그것만으로 이름을 짓는다. 종류가 다르면 딸린 줄도 다 달라서, 모두 적으면 이름이 너무 길다.
+  const titles = ['fly|초파리', 'aimer|조준기'].filter(differs)
+  const differing = titles.length ? titles : keys.filter(differs)
   const items = list.map((g, i) => ({
     key: g.runs[0].id,
     label: differing.length ? differing.map((k) => shown[i].get(k) ?? '없음').join(', ') : `설정 ${i + 1}`,
@@ -268,5 +309,6 @@ export function compareExperiments(exp, prev) {
     fly: diffCards(exp.fly, prev.fly),
     aimer: diffCards(exp.aimer, prev.aimer),
     conditions: diffRows(exp.conditions, prev.conditions),
+    rewards: diffRows(exp.rewards, prev.rewards),
   }
 }

@@ -48,9 +48,10 @@ Clicking an issue name in the viewer sidebar shows what that batch of episodes i
 - [x] ui-evidence screenshots at 1600px and 390px, no overflow, console clean apart from the existing favicon 404. (2026-11-15)
 - [x] Explanation text is 한다체; README prose passes ko-writing `check.py` and `readme_check.py`. (2026-11-15)
 - [x] `uv run pytest` passes. (2026-11-15)
+- [x] After merging main (#44, #45, #49): every issue with published runs has a file; #42 shows the #44 SAC runs as a variation; #45 shows the new baseline's tracking; #49 shows the reward change. (2026-11-16)
 
 ## Current State
-2026-11-15: all done criteria met; feature committed. Next: the closing commit (pointer removed, Status done), then push, PR and squash merge at the user's request ("머지해"), then the post-PR cleanup gate. Open for the next issue: #44 must add `published/issues/44.json` with its runs, or pytest fails.
+2026-11-16: all done criteria met; main (#44, #45, #49) merged into the branch and the page extended for their runs. Next: the closing commit (pointer removed, Status done), then push, PR and squash merge at the user's request ("머지해"), then the post-PR cleanup gate.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -104,11 +105,35 @@ ui-evidence (Chrome 157.0.8103.52; working tree on base 7a81d0a before this comm
 | `/?issue=42`, file missing (build) | 1600x1400, 390x1600 | `47-feature-viewer-issue-info/captures/no-info-*.png` | none | favicon 404 |
 | `/` (player, sidebar collapsed) | 1600x900 | `47-feature-viewer-issue-info/captures/root-1600x900.png` | none | favicon 404, three.js warnings |
 
-The favicon 404 is on main too (before capture).
+The favicon 404 is on main too (before capture). The two `rows-42-*` captures were removed in the next commit: after merging main, #42 also holds the #44 SAC runs, and `m-42-1600x2600.png` replaces them.
 #### Notes
 - User decisions on 2026-11-15: issue name → experiment page, no run table; sidebar collapsed; 한다체 for explanation text; Apple style, no subtitles; comparison per section against an explicit `compare` flag; variation buttons; row labels left, values from the centre.
 - Not compared: results (capture rate, time), reward weights and turning speed (equal in every published run). The chosen variation is not kept in the URL.
 - Leftover dev servers: `TaskStop` ended the shell but left `vite` running on 5188 and 5189 (Windows); stopped by PID after checking the command line.
+
+### feat: main에 들어온 실행에 맞춰 issue 화면 넓히기 (#47)
+> why: merging main brought five published runs (#44 under #42, #45, #49) that the page did not describe: the #45 baseline tracks the fly's angular velocity, #49 changes the reward, and #44 plays a version-2 model under version 3; the description-file test failed for #45 and #49
+#### Scope
+viewer experiment model and issue page, description files, README.
+#### Changes
+- Merge commit 83b7eaa: `origin/main` @ c4dd7e1 into the branch; conflicts only in the registry rows and the glossary history (both sides kept).
+- `experiment.js`: baseline card gets a 따라가는 방식 row (environment version 4 and later: tracks the fly's angular velocity, #45; earlier: aim error only) and a description that fits both; learned-aimer rows 학습한 환경 버전 and 모델 from `algo.trainedEnvVersion` / `algo.model`; condition row 확대 화면 (`fov_v_deg / fine_error_deg`, 80배); reward rows from `env.reward` (시간 벌점, 빔까지 거리 벌점, 빔 벌점이 가장 큰 거리, 조준 오차 벌점, 놓쳤을 때 벌점, 행동 변화 벌점, 포획 보상) compared like conditions; variation labels use only the fly/aimer kinds when those differ (#42: 기준선 v0 / 학습한 조준기 v1) and the description file's version labels.
+- `IssuePage.jsx`: 보상 section after 조건.
+- `published/issues/42.json`: the #44 SAC runs, `aimer: v1`, phase 레이저 포획에서 다시 재기. New `45.json` (compare 42) and `49.json` (compare 45), drafted from their management docs.
+- `README.md` issue page section: 보상, 따라가는 방식, model rows, 확대 화면, variation naming.
+#### Verification
+- `uv run pytest`: 133 passed, 45 skipped (local neural source).
+- `npm run build`: `runs/issues/{22,35,42,45,49}.json`.
+- Changed rows (probe): #42 vs #22 → environment 1 → 3, capture range and hold (−0.05초), pitch +9°; 학습한 조준기 v1 variation adds 학습한 환경 버전 2 and 모델 2026-11-12_131635_sac-fs1-s0. #45 vs #42 → 따라가는 방식 조준 오차만 보고 돌림 → 초파리 각속도에 맞춰 돌림, environment 3 → 4, pitch ±89° → ±90° (+1°), 확대 화면 없음 → 80배. #49 vs #45 → environment 4 → 5, 빔까지 거리 벌점 없음 → 0.1, 빔 벌점이 가장 큰 거리 없음 → 1m, 조준 오차 벌점 0.05 → 0 (−0.05). Matches the env.py version notes and the #45/#49 docs.
+- ko-writing `check.py` on the new texts and README section: no forbidden patterns, endings unified (one heading warning is an extraction artefact: a paragraph that starts with `#44`). `readme_check.py`: 0 fail.
+
+| page | viewport | file | overflow | console |
+| --- | --- | --- | --- | --- |
+| `/?issue=42`, 학습한 조준기 v1 chosen | 1600x2600 | `47-feature-viewer-issue-info/captures/m-42-1600x2600.png` | none | favicon 404 |
+| `/?issue=45` | 1600x2600 | `47-feature-viewer-issue-info/captures/m-45-1600x2600.png` | none | favicon 404 |
+| `/?issue=49` | 390x3600 | `47-feature-viewer-issue-info/captures/m-49-390x3600.png` | none | clean |
+#### Notes
+- Behaviour that lives only in code (not in `config.json`) is visible only where it can be tied to the environment version, as for the baseline. Anything else needs the description file's `purpose`.
 
 ## Management Notes
 ### Follow-up Candidates
