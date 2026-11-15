@@ -75,6 +75,18 @@ The weights are starting values chosen by reasoning, not by experiment: `beam` 0
 #### Notes
 - None.
 
+### docs: README의 R을 빔까지 거리 벌점으로 고치기 (#49)
+> why: README states both sides' reward tables and the baseline's mean return
+#### Scope
+`README.md`.
+#### Changes
+- Aimer R: the penalty row, its explanation with the formula and four values, the ratio to the lost penalty (1.5x). Fly R: mirrored row and the date of the change. Fly state: the aim-error entry no longer claims to be the reward's quantity. Training: the `--reward` option. Baseline: version 5, mean return −23.13, and that only the return differs from version 4.
+#### Verification
+- ko-writing `check.py`: no banned patterns, endings consistent, no over-long paragraph.
+- Values recomputed: log1p(1)/log1p(800) = 0.104, log1p(10)/log1p(800) = 0.359, log1p(100)/log1p(800) = 0.690; 0.15 / 0.1 = 1.5.
+#### Notes
+- No cold-reader pass.
+
 ## Management Notes
 ### Follow-up Candidates
 - SAC training under version 5 with several conditions and a pre-registered gate (next issue).
