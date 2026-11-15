@@ -48,6 +48,19 @@ Train SAC aimers under environment version 5 (laser-hit capture, 17-dim observat
 #### Notes
 - None.
 
+### feat: 정책 행동에 기준선 추적을 더하는 assist (#51)
+> why: one training condition lets the policy correct the baseline's tracker instead of steering alone; SAC's exploration noise is far larger than the 0.13 % action precision a hit needs
+#### Scope
+`flytracker/baseline.py`, `wrappers.py`, `players.py`, `scripts/train.py`, `tests/test_assist.py`.
+#### Changes
+- `RuleAimer.track(obs)` (the tracking law, stateless) and `assisted(obs, action, scale)`: tracking + scale x policy action while visible, the policy's action otherwise.
+- `wrappers.TrackingAssist`, `make_env(assist=)`, `train.py --assist`, `algo.assist` in `config.json`; `PolicyPlayer` / `load_opponent` apply the same assist. `baseline_player` passes the camera and rate limits of the config.
+#### Verification
+- `uv run python -m pytest -q`: 126 passed, 45 skipped. New `tests/test_assist.py`: the action reaching the env is tracking + 0.2 x policy while visible and the policy's own otherwise; a zero policy with assist captures a fly it starts facing; a `PolicyPlayer` with assist reproduces the wrapper's actions and observations step by step; discrete actions are refused.
+- Smoke: `train.py --algo sac --steps 6000 --assist 0.2` runs and saves; `evaluate_gate.py model` loads it (0/5 on 5 seeds, untrained).
+#### Notes
+- Throughput on this machine is about 50 steps/s per run (6,000 steps in about 2 minutes, with or without `OMP_NUM_THREADS=1`).
+
 ## Management Notes
 ### Follow-up Candidates
 ### References

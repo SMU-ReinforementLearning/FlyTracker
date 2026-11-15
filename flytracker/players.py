@@ -41,10 +41,13 @@ class PolicyPlayer:
     (gymnasium FrameStackObservation 의 padding_type="reset" 과 같다). 이산 행동 모델이면 행동 번호를 연속 행동으로 바꾼다.
     """
 
-    def __init__(self, policy, frame_stack: int = 1, discrete: bool = False):
+    def __init__(self, policy, frame_stack: int = 1, discrete: bool = False, assist: float = 0.0, tracker: RuleAimer | None = None):
+        """assist 가 0 보다 크면 학습 때처럼 정책의 행동에 tracker 의 추적을 더한다 (wrappers.TrackingAssist)."""
         self.policy = policy
         self.frame_stack = frame_stack
         self.discrete = discrete
+        self.assist = assist
+        self.tracker = tracker
         self._stack: deque | None = None
 
     def reset(self) -> None:
@@ -63,6 +66,8 @@ class PolicyPlayer:
         action, _ = self.policy.predict(x, deterministic=True)
         if self.discrete:
             return DISCRETE_ACTIONS[int(action)][1].copy()
+        if self.assist > 0:
+            return self.tracker.assisted(obs, action, self.assist)
         return np.asarray(action, dtype=float)
 
 
@@ -74,7 +79,15 @@ class Opponent:
 
 
 def baseline_player(config: EnvConfig) -> PolicyPlayer:
-    return PolicyPlayer(RuleAimer(max_pitch_deg=config.aimer.max_pitch_deg))
+    return PolicyPlayer(
+        RuleAimer(
+            max_pitch_deg=config.aimer.max_pitch_deg,
+            max_yaw_rate_deg=config.aimer.max_yaw_rate_deg,
+            max_pitch_rate_deg=config.aimer.max_pitch_rate_deg,
+            fov_v_deg=config.camera.fov_v_deg,
+            aspect=config.camera.aspect,
+        )
+    )
 
 
 def load_opponent(spec: str, side: str, config: EnvConfig) -> Opponent:
@@ -105,7 +118,14 @@ def load_opponent(spec: str, side: str, config: EnvConfig) -> Opponent:
     if name not in classes:
         raise ValueError(f"{spec}: 알 수 없는 알고리즘 {name!r}")
     model = classes[name].load(model_path, device="cpu")
-    player = PolicyPlayer(model, frame_stack=int(algo.get("frameStack", 1)), discrete=name == "dqn")
+    assist = float(algo.get("assist", 0.0))
+    player = PolicyPlayer(
+        model,
+        frame_stack=int(algo.get("frameStack", 1)),
+        discrete=name == "dqn",
+        assist=assist,
+        tracker=baseline_player(config).policy if assist > 0 else None,
+    )
     label = run_dir.name if model_path.name == "model.zip" else f"{run_dir.name}/{model_path.stem}"
     return Opponent(player, label, version)
 

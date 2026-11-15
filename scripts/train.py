@@ -82,6 +82,13 @@ def main() -> None:
     p.add_argument("--eval-every", type=int, default=20_000)
     p.add_argument("--eval-episodes", type=int, default=3)
     p.add_argument("--frame-stack", type=int, default=1)
+    p.add_argument(
+        "--assist",
+        type=float,
+        default=0.0,
+        help="0 보다 크면 조준기 정책의 행동에 기준선의 추적을 더한다. 보이는 동안 환경에 들어가는 행동은 "
+        "추적 행동 + 이 값 × 정책 행동이다. 조준기 쪽 연속 행동에서만 쓴다",
+    )
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--eval-seed", type=int, default=10_000)
     p.add_argument("--device", default="cpu", help="작은 MLP 는 대개 CPU 가 빠르다")
@@ -94,6 +101,8 @@ def main() -> None:
 
     cfg = config_from_args(args)
     action_mode = "discrete" if args.algo == "dqn" else "continuous"
+    if args.assist > 0 and (args.side != "aimer" or action_mode != "continuous"):
+        p.error("--assist 는 조준기 쪽 연속 행동에서만 쓴다")
     other = "fly" if args.side == "aimer" else "aimer"
     spec = args.opponent or RULE_SPECS[other]
     # 학습 환경과 평가 환경이 상대의 상태(frame stack, 기준선의 탐색 상태)를 나누지 않게 따로 불러온다
@@ -102,7 +111,7 @@ def main() -> None:
 
     def build_env(opponent) -> gym.Env:
         if args.side == "aimer":
-            return make_env(cfg, action_mode, args.frame_stack, fly=opponent.player)
+            return make_env(cfg, action_mode, args.frame_stack, fly=opponent.player, assist=args.assist)
         return make_fly_env(cfg, aimer=opponent.player, frame_stack=args.frame_stack)
 
     name = args.name or (args.algo if args.side == "aimer" else f"fly-{args.algo}")
@@ -111,6 +120,7 @@ def main() -> None:
         "steps": args.steps,
         "seed": args.seed,
         "frameStack": args.frame_stack,
+        "assist": args.assist,
         "side": args.side,
         "opponent": train_opponent.label,
     }
