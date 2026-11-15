@@ -62,7 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- (none)
+- `51-feature-sac-laser-training` — `docs/issues/feature/51-feature-sac-laser-training.md` — 레이저 명중 조건에서 SAC로 조준기 다시 학습하기
 
 ## Environment (repo slot)
 
