@@ -33,6 +33,9 @@ export function shortDate(iso) {
 /** 초파리에서 빔까지 거리. 10cm 아래는 mm 로, 그 위는 m 로 적는다. */
 export const beamDistance = (mm) => (mm < 100 ? `${mm.toFixed(1)}mm` : `${(mm / 1000).toFixed(2)}m`)
 
+/** 확대 화면의 배율. 조준기 화면의 시야각을 확대 화면의 시야각으로 나눈 값이다. */
+export const zoomLabel = (ratio) => `${Math.round(ratio)}배`
+
 export const percent = (ratio) => `${Math.round(ratio * 100)}%`
 
 export const stepLabel = (step) => step.toLocaleString('ko-KR')

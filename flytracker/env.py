@@ -19,9 +19,9 @@ import numpy as np
 from gymnasium import spaces
 
 from .aimer import ACTION_DIM, Aimer, AimerLimits
-from .camera import CameraIntrinsics, Projection, camera_basis, project
+from .camera import CameraIntrinsics, Projection, project
 from .fly import Fly, FlyParams
-from .geometry import unit
+from .geometry import unit, wrap_angle, yaw_pitch_of
 from .neural_fly import NeuralConfig, NeuralFly
 from .stimulus import StimulusConfig, StimulusScheduler
 from .world import UP, Room
@@ -31,7 +31,8 @@ from .world import UP, Room
 # 1: #33 까지. pitch 제한 80°.
 # 2: #34. pitch 제한 89°. 학습한 초파리를 넣는 자리, 초파리 관측(초록 레이저로 조준선을 봄, 0.06초 늦게), 초파리 보상.
 # 3: #42. 포획을 레이저 명중으로 바꿈. 조준 오차 3° 에 0.2초 → 초파리 중심에서 빔까지 1.25mm 에 0.15초.
-ENV_VERSION = 3
+# 4: #45. pitch 제한 90°. 조준기 관측에 초파리 방향의 각속도(target_rate)와 가운데를 확대한 조준 오차(uv_fine)를 넣음.
+ENV_VERSION = 4
 
 
 @dataclass(frozen=True)
@@ -78,6 +79,7 @@ class EnvConfig:
     capture_radius: float = 0.00125  # m. 초파리 중심에서 빔 중심선까지 이 거리 안이면 맞은 것이다. 빔 지름 2.5mm 의 절반
     capture_range: float | None = None  # m. None 이면 거리 조건 없음
     capture_hold: float = 0.15  # s. 이 시간 동안 이어서 맞아야 포획. 치사 에너지 74mJ ÷ 출력 500mW
+    fine_error_deg: float = 0.5  # 도. 관측 uv_fine 이 ±1 로 나타내는 범위. 2m 에서 약 ±17mm
     min_start_distance: float = 1.5  # m. 시작할 때 초파리와 조준기 사이 최소 거리
     start_facing_fly: bool = False  # True 면 초파리를, False 면 방 가운데 쪽(바로 아래면 −z)을 수평으로 바라보며 시작한다
     memory_horizon: float = 2.0  # s. 놓친 뒤 지난 시간을 이 값으로 나눈다
@@ -133,6 +135,12 @@ OBS_FIELDS: tuple[tuple[str, int, float, float], ...] = (
     ("visible", 1, 0.0, 1.0),
     ("uv", 2, -1.0, 1.0),  # 보이면 화면 정규 좌표, 아니면 0
     ("distance", 1, 0.0, 1.0),  # 보이면 거리 / 방 대각선, 아니면 0
+    # 보이면 조준기에서 본 초파리 방향이 도는 각속도 (yaw, pitch) / 조준기 최대 각속도, 아니면 0. 행동과 같은 눈금이라
+    # 이 값을 그대로 행동으로 내면 초파리와 같은 각속도로 돈다. 지금은 참값이다. 검출 오차를 넣을 때(#13) 추정값으로 바꾼다.
+    ("target_rate", 2, -1.0, 1.0),
+    # 보이면 화면 가운데에서 벗어난 각 (가로, 세로) / fine_error_deg, 아니면 0. uv 의 가운데만 확대한 값이다.
+    # 레이저 명중은 2m 에서 0.036° 안이라 uv 로는 0.002 차이다. 이 값으로는 약 0.07 이다.
+    ("uv_fine", 2, -1.0, 1.0),
     ("last_seen_dir", 3, -1.0, 1.0),  # 마지막으로 본 위치의 방향 (카메라 r, u, f 축). 본 적 없으면 0
     ("time_since_seen", 1, 0.0, 1.0),  # 놓친 뒤 지난 시간 / memory_horizon
     ("yaw_sincos", 2, -1.0, 1.0),
@@ -245,6 +253,8 @@ class FlyChaseEnv(gym.Env):
         self._last_seen_pos: np.ndarray | None = None
         self._time_since_seen = cfg.memory_horizon
         self._prev_action = np.zeros(ACTION_DIM)
+        self._target_angles: tuple[float, float] | None = None
+        self._target_rate = np.zeros(2)
         self._update_vision()
         now = self._fly_obs_now()
         self._fly_obs_buf = deque([now] * (self._fly_delay_steps + 1), maxlen=self._fly_delay_steps + 1)
@@ -266,7 +276,7 @@ class FlyChaseEnv(gym.Env):
             else:
                 for _ in range(2):
                     tick = self.fly.sim.clock.tick
-                    view = project(self.fly.pos, self.aimer.pos, self.aimer.look, cfg.camera)
+                    view = project(self.fly.pos, self.aimer.pos, self.aimer.look, cfg.camera, self.aimer.basis)
                     event = self._stimulus.advance(tick, view.visible, view.angle_error, self.aimer.pos)
                     self.fly.present_stimulus(event, cfg.stimulus)
                     self.fly.step(0.005, cfg.room)
@@ -327,6 +337,7 @@ class FlyChaseEnv(gym.Env):
             "flyHeading": self.fly.heading.tolist(),  # viewer 가 초파리 모델을 진행 방향으로 돌린다
             "aimerC": self.aimer.pos.tolist(),
             "aimerLook": self.aimer.look.tolist(),
+            "aimerAngles": [self.aimer.yaw, self.aimer.pitch],  # rad. 바로 위를 볼 때는 aimerLook 만으로 yaw 를 알 수 없다
             "visible": proj.visible,
             "uv": proj.uv.tolist() if proj.in_front else [0.0, 0.0],
             "angleErrDeg": math.degrees(proj.angle_error),
@@ -359,8 +370,14 @@ class FlyChaseEnv(gym.Env):
 
     def _update_vision(self) -> None:
         cfg = self.config
-        proj = project(self.fly.pos, self.aimer.pos, self.aimer.look, cfg.camera)
+        proj = project(self.fly.pos, self.aimer.pos, self.aimer.look, cfg.camera, self.aimer.basis)
         self._proj = proj
+        # 조준기에서 본 초파리 방향이 직전 물리 step 부터 돈 각을 시간으로 나눈다. 두 경로 모두 cfg.dt 마다 여기에 온다.
+        angles = yaw_pitch_of(self.fly.pos - self.aimer.pos)
+        if self._target_angles is not None:
+            prev = self._target_angles
+            self._target_rate = np.array([wrap_angle(angles[0] - prev[0]), angles[1] - prev[1]]) / cfg.dt
+        self._target_angles = angles
         if proj.visible:
             self._last_seen_pos = self.fly.pos.copy()
             self._time_since_seen = 0.0
@@ -406,8 +423,12 @@ class FlyChaseEnv(gym.Env):
             o[OBS["visible"]] = 1.0
             o[OBS["uv"]] = proj.uv
             o[OBS["distance"]] = proj.distance / cfg.room.diagonal
+            o[OBS["target_rate"]] = self._target_rate / np.radians([lim.max_yaw_rate_deg, lim.max_pitch_rate_deg])
+            cam = cfg.camera
+            off = np.arctan(proj.uv * [cam.tan_half_h, cam.tan_half_v])
+            o[OBS["uv_fine"]] = off / math.radians(cfg.fine_error_deg)
         if self._last_seen_pos is not None:
-            r, u, f = camera_basis(aimer.look)
+            r, u, f = aimer.basis
             d = unit(self._last_seen_pos - aimer.pos)
             o[OBS["last_seen_dir"]] = [d @ r, d @ u, d @ f]
         o[OBS["time_since_seen"]] = self._time_since_seen / cfg.memory_horizon

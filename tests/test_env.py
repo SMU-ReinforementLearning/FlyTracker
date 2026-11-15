@@ -110,19 +110,83 @@ def test_capture_range_none_captures_far_fly():
     assert info["captured"]
 
 
-def test_fly_straight_above_turret_is_not_capturable():
-    # pitch 는 89° 까지라 바로 위(90°)와는 1° 가 남는다. 1.9m 에서 빔과 33mm 떨어져 레이저 명중(1.25mm)이 되지 않는다.
+def test_fly_straight_above_turret_is_captured():
+    # pitch 가 90° 까지 돌아서 바로 위에도 빔이 닿는다.
     env = FlyChaseEnv(static_fly_config())
     env.reset(seed=0)
     env.fly.pos = env.aimer.pos + np.array([0.0, 1.9, 0.0])  # 바로 위 1.9m. 위협 반경(1m) 밖이라 피하지 않는다
     env._update_vision()
     info = {"captured": False}
     for _ in range(150):  # 3초 동안 위로 돌린다
-        _, _, terminated, _, info = env.step(np.array([0.0, 1.0]))
+        obs, _, terminated, _, info = env.step(np.array([0.0, 1.0]))
         if terminated:
             break
-    assert info["captured"] is False
-    assert info["beam_dist"] == pytest.approx(1.9 * np.sin(np.radians(1.0)), rel=0.02)
+    assert info["captured"] is True
+    assert env.aimer.pitch == pytest.approx(np.pi / 2)
+    assert info["beam_dist"] < 1e-9
+
+
+def test_camera_frame_is_continuous_through_straight_up():
+    # 바로 위를 볼 때도 화면 좌표가 끊기지 않는다. 89.9° 와 90° 에서 같은 점의 화면 좌표가 0.1° 만큼만 다르다.
+    env = FlyChaseEnv(static_fly_config())
+    env.reset(seed=0)
+    yaw = 0.7
+    point = env.aimer.pos + np.array([0.05, 2.0, -0.03])  # 바로 위에서 조금 벗어난 점
+    env.fly.pos = point
+    uvs = []
+    for pitch_deg in (89.9, 90.0):
+        env.aimer.reset(env.aimer.pos, yaw, np.radians(pitch_deg))
+        env._update_vision()
+        assert env._proj.visible
+        uvs.append(env._proj.uv.copy())
+    step = np.tan(np.radians(0.1)) / env.config.camera.tan_half_v  # pitch 0.1° 가 세로 화면 좌표에서 차지하는 크기
+    assert uvs[1][0] == pytest.approx(uvs[0][0], abs=1e-4)
+    assert uvs[0][1] - uvs[1][1] == pytest.approx(step, rel=0.01)
+    r, u, f = env.aimer.basis
+    assert np.allclose(f, [0, 1, 0]) and np.allclose(r, [np.cos(yaw), 0, -np.sin(yaw)])
+    assert np.allclose(u, [np.sin(yaw), 0, np.cos(yaw)])  # 화면 위쪽은 수평 앞 방향의 반대쪽
+
+
+def test_observation_has_target_rate_and_fine_error():
+    cfg = static_fly_config()
+    env = FlyChaseEnv(cfg)
+    env.reset(seed=0)
+    # 2m 앞, 빔에서 오른쪽으로 7mm (0.2°). uv_fine 은 0.2° / 0.5° = 0.4 이고, uv 로는 0.007 이다.
+    r, _, f = env.aimer.basis
+    off = 2.0 * np.tan(np.radians(0.2))
+    env.fly.pos = env.aimer.pos + f * 2.0 + r * off
+    env._target_angles = None
+    env._update_vision()
+    obs = env._observation()
+    assert obs[OBS["uv_fine"]] == pytest.approx([0.4, 0.0], abs=1e-4)
+    assert abs(obs[OBS["uv"]][0]) < 0.01
+    assert obs[OBS["target_rate"]] == pytest.approx([0.0, 0.0])
+    # 초파리를 물리 step 하나(0.01초)에 오른쪽으로 0.09° 옮긴다. 9°/s 이고 yaw 는 줄어든다(오른쪽). 최대 180°/s 의 −0.05.
+    env.fly.pos = env.aimer.pos + f * 2.0 + r * 2.0 * np.tan(np.radians(0.29))
+    env._update_vision()
+    obs = env._observation()
+    assert obs[OBS["target_rate"]] == pytest.approx([-0.05, 0.0], abs=1e-4)
+    # 안 보이면 둘 다 0 이다.
+    env.fly.pos = env.aimer.pos - f * 2.0
+    env._update_vision()
+    obs = env._observation()
+    assert not obs[OBS["target_rate"]].any() and not obs[OBS["uv_fine"]].any()
+
+
+def test_rule_aimer_holds_the_beam_on_a_moving_fly():
+    # 기준선은 초파리 각속도에 맞춰 돌아서 기본 초파리를 레이저 명중 조건으로 잡는다.
+    from flytracker import RuleAimer
+
+    env, policy, caught = FlyChaseEnv(EnvConfig()), RuleAimer(), 0
+    for seed in range(5):
+        obs, info = env.reset(seed=seed)
+        policy.reset()
+        done = False
+        while not done:
+            obs, _, terminated, truncated, info = env.step(policy.act(obs))
+            done = terminated or truncated
+        caught += info["captured"]
+    assert caught >= 4
 
 
 def _held_fly_env(offset_m: float = 0.0, distance: float = 2.0, **kw) -> FlyChaseEnv:

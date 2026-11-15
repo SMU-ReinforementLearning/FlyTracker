@@ -59,6 +59,12 @@ export function prepareEpisode(raw) {
   }
   const uv = new Float32Array(n * 2)
   f.uv.forEach((r, i) => uv.set(r, i * 2))
+  // 조준기의 yaw, pitch (rad). 환경 버전 4부터의 기록에만 있다. 바로 위를 볼 때는 look 만으로 yaw 를 알 수 없다
+  let angles = null
+  if (f.aimerAngles) {
+    angles = new Float32Array(n * 2)
+    f.aimerAngles.forEach((r, i) => angles.set(r, i * 2))
+  }
   return {
     meta: raw.meta,
     summary: raw.summary,
@@ -70,6 +76,7 @@ export function prepareEpisode(raw) {
     attitude: attitudes(f, n),
     C: flat3(f.aimerC),
     look: flat3(f.aimerLook),
+    angles,
     uv,
     visible: Uint8Array.from(f.visible, Number),
     alarmed: Uint8Array.from(f.alarmed ?? f.evading, Number), // evading 은 이 필드가 생기기 전 기록
@@ -146,6 +153,15 @@ export function sample(ep, t, out) {
   out.look[0] /= len
   out.look[1] /= len
   out.look[2] /= len
+  out.hasAngles = ep.angles !== null
+  if (out.hasAngles) {
+    const a = ep.angles
+    let dyaw = a[j * 2] - a[i * 2] // yaw 는 ±π 에서 이어지므로 짧은 쪽으로 보간한다
+    if (dyaw > Math.PI) dyaw -= 2 * Math.PI
+    else if (dyaw < -Math.PI) dyaw += 2 * Math.PI
+    out.yaw = a[i * 2] + dyaw * s
+    out.pitch = a[i * 2 + 1] + (a[j * 2 + 1] - a[i * 2 + 1]) * s
+  }
   out.i = i
   out.visible = ep.visible[i] === 1
   out.alarmed = ep.alarmed[i] === 1
@@ -158,5 +174,6 @@ export function sample(ep, t, out) {
 export function newSample() {
   return { fly: [0, 0, 0], heading: [0, 0, -1], C: [0, 0, 0], look: [0, 0, -1],
     hasAttitude: false, attitude: [1, 0, 0, 0], meshQuaternion: [0, 0, 0, 1],
+    hasAngles: false, yaw: 0, pitch: 0,
     i: 0, visible: false, alarmed: false, capture: 0, u: 0, v: 0 }
 }
