@@ -62,7 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `45-feature-laser-tracking-baseline` — `docs/issues/feature/45-feature-laser-tracking-baseline.md` — 레이저 포획 조건에서 통하는 조준기 기준선 만들기
+- (none)
 
 ## Environment (repo slot)
 

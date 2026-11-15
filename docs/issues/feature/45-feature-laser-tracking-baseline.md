@@ -4,7 +4,7 @@
 - Issue: #45
 - Branch: `45-feature-laser-tracking-baseline`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 Make an aimer that works under the laser capture rule of env version 3 (fly centre within 1.25 mm of the beam for 0.15 s): a rule baseline with velocity feed-forward tracking, the observation it needs, no blind cone above the turret, and a zoomed aimer view in the viewer. Under version 3 the current rule baseline catches 5/200 and the six #35 SAC models 1/1200 (seeds 10000-10199, measured in #42).
@@ -39,11 +39,9 @@ Make an aimer that works under the laser capture rule of env version 3 (fly cent
 - [x] Version-4 baseline runs published and listed in `viewer/dist/runs/index.json`. (2026-11-15)
 
 ## Current State
-2026-11-15: all scope items are implemented in the working tree and verified; commits wait for the user's approval (review gate). Planned commits: seed, env version 4 with the new baseline, viewer, published runs, README and #13 note, then the `AGENTS.md` pointer removal before the PR.
+Done 2026-11-15. All done criteria ticked; PR opened and merged at the user's request; the `AGENTS.md` pointer was removed in the branch's last commit.
 
-Measured under version 4, seeds 10000-10199, rule fly: baseline 200/200, mean 4.95 s over captures, visible 30 %, mean return −19.95 (version 3 baseline: 5/200). One episode (seed 10027) reaches pitch 90°. Per-seed numbers come from `runs/_ops/eval_v4.py` (local, gitignored).
-
-Design choices made here: the fly's angular rate is a finite difference of the true direction over one physics step, given in action units and only while visible; `uv_fine` is the angular offset divided by `fine_error_deg` (0.5°); the zoomed view is a second 3D camera with a 0.5° vertical field (80x) in its own card under the aimer view, not a schematic; recordings gain `aimerAngles` because `aimerLook` loses yaw when looking straight up.
+What the next issue starts from: env version 4 (pitch 90°, observation 17-dim with `target_rate` and `uv_fine`), rule baseline 200/200 with mean 4.95 s on seeds 10000-10199. Models trained before version 4 cannot be loaded (observation size). The reward is unchanged from version 2: the aim-error penalty is linear in angle and nearly flat below 1°.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -124,6 +122,17 @@ Design choices made here: the fly's angular rate is a finite difference of the t
 - Numbers in the new README text recomputed: 8.6°/s ÷ 180 = 0.048; 0.036° ÷ 0.5° = 0.072; 1° at 2 m = 34.9 mm; 40° ÷ 0.5° = 80.
 #### Notes
 - No cold-reader pass was run on the README edits.
+
+### chore: #45 마무리 (#45)
+> why: last commit before the PR; a protected branch cannot take the pointer removal after the merge
+#### Scope
+`AGENTS.md`, `docs/issues/README.md`, this doc.
+#### Changes
+- Pointer line removed, registry row and Status set to done, Current State rewritten for the next issue.
+#### Verification
+- `uv run python -m pytest -q`: 112 passed, 45 skipped. `npm run build --prefix viewer` passes.
+#### Notes
+- None.
 
 ## Management Notes
 ### Follow-up Candidates
