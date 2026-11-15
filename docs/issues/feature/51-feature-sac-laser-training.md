@@ -4,7 +4,7 @@
 - Issue: #51
 - Branch: `51-feature-sac-laser-training`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 Train SAC aimers under environment version 5 (laser-hit capture, 17-dim observation, log-scaled beam-distance penalty) in four conditions — new or previous dense reward, policy alone or correcting the baseline's tracker — and gate each against the rule baseline with rules written before training. Models from before version 4 cannot be loaded, and under the laser rule #35's models caught 1/1200.
@@ -24,21 +24,19 @@ Train SAC aimers under environment version 5 (laser-hit capture, 17-dim observat
 - The fly side; detection noise and latency (#13).
 
 ## Done Criteria
-- [ ] Tracking assist implemented and tested; a model trained with it is loaded with the same assist by `load_opponent`.
-- [ ] Gate document complete above "Verdict" and committed before the first training run starts.
-- [ ] 12 runs reach 1,000,000 steps.
-- [ ] Each candidate evaluated on seeds 20000-20199; bootstrap output and verdicts written into `gate.md`.
-- [ ] Runs published under issue #51; `viewer/dist/runs/index.json` lists them.
-- [ ] README updated; `uv run python -m pytest -q` and `npm run build --prefix viewer` pass.
+- [x] Tracking assist implemented and tested; a model trained with it is loaded with the same assist by `load_opponent`.
+- [x] Gate document complete above "Verdict" and committed before the first training run starts.
+- [x] 12 runs reach 1,000,000 steps.
+- [x] Each candidate evaluated on seeds 20000-20199; bootstrap output and verdicts written into `gate.md`.
+- [x] Runs published under issue #51; `viewer/dist/runs/index.json` lists them.
+- [x] README updated; `uv run python -m pytest -q` and `npm run build --prefix viewer` pass.
 
 ## Current State
-2026-11-16 00:25 KST: the 12 runs are training on vast.ai instance 60797094 (ssh target in `runs/_ops/ssh_target.txt`, `root@175.143.181.143 -p 60362`), started 2026-11-15 15:17 UTC, about 49 steps/s per run, so they end around 2026-11-15 21:00 UTC (06:00 KST). The instance costs about $0.14 per hour and keeps billing until it is destroyed.
+Done 2026-11-16. Of the four SAC conditions only `sac-beam-assist` (beam-distance reward, tracking assist 0.2) beats the rule baseline under the laser rule: 2.941 s against 4.858 s on seeds 20000-20199, 585/600 captured against 198/200. The other three fail (21, 3 and 127 of 600). Verdicts: `51-feature-sac-laser-training/gate.md`.
 
-The remote job (`/root/ft/remote_train.sh`, a copy of `runs/_ops/remote_train.sh`) needs no laptop: after training it evaluates the 12 models on seeds 20000-20199, averages per condition, packs `/root/gate_out.tgz` and `/root/runs-g51.tgz` with `/root/manifest.sha256`, and writes `/root/ft/state/RESULTS_READY` (or `state/FAILED`).
+The 12 full runs (models, checkpoints) are in this worktree's `runs/g51/` (gitignored, about 640 MB packed); they are lost if the worktree is removed without copying them. The vast.ai instance was destroyed after the download was verified.
 
-Next, in order: (1) `bash runs/_ops/fetch.sh` — downloads, verifies sha256, extracts runs to `runs/g51/` and CSVs to the gate folder, destroys the instance only when every check passed; (2) `bash runs/_ops/run_gate.sh boot > .../gate/bootstrap-output.md` and write the verdicts into `gate.md`; (3) publish the 12 runs with `publish_run.py --runs-dir runs/g51/<name> --issue 51`; (4) README results, work log, pointer removal, PR, merge (the user asked for the merge).
-
-Trap: a vast `python:3.11-bookworm` instance forces tmux on ssh and runs no command unless `/root/.no_auto_tmux` exists; create the instance with `--onstart-cmd "touch /root/.no_auto_tmux"`. Parallel `train.py` runs need separate `--runs-dir`.
+Trap for the next training on vast.ai: a `python:3.11-bookworm` instance forces tmux on ssh and runs no command unless `/root/.no_auto_tmux` exists; create the instance with `--onstart-cmd "touch /root/.no_auto_tmux"`. Parallel `train.py` runs need separate `--runs-dir`. Throughput there was about 49 steps/s per run with 12 in parallel (1,000,000 steps in 5 h 50 min).
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -125,8 +123,22 @@ Trap: a vast `python:3.11-bookworm` instance forces tmux on ssh and runs no comm
 #### Notes
 - The page was not opened in a browser; the variation labels (for example "없음, 0.1, 0") are correct but terse.
 
+### chore: #51 마무리 (#51)
+> why: last commit of the branch before the PR
+#### Scope
+This doc, `docs/issues/README.md`, `AGENTS.md`.
+#### Changes
+- Status and registry row set to done, done criteria ticked, Current State rewritten as the result, pointer line removed from `AGENTS.md`.
+#### Verification
+- `uv run python -m pytest -q`: 139 passed, 45 skipped. `npm run build --prefix viewer` passes.
+#### Notes
+- None.
+
 ## Management Notes
 ### Follow-up Candidates
+- Why the correction hurts with the angle reward (`sac-angle-assist`, 127/600), and whether `sac-beam-assist`'s 15 misses of 600 can be removed (other assist scale, more steps): new gates.
+- A model-version label (`aimer` in `published/issues/51.json`) for `sac-beam-assist` once the team decides it is the next aimer version.
+- Shorter variation labels on the issue page when variations differ in several rows.
 ### References
 - `docs/issues/feature/35-feature-sac-aimer-training/gate.md` (the gate this one follows).
 - `docs/issues/feature/49-feature-laser-beam-reward.md`, `docs/issues/feature/45-feature-laser-tracking-baseline.md`.
