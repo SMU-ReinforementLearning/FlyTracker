@@ -61,6 +61,19 @@ Train SAC aimers under environment version 5 (laser-hit capture, 17-dim observat
 #### Notes
 - Throughput on this machine is about 50 steps/s per run (6,000 steps in about 2 minutes, with or without `OMP_NUM_THREADS=1`).
 
+### docs: SAC 학습 판정 기준을 학습 전에 적기 (#51)
+> why: the comparison rules have to exist before any candidate is measured
+#### Scope
+`docs/issues/feature/51-feature-sac-laser-training/gate.md`, `evaluate_gate.py`, `gate/baseline.csv`, `gate/truth.csv`.
+#### Changes
+- Gate: four candidates (2 rewards x policy alone / tracking assist 0.2), 3 training seeds, 500,000 steps, time to capture on seeds 20000-20199, paired bootstrap P ≥ 0.90, capture-rate exclusion 0.97, per-seed exclusion, no selection among candidates.
+- `evaluate_gate.py`: as in #35, but models are loaded with `load_opponent` so the assist is rebuilt.
+- Baseline frozen: 198/200, mean time 4.858 s, sha256 `6ac2f0bd…`.
+#### Verification
+- `sha256sum` of both files matches `gate.md`. No training run of this issue had started when this was committed.
+#### Notes
+- 500,000 steps instead of #35's 1,000,000 because of local throughput; stated in the gate as part of the candidate.
+
 ## Management Notes
 ### Follow-up Candidates
 ### References
