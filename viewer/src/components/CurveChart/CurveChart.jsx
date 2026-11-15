@@ -11,7 +11,7 @@ const M = { top: 10, right: 14, bottom: 22, left: 40 }
  * 학습 곡선. 가로축은 학습 step, 세로축은 checkpoint 별 값이다.
  * series: [{ id, label, color, points: [{ x, y }], flat }]
  *   points 는 step 이 있는 checkpoint. flat 은 step 이 없는 실행(기준선)의 값이고 점선 가로줄로 그린다.
- * 시리즈가 여럿일 때 어느 선이 어느 실행인지는 아래 표의 색 표시가 알려 준다.
+ * 시리즈가 여럿일 때 어느 선이 어느 실행인지는 그리는 쪽이 둔 범례가 알려 준다.
  */
 export function CurveChart({ series, label, format, tickFormat = format, domain, marker = null, onPick, height = 150 }) {
   const box = useRef(null)

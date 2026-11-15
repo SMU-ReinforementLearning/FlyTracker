@@ -84,15 +84,21 @@ function Group({ group, open, onToggle, runId, issueKey, onSelectRun, onOpenIssu
 
 export function Sidebar({ groups, error, runId, issueKey, onSelectRun, onOpenIssue }) {
   const [query, setQuery] = useState('')
-  const [closed, setClosed] = useState(() => new Set())
+  // 묶음은 처음에 모두 접혀 있다. issue 이름을 누르면 그 묶음이 펼쳐진다.
+  const [opened, setOpened] = useState(() => new Set())
 
   const toggle = (key) =>
-    setClosed((prev) => {
+    setOpened((prev) => {
       const next = new Set(prev)
       if (next.has(key)) next.delete(key)
       else next.add(key)
       return next
     })
+
+  const openIssue = (key) => {
+    setOpened((prev) => (prev.has(key) ? prev : new Set(prev).add(key)))
+    onOpenIssue(key)
+  }
 
   let body
   if (error) {
@@ -118,12 +124,12 @@ export function Sidebar({ groups, error, runId, issueKey, onSelectRun, onOpenIss
           <Group
             key={g.key}
             group={g}
-            open={searching || !closed.has(g.key)}
+            open={searching || opened.has(g.key)}
             onToggle={() => toggle(g.key)}
             runId={runId}
             issueKey={issueKey}
             onSelectRun={onSelectRun}
-            onOpenIssue={onOpenIssue}
+            onOpenIssue={openIssue}
           />
         ))
       )
