@@ -4,7 +4,7 @@
 - Issue: #44
 - Branch: `44-chore-sac-v3-episodes`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 Episodes of the #35 SAC aimer under env version 3, on the same seeds and config as the two #42 baseline runs, published so the viewer shows them next to those runs. The #42 group in the viewer held only rule-baseline runs; the user asked (2026-11-15) for the learned-model version under the same conditions.
@@ -25,10 +25,10 @@ Two published runs that pair episode by episode with `2026-11-15_201137_baseline
 ## Done Criteria
 - [x] Two runs recorded with the SAC model on seeds 10000-10002 and 10114-10118, env config equal to the paired baseline run's. (2026-11-15 22:05)
 - [x] Both published under issue 42 and listed by the viewer build. (2026-11-15 22:10)
-- [ ] Merged to main (the Cloudflare viewer shows them only after the merge).
+- [x] Merged to main (the Cloudflare viewer shows them only after the merge). (2026-11-15, by the PR for this branch)
 
 ## Current State
-As of 2026-11-15 22:15 KST. Runs recorded, published into this worktree and verified; waiting for the user's approval at the pre-commit review gate. Nothing is committed or pushed. Nothing is running. Next: commit, remove the `AGENTS.md` pointer as the last commit, open the PR when the user asks.
+Done 2026-11-15. Runs recorded, published and verified; PR opened and merged at the user's request, and the `AGENTS.md` pointer was removed in the branch's last commit. The merge criterion above is ticked by the PR itself. No aimer trained under version 3 exists yet (see #42 Follow-up Candidates).
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -50,6 +50,17 @@ Management doc, registry row, `AGENTS.md` pointer, `record_model_v3.py`, the two
 - `publish_run.py` warns that #42 has no `training` label, as it did for the baseline runs.
 - Seed 10116 is the one episode the baseline captures (2.62 s); the SAC model never gets the fly in view there.
 - The user sent "rent a vast.ai instance" mid-task; recording took seconds on the laptop, so they were asked what it was for and chose not to rent.
+
+### chore: #44 마무리 (#44)
+> why: last commit before the PR; a protected branch cannot take the pointer removal after the merge
+#### Scope
+`AGENTS.md`, `docs/issues/README.md`, this doc.
+#### Changes
+- Pointer line removed, registry row and Status set to done, Current State rewritten.
+#### Verification
+- No code or data changed since the previous commit (109 passed, 45 skipped there).
+#### Notes
+- The user approved the commit and asked for the merge (2026-11-15).
 
 ## Management Notes
 ### Follow-up Candidates
