@@ -1,7 +1,8 @@
 import json
+import math
 from dataclasses import replace
 
-from flytracker import EnvConfig, EpisodeRecorder, RuleAimer, RunStore, make_env
+from flytracker import ENV_VERSION, EnvConfig, EpisodeRecorder, RuleAimer, RunStore, make_env
 from flytracker.fly import FlyParams
 from flytracker.record import FRAME_KEYS
 
@@ -48,3 +49,15 @@ def test_baseline_catches_hovering_fly():
     env = EpisodeRecorder(make_env(cfg))
     caught = sum(run_episode(env, RuleAimer(), seed=s)["summary"]["captured"] for s in range(5))
     assert caught == 5
+
+
+def test_config_json_records_env_version(tmp_path):
+    run = RunStore(tmp_path).create_run("test", "rule-baseline", "continuous", {"env": EnvConfig().to_dict()})
+    config = json.loads((tmp_path / run.id / "config.json").read_text(encoding="utf-8"))
+    assert config["envVersion"] == ENV_VERSION
+    assert EnvConfig.from_dict(config["env"]) == EnvConfig()
+
+
+def test_baseline_sweep_bands_stop_once_zenith_is_in_view():
+    bands = [round(math.degrees(b), 6) for b in RuleAimer().sweep_bands]
+    assert bands == [10.0, 45.0, 80.0]  # 80° 띠의 위 끝이 100° 라 천정이 이미 보인다

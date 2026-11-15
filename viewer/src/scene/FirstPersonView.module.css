@@ -1,0 +1,46 @@
+/* 조준기 화면 */
+
+.viewfinder {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #000;
+  box-shadow: var(--shadow-card);
+}
+
+.viewfinder canvas {
+  display: block;
+}
+
+.ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* iPhone 카메라의 초점 사각형. 변 가운데의 짧은 눈금까지 같은 모양이다. 선 굵기 1.5px 는 테두리라서 px 로 둔다. */
+.focus {
+  --c: #ffd60a;
+  position: absolute;
+  width: 4.6rem;
+  height: 4.6rem;
+  transform: translate(-50%, -50%);
+  border: 1.5px solid var(--c);
+  pointer-events: none;
+  opacity: 0;
+  background:
+    linear-gradient(var(--c), var(--c)) top center / 1.5px 0.6rem no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom center / 1.5px 0.6rem no-repeat,
+    linear-gradient(var(--c), var(--c)) left center / 0.6rem 1.5px no-repeat,
+    linear-gradient(var(--c), var(--c)) right center / 0.6rem 1.5px no-repeat;
+}
+
+.focus[data-capture='true'] {
+  --c: #30d158;
+}

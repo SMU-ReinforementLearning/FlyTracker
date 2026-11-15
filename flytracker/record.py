@@ -28,6 +28,7 @@ from typing import Callable
 
 import gymnasium as gym
 
+from .env import ENV_VERSION
 from .world import AXES, UNIT
 
 EPISODE_FORMAT = "flytracker.episode/1"
@@ -103,7 +104,7 @@ class EpisodeRecorder(gym.Wrapper):
         snap = self.env.unwrapped.snapshot()
         for k in FRAME_KEYS:
             self._frames[k].append(_round(snap[k]))
-        base = self.env.unwrapped
+        base = self._base()
         if not base.config.capture_enabled:
             self._frames.setdefault("flySpeed", []).append(_round(float(base.fly.speed)))
         if hasattr(base, "observation_aim_on"):
@@ -112,8 +113,13 @@ class EpisodeRecorder(gym.Wrapper):
             self._frames.setdefault("neuralPhase", []).append(base.fly.sim.motor.phase)
             self._frames.setdefault("neuralDiagnostics", []).append(base.fly.diagnostics())
 
+    def _base(self):
+        """시뮬레이션을 가진 FlyChaseEnv. 초파리 쪽 환경(FlyEscapeEnv)은 그것을 core 에 둔다."""
+        env = self.env.unwrapped
+        return getattr(env, "core", env)
+
     def _build(self) -> dict:
-        base = self.env.unwrapped
+        base = self._base()
         cfg = base.config
         frames = dict(self._frames)
         frames["reward"] = _round(self._rewards)
@@ -175,10 +181,11 @@ class RunStore:
         self.root = Path(root)
 
     def create_run(self, name: str, algo: str, action_mode: str, config: dict, notes: str = "") -> Run:
+        """config.json 에는 넘긴 설정에 환경 버전(envVersion)을 더해 쓴다."""
         now = datetime.now()
         run_id = f"{now:%Y-%m-%d_%H%M%S}_{_slug(name)}"
         run = Run(self, run_id)
-        _write_json(run.dir / "config.json", config)
+        _write_json(run.dir / "config.json", {"envVersion": ENV_VERSION, **config})
         _write_json(run.dir / "episodes.json", {"run": run_id, "episodes": []})
         index = self._index()
         index["runs"].append(

@@ -27,7 +27,7 @@ class RuleAimer:
     def __init__(
         self,
         turn_gain: float = 2.5,
-        max_pitch_deg: float = 80.0,
+        max_pitch_deg: float = 89.0,
         max_yaw_rate_deg: float = 180.0,
         max_pitch_rate_deg: float = 120.0,
         decision_dt: float = 0.02,  # 행동 한 번이 유지되는 시간 (s). 환경의 dt × frame_skip
@@ -56,10 +56,11 @@ class RuleAimer:
         self.min_pitch = math.radians(min_pitch_deg)
         # 띠는 시야각과 조준 범위만으로 정한다. 초파리가 어디에 많은지는 기준선도 모르는 것으로 둔다.
         # 가장 낮은 띠부터 시야각에서 겹침을 뺀 간격으로 쌓는다 (Koopman: 훑는 폭만큼 띄운 평행 탐색)
+        # 띠의 위 끝이 천정(90°)에 닿으면 더 쌓지 않는다. 그 위로 띠를 더 두면 제자리에서 도는 것뿐이다.
         bands, center = [], min_pitch_deg + fov_v_deg / 2
         while True:
             bands.append(math.radians(min(center, max_pitch_deg)))
-            if center >= max_pitch_deg:
+            if center >= max_pitch_deg or center + fov_v_deg / 2 >= 90.0:
                 break
             center += fov_v_deg - band_overlap_deg
         self.sweep_bands = tuple(bands)

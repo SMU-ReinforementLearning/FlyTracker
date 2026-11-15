@@ -1,0 +1,132 @@
+/* 실행 패널: 고른 checkpoint 의 수치, 학습 곡선, 에피소드 목록 */
+
+.panel {
+  flex: none;
+  width: 30rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: 1.8rem var(--space-4) var(--space-6);
+  border-right: 1px solid var(--color-separator);
+  overflow-y: auto;
+}
+
+.title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.stat dt {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-2xs);
+}
+
+.stat dd {
+  margin: 0.2rem 0 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-figure);
+  font-variant-numeric: tabular-nums;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+/* 에피소드 목록. checkpoint 마다 제목 줄이 있고, 펼치면 에피소드 줄이 나온다. */
+
+.group + .group {
+  margin-top: 0.2rem;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: 0.6rem var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+  cursor: default;
+}
+
+.head:hover {
+  background: var(--color-fill);
+}
+
+.head svg {
+  flex: none;
+  color: var(--color-text-tertiary);
+  transition: transform 0.15s;
+}
+
+.head[aria-expanded='true'] svg {
+  transform: rotate(90deg);
+}
+
+.head[aria-current='true'] .tag {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.count {
+  margin-left: auto;
+}
+
+/* 에피소드 줄. 줄 모양은 ListRow 가 맡고, 여기서는 줄 안의 배치를 정한다.
+   ListRow 의 기본 배치(display, padding)를 이겨야 해서 목록 선택자를 앞에 붙인다. */
+.episodes .item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: 0.5rem var(--space-2) 0.5rem 2.6rem;
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.num {
+  flex: none;
+  min-width: 2.2rem;
+  color: var(--color-text-tertiary);
+}
+
+.outcome {
+  flex: 1;
+  min-width: 0;
+}
+
+.return {
+  color: var(--color-text-secondary);
+}
+
+.item[aria-current='true'] .num,
+.item[aria-current='true'] .return {
+  color: var(--color-text-on-accent-secondary);
+}
+
+/* media query 의 rem 은 html 글자 크기를 따르지 않아 px 로 쓴다 */
+@media (max-width: 1080px) {
+  .panel {
+    width: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-separator);
+    overflow-y: visible;
+  }
+}

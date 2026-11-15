@@ -206,3 +206,26 @@ Organization main은 관측 시점 64c60ff이며 현재 작업 기준 7237428보
 - Head는 heohs:feature/31-neural-flight이며 Base는 Organization의 issue-31이다. Base가 없을 때만 생성 직전 최신 main에서 생성하고 기존 Base는 덮어쓰지 않는다.
 - 최신 main과의 통합 검증은 미완료이며 병합, rebase, force push와 PR merge는 수행하지 않는다.
 - 실제 행동 일치, 독립 보정, 장시간 학습 및 로컬 원본/가공 CSV/정확한 주석의 재배포 조건은 미완료다.
+
+### merge: integrate latest main into the neural flight branch (#31)
+
+The user asked to land PR #39 on main. The PR targeted `issue-31` (main at 64c60ff) and conflicted with it; main had since gained #35 (SAC aimer) and #18 (viewer CSS modules). The user chose to merge `origin/main` (440158a) into the PR branch, push to the fork branch with maintainer edit, retarget the PR to main and squash merge. Issue #31 stays open: the PR body's `Closes #31` becomes `Refs #31`, because RL training, calibration and redistribution rights are still open.
+
+#### Scope
+
+- `flytracker/env.py`: kept #34 (`ENV_VERSION = 2`, learned fly slot, fly observation) and the neural fly/stimulus path. A learned fly player with `fly_model="neural"` raises `ValueError` (the neural fly has no `command_escape`); `_fly_obs_now` returns zeros in neural mode.
+- `flytracker/fly.py`: `aimer_pos=None` (no-aim flight) and `external_escape` both kept.
+- `flytracker/record.py`: `_base()` reads `FlyEscapeEnv.core`, so the neural/observation recording code also works on the fly-side env. Not a textual conflict; added during the merge.
+- `flytracker/__init__.py`, `docs/issues/README.md`: union of both sides.
+- viewer: the PR's edits ported into the #18 component folders; `.charts-flight` from the deleted `styles.css` became `.chartsFlight` in `App.module.css`.
+- `ENV_VERSION` stays 2: the rule path is unchanged and the neural fly is opt-in.
+
+#### Verification
+
+- pytest without the local flysim source: 104 passed, 45 skipped (neural integration). All 53 tests collected on `origin/main` are present and passed.
+- `npm run build` in `viewer/`: passed (existing 500 kB chunk warning).
+- All 383 published episodes load through the merged `prepareEpisode`/`sample` with no failure.
+
+#### Notes
+
+- Not verified here: the 45 neural integration tests and the neural recordings need the teammate's local flysim source and data, which this machine does not have. No screenshots were taken for the same reason.

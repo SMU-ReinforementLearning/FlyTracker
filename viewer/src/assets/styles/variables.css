@@ -1,0 +1,93 @@
+/* Apple 스타일. 위계는 여백과 글자 크기로 만들고, 강조색은 하나(파랑)만 쓴다. */
+/* 크기는 rem 이다. global.css 가 html 글자 크기를 62.5% 로 두어 1rem = 10px 이다. */
+/* 테두리와 그림자처럼 1px 안팎의 선은 px 로 둔다. rem 으로 바꾸면 화면 배율에 따라 흐려진다. */
+
+:root {
+  color-scheme: light;
+
+  /* color */
+  --color-bg-window: #ffffff;
+  --color-bg-sidebar: #f2f2f5;
+  --color-bg-stage: #f5f5f7;
+  --color-text-primary: #1d1d1f;
+  --color-text-secondary: #6e6e73;
+  --color-text-tertiary: #86868b;
+  --color-text-on-accent: #ffffff;
+  --color-text-on-accent-secondary: rgba(255, 255, 255, 0.82);
+  --color-separator: rgba(0, 0, 0, 0.08);
+  --color-fill: rgba(0, 0, 0, 0.05);
+  --color-fill-strong: rgba(0, 0, 0, 0.08);
+  --color-accent: #0071e3;
+  --color-capture: #1a8a62;
+  /* 실행 여러 개를 겹쳐 그릴 때의 선 색. dataviz 검사 스크립트로 두 모드 모두 확인했다.
+     밝은 모드의 3, 4, 5번은 바탕 대비 3:1 미만이라, 같은 값을 아래 표가 글자로도 보여 준다. */
+  --color-series-1: #2a78d6;
+  --color-series-2: #eb6834;
+  --color-series-3: #1baf7a;
+  --color-series-4: #eda100;
+  --color-series-5: #e87ba4;
+  --color-series-6: #008300;
+  --color-series-7: #6250d6;
+  --color-series-8: #e34948;
+
+  /* typography */
+  --font-family-base: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', 'Malgun Gothic', sans-serif;
+  --font-family-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --font-size-2xs: 1.1rem;
+  --font-size-xs: 1.2rem;
+  --font-size-sm: 1.3rem;
+  --font-size-md: 1.4rem;
+  --font-size-lg: 1.5rem;
+  --font-size-xl: 2rem;
+  --line-height-base: 1.45;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --letter-spacing-base: -0.005em;
+  --letter-spacing-title: -0.01em;
+  --letter-spacing-figure: -0.02em;
+
+  /* spacing */
+  --space-1: 0.4rem;
+  --space-2: 0.8rem;
+  --space-3: 1.2rem;
+  --space-4: 1.6rem;
+  --space-5: 2rem;
+  --space-6: 2.4rem;
+
+  /* radius */
+  --radius-sm: 0.7rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.4rem;
+
+  /* shadow */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
+  --shadow-control: 0 1px 2px rgba(0, 0, 0, 0.12);
+  --shadow-popover: 0 2px 10px rgba(0, 0, 0, 0.16);
+  --shadow-thumb: 0 0 0 0.5px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --color-bg-window: #1c1c1e;
+    --color-bg-sidebar: #232325;
+    --color-bg-stage: #1c1c1e;
+    --color-text-primary: #f5f5f7;
+    --color-text-secondary: #a1a1a6;
+    --color-text-tertiary: #8e8e93;
+    --color-separator: rgba(255, 255, 255, 0.1);
+    --color-fill: rgba(255, 255, 255, 0.06);
+    --color-fill-strong: rgba(255, 255, 255, 0.1);
+    --color-accent: #0a84ff;
+    --color-capture: #30d158;
+    --color-series-1: #3987e5;
+    --color-series-2: #d95926;
+    --color-series-3: #199e70;
+    --color-series-4: #c98500;
+    --color-series-5: #d55181;
+    --color-series-6: #008300;
+    --color-series-7: #9085e9;
+    --color-series-8: #e66767;
+    --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.06);
+  }
+}

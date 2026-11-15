@@ -37,9 +37,12 @@ class DiscreteActions(gym.ActionWrapper):
         return DISCRETE_ACTIONS[int(action)][1]
 
 
-def make_env(config: EnvConfig | None = None, action_mode: str = "continuous", frame_stack: int = 1) -> gym.Env:
-    """action_mode 는 'continuous' 또는 'discrete'. frame_stack 이 2 이상이면 최근 관측을 쌓는다."""
-    env: gym.Env = FlyChaseEnv(config)
+def make_env(config: EnvConfig | None = None, action_mode: str = "continuous", frame_stack: int = 1, fly=None) -> gym.Env:
+    """조준기 쪽 환경. action_mode 는 'continuous' 또는 'discrete'. frame_stack 이 2 이상이면 최근 관측을 쌓는다.
+
+    fly 는 학습한 초파리 player 다(players.py). None 이면 규칙 초파리.
+    """
+    env: gym.Env = FlyChaseEnv(config, fly=fly)
     if action_mode == "discrete":
         env = DiscreteActions(env)
     elif action_mode != "continuous":

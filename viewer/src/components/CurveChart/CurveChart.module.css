@@ -1,0 +1,59 @@
+/* 학습 곡선. 시리즈 색은 그리는 쪽이 --series 로 넘기고, 없으면 강조색이다. */
+
+.curve {
+  position: relative;
+  width: 100%;
+}
+
+.curve svg {
+  display: block;
+  overflow: visible;
+}
+
+.curve svg[data-pickable] {
+  cursor: pointer;
+}
+
+.grid {
+  stroke: var(--color-separator);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.tick {
+  fill: var(--color-text-tertiary);
+  font-size: var(--font-size-2xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.series {
+  fill: none;
+  stroke: var(--series, var(--color-accent));
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.flat {
+  stroke: var(--series, var(--color-accent));
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+
+.point {
+  fill: var(--series, var(--color-accent));
+  stroke: var(--color-bg-window);
+  stroke-width: 1.5;
+}
+
+/* 지금 고른 checkpoint. 속을 비운 고리로 다른 점과 구분한다. */
+.marker {
+  fill: var(--color-bg-window);
+  stroke: var(--series, var(--color-accent));
+  stroke-width: 2.5;
+}
+
+.crosshair {
+  stroke: var(--color-text-tertiary);
+  stroke-width: 1;
+}

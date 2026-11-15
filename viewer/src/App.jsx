@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { IssuePage } from './components/IssuePage.jsx'
-import { LineChart } from './components/LineChart.jsx'
-import { Readouts } from './components/Readouts.jsx'
-import { RunPanel } from './components/RunPanel.jsx'
-import { groupTitle, Sidebar } from './components/Sidebar.jsx'
-import { stepFrame, Transport } from './components/Transport.jsx'
+import { IconButton } from './components/IconButton/IconButton.jsx'
+import { IssuePage } from './components/IssuePage/IssuePage.jsx'
+import { LineChart } from './components/LineChart/LineChart.jsx'
+import { Outcome } from './components/Outcome/Outcome.jsx'
+import { Readouts } from './components/Readouts/Readouts.jsx'
+import { RunPanel } from './components/RunPanel/RunPanel.jsx'
+import { groupTitle, Sidebar } from './components/Sidebar/Sidebar.jsx'
+import { stepFrame, Transport } from './components/Transport/Transport.jsx'
 import { fetchEpisode, fetchEpisodes, fetchRuns } from './data/api.js'
 import { prepareEpisode } from './data/episode.js'
 import { seconds, signed, tagLabel } from './data/labels.js'
@@ -14,6 +16,7 @@ import { useRoute } from './route.js'
 import { FirstPersonView } from './scene/FirstPersonView.jsx'
 import { ThirdPersonView } from './scene/ThirdPersonView.jsx'
 import { useColorScheme } from './theme.js'
+import styles from './App.module.css'
 
 function ReloadIcon() {
   return (
@@ -38,13 +41,13 @@ function Charts({ ep }) {
   const { t } = useClock(15)
   if (ep.meta.mode === 'free-flight') {
     return (
-      <div className="charts charts-flight">
+      <div className={`${styles.charts} ${styles.chartsFlight}`}>
         <LineChart ep={ep} values={ep.speed} label="비행 속도" format={(v) => `${v.toFixed(2)}m/s`} tickFormat={(v) => v.toFixed(1)} t={t} zeroBased />
       </div>
     )
   }
   return (
-    <div className="charts">
+    <div className={styles.charts}>
       {ep.meta.mode === 'tracking-observation'
         ? <LineChart ep={ep} values={ep.speed} label="비행 속도" format={(v) => `${v.toFixed(2)}m/s`} tickFormat={(v) => v.toFixed(1)} t={t} zeroBased />
         : <LineChart ep={ep} values={ep.returns} label="누적 보상" format={(v) => signed(v, 2)} tickFormat={(v) => signed(v, 0)} t={t} zeroBased />}
@@ -151,56 +154,56 @@ export default function App() {
 
   const title = group ? groupTitle(group) : run ? run.name : 'FlyTracker'
   return (
-    <div className="app">
+    <div className={styles.app}>
       <Sidebar groups={groups} error={runsError} runId={runId} issueKey={group?.key ?? null} onSelectRun={selectRun} onOpenIssue={openIssue} />
-      <main className="main">
-        <header className="toolbar">
-          <div className="toolbar-lead">
-            {group?.issue && <span className="toolbar-num">#{group.issue.number}</span>}
-            <h1 className="toolbar-title">{title}</h1>
+      <main className={styles.main}>
+        <header className={styles.toolbar}>
+          <div className={styles.toolbarLead}>
+            {group?.issue && <span className={styles.toolbarNum}>#{group.issue.number}</span>}
+            <h1 className={styles.toolbarTitle}>{title}</h1>
             {episode && (
-              <span className="toolbar-meta">
+              <span className={styles.toolbarMeta}>
                 <span>{tagLabel(episode.tag)}</span>
                 <span>에피소드 {sel.k + 1}</span>
-                <span className={episode.summary.captured ? 'outcome outcome-capture' : 'outcome'}>
+                <Outcome captured={episode.summary.captured}>
                   {episode.summary.result === 'observation_complete' ? `관찰 ${seconds(episode.summary.duration)}` : episode.summary.captured ? `포획 ${seconds(episode.summary.duration)}` : '시간 초과'}
-                </span>
+                </Outcome>
                 {episode.summary.result !== 'observation_complete' && <span>보상 {signed(episode.summary.return)}</span>}
               </span>
             )}
           </div>
-          <div className="toolbar-actions">
+          <div className={styles.toolbarActions}>
             {group?.issue && (
-              <a className="icon-button" href={group.issue.url} target="_blank" rel="noreferrer" aria-label="GitHub에서 issue 열기" title="GitHub에서 issue 열기">
+              <IconButton href={group.issue.url} label="GitHub에서 issue 열기" title="GitHub에서 issue 열기">
                 <ExternalIcon />
-              </a>
+              </IconButton>
             )}
-            <button type="button" className="icon-button" aria-label="새로고침" title="새로고침" onClick={() => setReloadKey((k) => k + 1)}>
+            <IconButton label="새로고침" title="새로고침" onClick={() => setReloadKey((k) => k + 1)}>
               <ReloadIcon />
-            </button>
+            </IconButton>
           </div>
         </header>
         {group ? (
           <IssuePage key={group.key} group={group} onSelectRun={selectRun} />
         ) : (
-          <div className="workspace">
+          <div className={styles.workspace}>
             {run && sel && <RunPanel key={run.id} run={run} grid={grid} sel={sel} onSelect={selectEpisode} />}
             {ep ? (
-              <div className="stage">
-                <div className="scene">
+              <div className={styles.stage}>
+                <div className={styles.scene}>
                   <ThirdPersonView key={file} ep={ep} scheme={scheme} />
                 </div>
-                <aside className="inspector" aria-label={ep.meta.mode === 'free-flight' ? '초파리 비행 상태' : '조준기 화면과 현재 상태'}>
+                <aside className={styles.inspector} aria-label={ep.meta.mode === 'free-flight' ? '초파리 비행 상태' : '조준기 화면과 현재 상태'}>
                   {ep.meta.aimerEnabled !== false && <FirstPersonView key={file} ep={ep} />}
                   <Readouts ep={ep} scheme={scheme} />
                 </aside>
-                <div className="dock">
+                <div className={styles.dock}>
                   <Transport ep={ep} />
                   <Charts ep={ep} />
                 </div>
               </div>
             ) : (
-              <p className="empty">{list && !sel ? '저장된 에피소드가 없어요.' : ''}</p>
+              <p className={styles.empty}>{list && !sel ? '저장된 에피소드가 없어요.' : ''}</p>
             )}
           </div>
         )}

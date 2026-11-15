@@ -1,0 +1,66 @@
+{
+  "truth": {
+    "path": "docs/issues/feature/35-feature-sac-aimer-training/gate/truth.csv",
+    "sha256": "630ec5b311a118169c3d0a5872638c13680f0a02d3f509cf98f52238aad98089"
+  },
+  "a": {
+    "path": "docs/issues/feature/35-feature-sac-aimer-training/gate/baseline.csv",
+    "sha256": "4aec8f8eecf6074d73e37bdd132b6c54b00cd2cd3113e46ed57e2ea36b06b08d"
+  },
+  "b": {
+    "path": "docs/issues/feature/35-feature-sac-aimer-training/gate/sac-fs1.csv",
+    "sha256": "87157690c9fff6266319ee70bcb64d1bd0ca6d3f173ba6b5b9ce666dfd2e5178"
+  },
+  "n": 200,
+  "dropped": {
+    "A": 0,
+    "B": 0
+  },
+  "targets": [
+    "time"
+  ],
+  "metric": "mae · round none · no clip · lower is better",
+  "metric_args": {
+    "metric": "mae",
+    "composite": "0.5*(1-rmse)+0.5*spearman",
+    "round": "none",
+    "clip": null
+  },
+  "resamples": 10000,
+  "seed": 42,
+  "engine": "numpy",
+  "seconds": 0.3,
+  "nan_as_zero": 0,
+  "threshold": 0.9,
+  "verdict": "PASS",
+  "rows": [
+    {
+      "target": "time",
+      "a": 4.09995,
+      "b": 2.183648,
+      "delta": -1.916302,
+      "base_a": {
+        "mae": 4.09995
+      },
+      "base_b": {
+        "mae": 2.183648
+      },
+      "boot_mean": -1.9149808461499997,
+      "ci_low": -2.1956756874999988,
+      "ci_high": -1.6233600875000003,
+      "p_better": 1.0,
+      "ties": 0
+    }
+  ],
+  "macro": {
+    "target": "macro",
+    "a": 4.09995,
+    "b": 2.183648,
+    "delta": -1.916302,
+    "boot_mean": -1.9149808461499997,
+    "ci_low": -2.1956756874999988,
+    "ci_high": -1.6233600875000003,
+    "p_better": 1.0,
+    "ties": 0
+  }
+}

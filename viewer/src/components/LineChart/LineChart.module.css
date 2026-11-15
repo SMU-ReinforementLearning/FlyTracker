@@ -1,0 +1,61 @@
+/* 에피소드 그래프. 시리즈 하나짜리 선 그래프다. */
+
+.chart {
+  position: relative;
+  margin: 0;
+  padding: 1rem var(--space-3) 0.6rem;
+  background: var(--color-bg-window);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+.label {
+  position: absolute;
+  top: 1rem;
+  left: 1.4rem;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+.chart svg {
+  display: block;
+  overflow: visible;
+}
+
+.grid {
+  stroke: var(--color-separator);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.tick {
+  fill: var(--color-text-tertiary);
+  font-size: var(--font-size-2xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.series {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.playhead {
+  stroke: var(--color-text-primary);
+  stroke-width: 1;
+  opacity: 0.5;
+}
+
+.crosshair line {
+  stroke: var(--color-text-tertiary);
+  stroke-width: 1;
+}
+
+.crosshair circle {
+  fill: var(--color-accent);
+  stroke: var(--color-bg-window);
+  stroke-width: 2;
+}

@@ -1,0 +1,17 @@
+/* 글자 없이 아이콘만 있는 둥근 버튼. 도구 막대와 재생 조작에서 함께 쓴다. */
+
+.button {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--color-text-secondary);
+}
+
+.button:hover {
+  background: var(--color-fill);
+  color: var(--color-text-primary);
+}

@@ -10,7 +10,7 @@
   "probes": [
     "getComputedStyle(document.body).fontFamily.split(',')[0]",
     "document.querySelectorAll('canvas').length",
-    "document.querySelector('.toolbar-title')?.textContent"
+    "document.querySelector('main h1')?.textContent"
   ],
   "serveCheck": "document.title === 'FlyTracker'",
   "flags": ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--use-gl=angle", "--ignore-gpu-blocklist"],

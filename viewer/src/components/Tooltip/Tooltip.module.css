@@ -1,0 +1,48 @@
+/* 그래프 위에 뜨는 값 상자 */
+
+.tooltip {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+  padding: 0.5rem 0.9rem;
+  border-radius: 0.8rem;
+  background: var(--color-bg-window);
+  box-shadow: var(--shadow-popover);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.tooltip strong {
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.tooltip span {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-2xs);
+}
+
+.side {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.3rem;
+  transform: translate(1.2rem, 0);
+  z-index: 1;
+}
+
+.side[data-flip='true'] {
+  transform: translate(calc(-100% - 1.2rem), 0);
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.row strong {
+  margin-left: auto;
+  padding-left: 1rem;
+}
