@@ -4,7 +4,7 @@
 - Issue: #49
 - Branch: `49-feature-laser-beam-reward`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 Replace the aimer's aim-error penalty, which is linear in angle and nearly flat below 1°, by a penalty on the log-scaled distance from the fly to the beam, so that the reward still changes over the last millimetres before a laser hit (capture radius 1.25 mm). `ENV_VERSION` 4 → 5; the old penalty stays available through reward weights so runs under both rewards can be compared.
@@ -32,9 +32,9 @@ Replace the aimer's aim-error penalty, which is linear in angle and nearly flat 
 - [x] One version-5 baseline run published. (2026-11-15)
 
 ## Current State
-2026-11-15: implemented and verified in the working tree; committing, then PR and merge at the user's request (they asked for the reward issue to be done and merged, then SAC training).
+Done 2026-11-15; PR opened and merged at the user's request; the `AGENTS.md` pointer was removed in the branch's last commit.
 
-The weights are starting values chosen by reasoning, not by experiment: `beam` 0.1 keeps the visible penalty below `lost` (0.15) and makes one decade of distance worth about 0.034 per step against the 0.01 time penalty.
+What the next issue starts from: env version 5. Dense penalty while visible is `0.1 * log-scaled beam distance`; the version-4 reward is `--reward beam=0 angle=0.05`. Baseline on seeds 10000-10199: 200/200, 4.95 s, mean return −23.13. The weights are reasoned starting values; no training has been run under them.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -86,6 +86,17 @@ The weights are starting values chosen by reasoning, not by experiment: `beam` 0
 - Values recomputed: log1p(1)/log1p(800) = 0.104, log1p(10)/log1p(800) = 0.359, log1p(100)/log1p(800) = 0.690; 0.15 / 0.1 = 1.5.
 #### Notes
 - No cold-reader pass.
+
+### chore: #49 마무리 (#49)
+> why: last commit before the PR; a protected branch cannot take the pointer removal after the merge
+#### Scope
+`AGENTS.md`, `docs/issues/README.md`, this doc.
+#### Changes
+- Pointer line removed, registry row and Status set to done, Current State rewritten for the next issue.
+#### Verification
+- `uv run python -m pytest -q`: 122 passed, 45 skipped. `npm run build --prefix viewer` passes.
+#### Notes
+- None.
 
 ## Management Notes
 ### Follow-up Candidates
