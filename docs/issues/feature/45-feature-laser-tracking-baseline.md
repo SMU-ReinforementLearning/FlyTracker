@@ -101,6 +101,17 @@ Design choices made here: the fly's angular rate is a finite difference of the t
 - First attempt put the zoom view as an inset inside the aimer view (34 % wide, 1° field); the fly was about 8 px, so it moved to its own card with a 0.5° field.
 - The phone captures show only the top of the page, so the zoom view itself is not in them; they establish no horizontal overflow.
 
+### feat: 버전 4 기준선 실행 올리기 (#45)
+> why: the deployed viewer shows only `published/`; without these the new baseline and the zoomed view have no version-4 episode to show
+#### Scope
+`published/2026-11-15_221052_baseline/`, `published/2026-11-15_221450_baseline/`.
+#### Changes
+- `record_baseline.py --episodes 5 --seed 10000` (5/5, mean 4.87 s) and `--episodes 1 --seed 10027` (captured at 6.53 s; the episode in which the turret reaches pitch 90°), published with `publish_run.py --issue 45`.
+#### Verification
+- `npm run build --prefix viewer`; `viewer/dist/runs/index.json` lists both runs under issue 45.
+#### Notes
+- Seed 10027 was picked because it is the one of 200 that reaches straight up; it is not a sample of typical episodes.
+
 ## Management Notes
 ### Follow-up Candidates
 - Reward that has a gradient below 0.1° (log-scale beam distance) and SAC retraining under version 4, possibly as a residual policy on top of the feed-forward tracker; fallback: learned search + rule tracking (191/200, 3.24 s in the #42 scratch run).
