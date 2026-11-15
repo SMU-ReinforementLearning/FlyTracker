@@ -108,6 +108,23 @@ Trap: a vast `python:3.11-bookworm` instance forces tmux on ssh and runs no comm
 #### Notes
 - The prediction files were produced on the instance (as the gate says); they were not re-evaluated locally.
 
+### feat: SAC 실행 12개 올리고 viewer에 추적 보조 보여 주기 (#51)
+> why: every condition is published separately so they can be compared in the viewer (the user's request); without an assist row two conditions looked identical on the issue page
+#### Scope
+`published/2026-11-15_151701_sac-*` (12 runs), `published/issues/51.json`, `viewer/src/data/experiment.js`, `ui-text.glossary.md`, `README.md`.
+#### Changes
+- 12 runs published with `publish_run.py --runs-dir runs/g51/<name> --issue 51` (55 MB; 63 episodes each: 21 checkpoints x seeds 10000-10002).
+- `published/issues/51.json`: phase, purpose with the results, compare 49. No `aimer` version label: three of the four conditions failed and the label would apply to all cards.
+- Viewer: learned-aimer card gains a "추적 보조" row from `algo.assist` ("없음" / "기준선 추적 + 행동 × 0.2"); glossary row added.
+- README: results table for the four conditions next to the baseline, link to the gate.
+#### Verification
+- `uv run python -m pytest -q`: 139 passed, 45 skipped (includes the issue-info file check from #47).
+- `npm run build --prefix viewer` passes; `viewer/dist/runs/index.json` lists 26 runs, 12 with issue 51; `dist/runs/issues/51.json` present.
+- `variationsOf` on the 12 published configs gives four variations labelled by 추적 보조, 빔까지 거리 벌점, 조준 오차 벌점.
+- `ko-writing` `check.py README.md`: no new finding in the added paragraph.
+#### Notes
+- The page was not opened in a browser; the variation labels (for example "없음, 0.1, 0") are correct but terse.
+
 ## Management Notes
 ### Follow-up Candidates
 ### References

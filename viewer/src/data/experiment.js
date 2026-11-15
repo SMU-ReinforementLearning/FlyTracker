@@ -75,6 +75,7 @@ function sidesOf(cfg) {
       steps: algo.steps,
       seed: algo.seed,
       frameStack: algo.frameStack,
+      assist: algo.assist, // 초파리가 보이는 동안 기준선의 추적 행동에 더하는 정책 행동의 배율(#51). 0 이면 정책 혼자 조준한다
       model: algo.model, // 이미 학습한 모델을 다른 환경에서 돌린 실행(#44)이면 그 모델의 실행 id
       trainedEnv: algo.trainedEnvVersion,
     }
@@ -109,6 +110,7 @@ function cardsOf(sides, table, versionLabel) {
         makeRow('학습 길이', list.map((s) => (has(s.steps) ? qty(s.steps, ' step') : null))),
         makeRow('학습 seed', list.map((s) => (has(s.seed) ? item(String(s.seed), s.seed) : null)), { delta: false }),
         makeRow('함께 보는 최근 관측', list.map((s) => (has(s.frameStack) ? qty(s.frameStack, '개') : null))),
+        makeRow('추적 보조', list.map((s) => (has(s.assist) ? item(s.assist > 0 ? `기준선 추적 + 행동 × ${fmtNum(s.assist)}` : '없음') : null))),
         makeRow('학습한 환경 버전', list.map((s) => (has(s.trainedEnv) ? item(String(s.trainedEnv)) : null))),
         makeRow('모델', list.map((s) => (has(s.model) ? item(s.model) : null))),
       ].filter(Boolean)

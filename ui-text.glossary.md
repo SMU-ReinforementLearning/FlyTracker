@@ -34,6 +34,7 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 | model version in the alternating schedule | v0, v1 | 버전0, 1세대 | README 대전표의 번호. 환경 버전과 다르다 |
 | environment version | 환경 버전 | env 버전 | `config.json`의 `envVersion` |
 | frame stack | 함께 보는 최근 관측 | 프레임 스택, 관측 묶음 | 값은 "1개, 4개" |
+| tracking assist | 추적 보조 | 어시스트, 보조 제어 | 알고리즘 설정의 `assist`. 값은 "없음" 또는 "기준선 추적 + 행동 × 0.2" |
 | training seed | 학습 seed | 시드 | 알고리즘 설정의 `seed` |
 | seeds of recorded episodes | 에피소드 seed | 평가 시드 | 설명 파일의 `notes`에 적는다 |
 
@@ -58,4 +59,5 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 - 2026-11-11: 실행 패널과 issue 화면 용어 7개 추가 (#27)
 - 2026-11-15: 빔까지 거리 추가 (#42)
 - 2026-11-15: 확대 화면 추가 (#45)
+- 2026-11-16: 추적 보조 추가 (#51)
 - 2026-11-15: issue 화면의 실험, 초파리, 조준기, 조건 용어 11개 추가 (#47)

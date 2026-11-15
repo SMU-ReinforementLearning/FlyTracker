@@ -1,0 +1,1 @@
+{"id":"2026-11-15_151701_sac-angle-s0","name":"sac-angle-s0","createdAt":"2026-11-15T15:17:01","algo":"sac","actionMode":"continuous","notes":"issue #51 gate candidate sac-angle, training seed 0","episodeCount":63,"issue":{"number":51,"title":"레이저 명중 조건에서 SAC로 조준기 다시 학습하기","url":"https://github.com/SMU-ReinforementLearning/FlyTracker/issues/51"},"author":"lhk0721"}
