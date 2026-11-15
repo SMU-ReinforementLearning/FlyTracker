@@ -112,6 +112,19 @@ Design choices made here: the fly's angular rate is a finite difference of the t
 #### Notes
 - Seed 10027 was picked because it is the one of 200 that reaches straight up; it is not a sample of typical episodes.
 
+### docs: README와 검출 모델 메모를 버전 4에 맞추기 (#45)
+> why: README states the observation size, the pitch limit and the baseline numbers, all of which changed
+#### Scope
+`README.md`, `docs/issues/feature/13-feature-detection-model/detection-model.md`.
+#### Changes
+- README: observation 17-dim with the two new entries explained, pitch 90°, baseline tracking law, baseline table (200/200, 4.95 s, visible 30 %, return −19.95), match table example, `aimerAngles` in the recording format, the zoomed view in the playback screen.
+- #13 note: a dated paragraph — the observation is now 17-dim, the angular rate is ground truth until detection lands, velocity estimation and latency compensation go into a tracking filter between detector and policy, and for a laser the intercept formula keeps only system latency.
+#### Verification
+- ko-writing `check.py` on both files: no banned patterns, endings consistent; the one over-long README paragraph it flagged was split.
+- Numbers in the new README text recomputed: 8.6°/s ÷ 180 = 0.048; 0.036° ÷ 0.5° = 0.072; 1° at 2 m = 34.9 mm; 40° ÷ 0.5° = 80.
+#### Notes
+- No cold-reader pass was run on the README edits.
+
 ## Management Notes
 ### Follow-up Candidates
 - Reward that has a gradient below 0.1° (log-scale beam distance) and SAC retraining under version 4, possibly as a residual policy on top of the feed-forward tracker; fallback: learned search + rule tracking (191/200, 3.24 s in the #42 scratch run).
