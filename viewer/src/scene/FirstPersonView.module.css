@@ -24,6 +24,23 @@
   pointer-events: none;
 }
 
+/* 빔이 지나는 화면 가운데. 가운데를 비워 초파리를 가리지 않는다. */
+.cross {
+  --c: rgba(255, 255, 255, 0.6);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 3.2rem;
+  height: 3.2rem;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  background:
+    linear-gradient(var(--c), var(--c)) top center / 1px 1.2rem no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom center / 1px 1.2rem no-repeat,
+    linear-gradient(var(--c), var(--c)) left center / 1.2rem 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) right center / 1.2rem 1px no-repeat;
+}
+
 /* iPhone 카메라의 초점 사각형. 변 가운데의 짧은 눈금까지 같은 모양이다. 선 굵기 1.5px 는 테두리라서 px 로 둔다. */
 .focus {
   --c: #ffd60a;

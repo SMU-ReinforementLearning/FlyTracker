@@ -28,14 +28,16 @@ function FollowAimer({ ep }) {
 /**
  * 조준기 카메라 화면. 3D 로 그린 초파리 위에 Python 이 기록한 화면 좌표(uv)를 초점 사각형으로 겹친다.
  * 두 위치가 어긋나면 Python 의 투영 계산과 viewer 중 한쪽이 틀린 것이다.
- * 가운데 원은 포획 각도 범위다.
+ * 가운데 십자는 빔이 지나는 자리다. 빔 지름 2.5mm 는 화면에서 화소 하나보다 작아서 범위를 원으로 그리지 않는다.
+ * 포획을 각도로 판정하던 기록(captureAngleDeg 가 있다)은 그 각도 범위를 원으로 그린다.
  * 초파리는 실제 크기로 그린다. 멀리 있으면 화소 하나보다 작아서, 위치는 초점 사각형으로 본다.
  */
 export function FirstPersonView({ ep }) {
   const focus = useRef(null)
   const s = useMemo(newSample, [])
   const halfV = (ep.meta.fovV * Math.PI) / 360
-  const ringPct = (Math.tan((ep.meta.captureAngleDeg * Math.PI) / 180) / Math.tan(halfV)) * 100
+  const byAngle = ep.meta.captureAngleDeg != null
+  const ringPct = byAngle ? (Math.tan((ep.meta.captureAngleDeg * Math.PI) / 180) / Math.tan(halfV)) * 100 : 0
 
   const update = useCallback(() => {
     const el = focus.current
@@ -58,7 +60,9 @@ export function FirstPersonView({ ep }) {
         <FollowAimer ep={ep} />
         <FrameCounter />
       </Canvas>
-      {ep.meta.captureEnabled !== false && <div className={styles.ring} style={{ height: `${ringPct}%` }} aria-hidden="true" />}
+      {ep.meta.captureEnabled !== false && (byAngle
+        ? <div className={styles.ring} style={{ height: `${ringPct}%` }} aria-hidden="true" />
+        : <div className={styles.cross} aria-hidden="true" />)}
       <div ref={focus} className={styles.focus} aria-hidden="true" />
     </div>
   )

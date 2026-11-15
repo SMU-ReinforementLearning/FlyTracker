@@ -75,6 +75,7 @@ export function prepareEpisode(raw) {
     alarmed: Uint8Array.from(f.alarmed ?? f.evading, Number), // evading 은 이 필드가 생기기 전 기록
     capture: Float32Array.from(f.captureProgress),
     angle: Float32Array.from(f.angleErrDeg),
+    beam: f.beamDistMm ? Float32Array.from(f.beamDistMm) : null, // mm. 포획이 레이저 명중으로 바뀐 뒤(환경 버전 3)의 기록에만 있다
     distance: Float32Array.from(f.distance),
     speed: f.flySpeed ? Float32Array.from(f.flySpeed) : null,
     events: raw.diagnostics?.stimulus?.events ?? [],

@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { frameAt } from '../../data/episode.js'
+import { beamDistance } from '../../data/labels.js'
 import { useClock } from '../../playback/clock.js'
 import { SCENE } from '../../theme.js'
 import styles from './Readouts.module.css'
@@ -48,7 +49,8 @@ export function Readouts({ ep, scheme }) {
   ] : [
     ...(ep.meta.flyModel === 'neural' ? [['비행 설정', flightLabel]] : []),
     ['상태', state[0], state[1]],
-    ['조준 오차', `${ep.angle[i].toFixed(1)}°`],
+    ['조준 오차', `${ep.angle[i].toFixed(ep.beam ? 2 : 1)}°`],
+    ...(ep.beam ? [['빔까지 거리', beamDistance(ep.beam[i])]] : []),
     ['거리', `${ep.distance[i].toFixed(2)}m`],
     ['포획 진행', `${Math.round(capture * 100)}%`],
     ['초파리', alarmed ? '비상시' : '평시', alarmed ? colors.alarm : null],

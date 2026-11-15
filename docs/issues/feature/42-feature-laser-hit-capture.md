@@ -31,10 +31,10 @@ Make the capture condition match a laser hit, with values taken from published i
 
 ## Done Criteria
 - [ ] Capture is decided by distance to the beam (1.25 mm) and hold time (0.15 s); the 3° angle condition is gone from code, recordings, viewer and README.
-- [x] `ENV_VERSION` is 3 with a version-table line. (2026-11-15 17:10)
-- [x] Tests cover: on-beam for 15 physics steps captures; 14 steps does not; 1.3 mm off does not; a fly behind the turret does not; full test suite passes. (2026-11-15 17:10)
-- [x] The design note records evidence, power choice and safety limits; #3 doc states the laser decision and its date. (2026-11-15 17:30)
-- [x] Baseline and #35 SAC capture counts on 200 seeds under version 3 are reported in this doc, whatever they are. (2026-11-15 18:05) Baseline 5/200, SAC 1/1200.
+- [x] `ENV_VERSION` is 3 with a version-table line. (2026-11-15)
+- [x] Tests cover: on-beam for 15 physics steps captures; 14 steps does not; 1.3 mm off does not; a fly behind the turret does not; full test suite passes. (2026-11-15)
+- [x] The design note records evidence, power choice and safety limits; #3 doc states the laser decision and its date. (2026-11-15)
+- [x] Baseline and #35 SAC capture counts on 200 seeds under version 3 are reported in this doc, whatever they are. (2026-11-15) Baseline 5/200, SAC 1/1200.
 - [ ] Viewer shows the new condition; screenshot evidence at desktop and 390px.
 
 ## Current State
@@ -106,6 +106,45 @@ Management doc, registry row, AGENTS.md pointer.
 - `EnvConfig.from_dict` ignores unknown keys, so a version-2 config (`capture_angle_deg: 3.0`, `capture_hold: 0.2`) loads as radius 1.25 mm with hold 0.2 s. `test_capture_demos_keep_published_baseline_contract` now asserts exactly that for the #31 demo specs. Whether the neural demos should use 0.15 s is the #31 owner's call.
 - The first test runs in this worktree used the main checkout's pytest (`VIRTUAL_ENV` pointed there) and so tested the old code; fixed with `uv sync --all-extras` and `uv run python -m pytest`. Results above are from the worktree's own environment.
 - Viewer still reads `captureAngleDeg`; new recordings have no such key until the viewer commit on this branch.
+
+### feat: viewer에 빔 자리와 빔까지 거리 넣기 (#42)
+> why: new recordings have no `captureAngleDeg`, so the capture ring had no size; a 0.036° target cannot be read from an aim error shown to 0.1°
+#### Scope
+`viewer/src/scene/FirstPersonView.jsx` + its CSS module, `viewer/src/components/Readouts/Readouts.jsx`, `viewer/src/data/episode.js`, `viewer/src/data/labels.js`, `viewer/src/App.jsx`, `ui-text.glossary.md`, captures, this doc.
+#### Changes
+- Aimer view: recordings without `captureAngleDeg` get a small centre crosshair (the beam path; a 2.5 mm beam is under one pixel, so no ring). Recordings with `captureAngleDeg` keep the ring.
+- Readouts: new row "빔까지 거리" (mm under 10 cm, m above) when the recording has `beamDistMm`; aim error shown to 0.01° for those recordings, also in the chart tooltip.
+- Glossary: "빔까지 거리" added.
+#### Verification
+- `npm run build --prefix viewer` passes. `uv run python -m pytest -q`: 109 passed, 45 skipped (includes the viewer attitude test, which needs `viewer/node_modules`).
+- ui-evidence, dev server from this worktree on port 5180 (port was free before start), commit c22f18d + working tree, Chrome 157.0.8103.52, ready `window.__frames > 10 && document.fonts.status === 'loaded'`, settle 800 ms, reduced motion on:
+
+| page | viewport | file | overflow | probes |
+| --- | --- | --- | --- | --- |
+| version-3 episode (`?run=2026-11-15_201137_baseline&tag=baseline&ep=1`) | 1600x900 | `42-feature-laser-hit-capture/captures/v3-1600x900.png` | none | 1 cross / 0 ring; rows: 상태, 조준 오차, 빔까지 거리, 거리, 포획 진행, 초파리, 프레임 |
+| version-3 episode | 390x844 (mobile, dpr 2) | `42-feature-laser-hit-capture/captures/v3-390x844.png` | none | same |
+| version-2 episode (`?run=2026-11-11_133858_baseline&tag=baseline&ep=1`) | 1600x900 | `42-feature-laser-hit-capture/captures/v2-1600x900.png` | none | 0 cross / 1 ring; rows: 상태, 조준 오차, 거리, 포획 진행, 초파리, 프레임 |
+| version-2 episode | 390x844 (mobile, dpr 2) | `42-feature-laser-hit-capture/captures/v2-390x844.png` | none | same |
+
+- Looked at the three 1600x900 / 390x844 PNGs opened: crosshair centred in the aimer view, "빔까지 거리 0.63m" row present, old episode unchanged with its ring. The phone capture shows the run list and panel above the fold; the aimer view is below it and was checked by probe only.
+- Console: one 404 for `/favicon.ico` and the existing `THREE.Clock` deprecation warnings; nothing from the changed code.
+#### Notes
+- The first capture run wrote both pages to the same file names (same path `/`), so the version-3 page was captured again into its own folder.
+- The aim-error chart still spans 0-180° and cannot show the last 0.1°. A beam-distance chart is a follow-up candidate.
+
+### feat: 새 포획 조건으로 돌린 기준선 실행 올리기 (#42)
+> why: the user asked to be able to watch version-3 episodes in the viewer after the merge
+#### Scope
+`published/2026-11-15_201137_baseline/`, `published/2026-11-15_201250_baseline/`, this doc.
+#### Changes
+- `record_baseline.py --episodes 3 --seed 10000` (the seeds the training evaluation uses): 0/3 captured.
+- `record_baseline.py --episodes 5 --seed 10114`: 1/5 captured (seed 10116 at 2.62 s). Chosen so that one capture can be watched; 5 episodes around a known capture overstate the rate, which is 5/200.
+- Both copied with `publish_run.py --issue 42`.
+#### Verification
+- Captured episode (`ep_002.json`, seed 10116): last frames have `beamDistMm` 1.21 → 0.32 while `captureProgress` goes 0.07 → 1.0 over 8 frames; meta has `captureRadius` 0.00125, `captureHold` 0.15, no `captureAngleDeg`.
+- Per-seed baseline run on seeds 10000-10199 (`runs/_ops/eval_v3.py`, local only): 5 captures (seeds 10031, 10069, 10116, 10164, 10196); the beam came within 1.25 mm at least once in 39 episodes, stayed for 0.05 s or more in 9; median of the closest approach 2.51 mm.
+#### Notes
+- `publish_run.py` warns when the issue has no `training` label; #42 is not a training issue.
 
 ## Management Notes
 ### Follow-up Candidates

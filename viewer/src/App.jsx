@@ -51,7 +51,7 @@ function Charts({ ep }) {
       {ep.meta.mode === 'tracking-observation'
         ? <LineChart ep={ep} values={ep.speed} label="비행 속도" format={(v) => `${v.toFixed(2)}m/s`} tickFormat={(v) => v.toFixed(1)} t={t} zeroBased />
         : <LineChart ep={ep} values={ep.returns} label="누적 보상" format={(v) => signed(v, 2)} tickFormat={(v) => signed(v, 0)} t={t} zeroBased />}
-      <LineChart ep={ep} values={ep.angle} label="조준 오차" format={(v) => `${v.toFixed(1)}°`} tickFormat={(v) => `${v}°`} t={t} zeroBased />
+      <LineChart ep={ep} values={ep.angle} label="조준 오차" format={(v) => `${v.toFixed(ep.beam ? 2 : 1)}°`} tickFormat={(v) => `${v}°`} t={t} zeroBased />
       {ep.meta.mode === 'tracking-observation' && ep.normalRate && <>
         <LineChart ep={ep} values={ep.normalRate} label="평상 회로 출력" format={(v) => `${v.toFixed(1)}Hz`} tickFormat={(v) => v.toFixed(0)} t={t} zeroBased />
         <LineChart ep={ep} values={ep.escapeRate} label="도피 회로 출력" format={(v) => `${v.toFixed(1)}Hz`} tickFormat={(v) => v.toFixed(0)} t={t} zeroBased />
