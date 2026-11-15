@@ -38,7 +38,11 @@ Make the capture condition match a laser hit, with values taken from published i
 - [ ] Viewer shows the new condition; screenshot evidence at desktop and 390px.
 
 ## Current State
-Seeded 2026-11-15. No code changed yet. Values fixed with the user on 2026-11-15: radius 1.25 mm, hold 0.15 s (500 mW assumption). Next: design note and #3 doc, then `env.py` and tests.
+2026-11-15. Seed committed. Design note + #3 note, and the `env.py` capture change with tests, are written and waiting for the user's approval (two commits). Values: radius 1.25 mm, hold 0.15 s (500 mW assumption).
+
+Measured under version 3 (seeds 10000-10199, rule fly): baseline 5/200. SAC numbers are in the feat work-log section.
+
+Next, in order: viewer (capture ring reads `captureAngleDeg`; show beam distance), README (episode, R, fly state, recording format, pitch 89° sentence), then close.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -64,6 +68,42 @@ Management doc, registry row, AGENTS.md pointer.
 - A fly at 0.3 m/s moves 3 mm per physics step, more than the 2.5 mm beam diameter, so a fly merely crossing the beam is inside it for at most one step.
 - Power decision (user, 2026-11-15): the device is for indoor use, so a 3 W beam is not acceptable. No eye-safe power kills a fly (Class 2 at 1 mW would need 74 s, Class 3R at 5 mW 15 s, and heat leaks away over seconds), so the power is lowered only to the top of Class 3B, 500 mW, where fire, skin and diffuse-reflection hazards are normally absent; the eye hazard is left to interlocks. 74 mJ / 0.5 W = 0.148 s → 0.15 s.
 - 0.15 s is an extrapolation: the papers varied pulse length only up to 45 ms for dose, and in-flight mortality fell at 50–100 ms. Class limits were checked against secondary sources (Seibersdorf white paper, Lasermet, ANSI blog), not the IEC 60825-1 text.
+
+### docs: 레이저 포획 조건의 근거 문서 (#42)
+> why: the user asked for the evidence behind the new capture values to be kept and documented; the #3 note still said the laser was excluded
+#### Scope
+`docs/issues/feature/42-feature-laser-hit-capture/laser-capture-condition.md` (new, Korean, for teammates), the #3 design note, this doc.
+#### Changes
+- New design note: scope, terms, values taken from Keller 2016 / 2020, the 1.25 mm choice among three candidates, power class table and the 500 mW / 0.15 s choice, what a fly crossing the beam does, safety limits, values put into the environment, references.
+- #3 note: a dated line at the top says the laser decision replaces its salt-pellet choice and links the new note. The rest is kept as a record.
+#### Verification
+- ko-writing `check.py`: no hits in sections 1-7; remaining warnings are heading heuristics (noun phrases with a modifier) and two dated lines kept on purpose.
+- One cold-reader pass by a fresh subagent that read only the note. Fixed: undefined terms (Class 3B, 벗초파리, Photonic Fence, R), "머무는 시간" / "판정 거리" used for both the measured value and the limit, "논문" without a year, the 45 ms figure missing from the table, eye-limit comparison at 25 ms only, missing Lasermet reference.
+- Arithmetic rechecked by script: 1.25 mm at 1 / 2 / 3 m = 0.072° / 0.036° / 0.024°; 74 mJ over a 2.3 mm spot = 1.78 J/cm²; 1.6 J/cm² over a 2.5 mm spot = 79 mJ, 0.157 s at 0.5 W.
+#### Notes
+- The cold reader caught that 74 mJ was measured with a 2.3 mm spot while the note assumes 2.5 mm. At 2.5 mm the same fluence is 79 mJ, i.e. 0.16 s at 500 mW. 0.15 s is kept (the value the user approved) and the note says so; the mosquito-to-fruit-fly gap is larger than this difference (our estimate).
+- The eye exposure limits in the note (about 0.1 mJ/cm² at 25 ms, 0.4 mJ/cm² at 0.15 s) come from the 1.8·t^0.75 mJ/cm² formula as remembered; a web search did not confirm it against the standard, and the note says it is unchecked.
+- No second cold-reader pass was run after the fixes.
+
+### feat: 포획 판정을 빔까지 거리로 바꾸기 (#42)
+> why: capture has to mean a laser hit; values from the design note
+#### Scope
+`flytracker/env.py`, `flytracker/record.py`, `flytracker/free_flight.py`, `flytracker/aimer.py` (comment), `tests/test_env.py`, `tests/test_neural_demo_suite.py`, this doc.
+#### Changes
+- `EnvConfig`: `capture_angle_deg` removed, `capture_radius` 0.00125 m added, `capture_hold` 0.2 to 0.15 s. `ENV_VERSION` 3.
+- Capture test in `_update_vision`: distance from the fly centre to the beam (`_to_beam`, forward-only, now shared with the fly observation) at most `capture_radius`; still requires `visible` and `capture_range`.
+- `info["beam_dist"]` (m) and frame key `beamDistMm` (mm, because frames are rounded to 4 decimals).
+- Recording meta: `captureAngleDeg` replaced by `captureRadius` and `captureHold`.
+- Tests: 15 physics steps capture and 14 do not; 1.2 mm captures, 1.3 mm and 52 mm (3° at 1 m) do not; the timer restarts after leaving the beam; a fly behind the turret is not hit; a fly straight above the turret is no longer capturable.
+#### Verification
+- `uv run python -m pytest -q`: 109 passed, 45 skipped (the skips need the local neural source).
+- Rule baseline under version 3, seeds 10000-10199, rule fly: 5/200 captured, mean 6.21 s over the captured ones (`scripts/match.py`). Under version 2 it was 200/200.
+- The 6 #35 SAC models (trained under version 2) under version 3, same seeds, rule fly, measured on the laptop with a scratch script that skips the version check in `load_opponent`: `sac-fs1-s0` 1/200 (9.91 s); `sac-fs1-s1`, `sac-fs1-s2`, `sac-fs4-s0`, `sac-fs4-s1`, `sac-fs4-s2` 0/200 each. Total 1/1200. Under version 2 they caught about 97-98 %.
+#### Notes
+- Blind cone: pitch stops at 89°, so a fly within 1° of straight up cannot be hit (33 mm off the beam at 1.9 m). Under the 3° rule the 89° limit covered the zenith; `test_fly_straight_above_turret_is_capturable_only_with_89_deg_limit` is replaced by a test that states the new behaviour.
+- `EnvConfig.from_dict` ignores unknown keys, so a version-2 config (`capture_angle_deg: 3.0`, `capture_hold: 0.2`) loads as radius 1.25 mm with hold 0.2 s. `test_capture_demos_keep_published_baseline_contract` now asserts exactly that for the #31 demo specs. Whether the neural demos should use 0.15 s is the #31 owner's call.
+- The first test runs in this worktree used the main checkout's pytest (`VIRTUAL_ENV` pointed there) and so tested the old code; fixed with `uv sync --all-extras` and `uv run python -m pytest`. Results above are from the worktree's own environment.
+- Viewer still reads `captureAngleDeg`; new recordings have no such key until the viewer commit on this branch.
 
 ## Management Notes
 ### Follow-up Candidates
