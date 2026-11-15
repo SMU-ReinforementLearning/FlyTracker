@@ -27,3 +27,4 @@ One row per management document, added in the same commit that creates the doc.
 | #42 | docs/issues/feature/42-feature-laser-hit-capture.md | done | 포획 조건을 레이저 명중으로 바꾸기 |
 | #44 | docs/issues/chore/44-chore-sac-v3-episodes.md | done | 학습한 조준기로 돌린 버전 3 에피소드 올리기 |
 | #45 | docs/issues/feature/45-feature-laser-tracking-baseline.md | done | 레이저 포획 조건에서 통하는 조준기 기준선 만들기 |
+| #49 | docs/issues/feature/49-feature-laser-beam-reward.md | done | 레이저 명중에 맞춰 조준기 보상 바꾸기 |

@@ -32,7 +32,8 @@ from .world import UP, Room
 # 2: #34. pitch 제한 89°. 학습한 초파리를 넣는 자리, 초파리 관측(초록 레이저로 조준선을 봄, 0.06초 늦게), 초파리 보상.
 # 3: #42. 포획을 레이저 명중으로 바꿈. 조준 오차 3° 에 0.2초 → 초파리 중심에서 빔까지 1.25mm 에 0.15초.
 # 4: #45. pitch 제한 90°. 조준기 관측에 초파리 방향의 각속도(target_rate)와 가운데를 확대한 조준 오차(uv_fine)를 넣음.
-ENV_VERSION = 4
+# 5: #49. 보일 때의 벌점을 조준 오차(각도에 비례)에서 빔까지 거리(log 눈금)로 바꿈. 초파리 보상도 같이 바꿈.
+ENV_VERSION = 5
 
 
 @dataclass(frozen=True)
@@ -43,7 +44,13 @@ class RewardWeights:
     """
 
     time: float = 0.01  # 매 step 벌점
-    angle: float = 0.05  # 보일 때, 조준 오차 / 세로 반시야각 (최대 1)
+    # 보일 때, 빔까지 거리의 log 눈금 (0~1). 빔 위에서 0, 포획 반경에서 약 0.1, beam_far 이상에서 1 이다.
+    # 거리가 10분의 1 이 될 때마다 거의 같은 만큼 줄어서, 포획 반경(1.25mm) 근처에서도 가까워진 만큼 벌점이 준다.
+    beam: float = 0.1
+    beam_far: float = 1.0  # m. 빔까지 거리가 이 값 이상이면 벌점이 가장 크다
+    # 보일 때, 조준 오차 / 세로 반시야각 (최대 1). 환경 버전 4 까지 쓰던 벌점이고 그때 값은 0.05 다.
+    # 각도에 비례해서 1° 아래로는 거의 달라지지 않는다. 견줘 볼 때만 켠다.
+    angle: float = 0.0
     lost: float = 0.15  # 안 보일 때 고정 벌점
     action_change: float = 0.01  # 이전 행동과의 차이 제곱 평균
     capture: float = 10.0  # 포획 보상
@@ -57,7 +64,8 @@ class FlyRewardWeights:
     """
 
     time: float = 0.01  # 버틴 step 마다
-    angle: float = 0.05  # 조준기에 보일 때, 조준 오차 / 세로 반시야각 (최대 1)
+    beam: float = 0.1  # 조준기에 보일 때, 빔까지 거리의 log 눈금 (0~1). 조준기의 beam 과 같은 값이다
+    angle: float = 0.0  # 조준기에 보일 때, 조준 오차 / 세로 반시야각 (최대 1). 환경 버전 4 까지는 0.05
     lost: float = 0.15  # 조준기에 안 보일 때
     capture: float = 10.0  # 포획되면 잃는다
 
@@ -322,7 +330,7 @@ class FlyChaseEnv(gym.Env):
     def fly_reward(self) -> float:
         """직전 step 에 학습한 초파리가 받는 보상. 조준기 보상의 부호를 뒤집은 값에서 행동 변화 벌점을 뺐다."""
         w = self.config.fly_reward
-        r = w.time + (w.angle * self._aim_error_ratio() if self._proj.visible else w.lost)
+        r = w.time + (w.beam * self._beam_ratio() + w.angle * self._aim_error_ratio() if self._proj.visible else w.lost)
         if self.captured:
             r -= w.capture
         return float(r)
@@ -403,11 +411,16 @@ class FlyChaseEnv(gym.Env):
         half_fov = math.radians(self.config.camera.fov_v_deg) / 2
         return min(self._proj.angle_error / half_fov, 1.0)
 
+    def _beam_ratio(self) -> float:
+        """빔까지 거리의 log 눈금. log(1 + 거리/포획 반경) 을 beam_far 에서 1 이 되게 나누고 1 에서 자른다."""
+        radius, far = self.config.capture_radius, self.config.reward.beam_far
+        return min(math.log1p(self._beam_dist / radius) / math.log1p(far / radius), 1.0)
+
     def _reward(self, a: np.ndarray) -> float:
         w, proj = self.config.reward, self._proj
         r = -w.time
         if proj.visible:
-            r -= w.angle * self._aim_error_ratio()
+            r -= w.beam * self._beam_ratio() + w.angle * self._aim_error_ratio()
         else:
             r -= w.lost
         r -= w.action_change * float(np.mean((a - self._prev_action) ** 2))

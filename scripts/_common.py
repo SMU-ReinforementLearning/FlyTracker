@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import argparse
 import sys
-from dataclasses import replace
+from dataclasses import fields, replace
 
 from flytracker import EnvConfig, EpisodeRecorder
+from flytracker.env import RewardWeights
 from flytracker.camera import CameraIntrinsics
 from flytracker.neural_fly import NeuralConfig
 from flytracker.stimulus import StimulusConfig
@@ -43,12 +44,32 @@ def add_env_args(p: argparse.ArgumentParser) -> None:
         help="포획 거리 (m). 없으면 거리 조건 없음",
     )
     g.add_argument("--max-seconds", type=float, default=EnvConfig.max_seconds)
+    g.add_argument(
+        "--reward",
+        nargs="+",
+        default=[],
+        metavar="항목=값",
+        help="조준기 보상 가중치를 바꾼다. 예: --reward beam=0 angle=0.05 (환경 버전 4 까지의 보상). "
+        f"항목: {', '.join(f.name for f in fields(RewardWeights))}",
+    )
     g.add_argument("--start-facing-fly", action="store_true", help="시작할 때 파리를 바라보게 한다. 없으면 방 가운데를 본다")
+
+
+def reward_from_args(items: list[str]) -> RewardWeights:
+    names = {f.name for f in fields(RewardWeights)}
+    values = {}
+    for item in items:
+        key, sep, value = item.partition("=")
+        if not sep or key not in names:
+            raise SystemExit(f"--reward {item}: 항목=값 꼴이어야 하고, 항목은 {', '.join(sorted(names))} 가운데 하나다")
+        values[key] = float(value)
+    return replace(RewardWeights(), **values)
 
 
 def config_from_args(args: argparse.Namespace) -> EnvConfig:
     return replace(
         EnvConfig(),
+        reward=reward_from_args(args.reward),
         turret_pos=tuple(args.turret_pos),
         capture_range=args.capture_range,
         camera=CameraIntrinsics(fov_v_deg=args.fov),
