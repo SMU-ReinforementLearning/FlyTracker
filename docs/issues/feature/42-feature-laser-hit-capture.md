@@ -35,14 +35,14 @@ Make the capture condition match a laser hit, with values taken from published i
 - [x] Tests cover: on-beam for 15 physics steps captures; 14 steps does not; 1.3 mm off does not; a fly behind the turret does not; full test suite passes. (2026-11-15)
 - [x] The design note records evidence, power choice and safety limits; #3 doc states the laser decision and its date. (2026-11-15)
 - [x] Baseline and #35 SAC capture counts on 200 seeds under version 3 are reported in this doc, whatever they are. (2026-11-15) Baseline 5/200, SAC 1/1200.
-- [ ] Viewer shows the new condition; screenshot evidence at desktop and 390px.
+- [x] Viewer shows the new condition; screenshot evidence at desktop and 390px. (2026-11-15)
 
 ## Current State
-2026-11-15. Committed: seed, design note + #3 note, capture change with tests. Values: radius 1.25 mm, hold 0.15 s (500 mW assumption).
+2026-11-15. Committed: seed, design note + #3 note, capture change with tests, viewer, two published version-3 baseline runs. Values: radius 1.25 mm, hold 0.15 s (500 mW assumption).
 
 Measured under version 3 (seeds 10000-10199, rule fly): baseline 5/200, the 6 #35 SAC models 1/1200 in total. The existing aimers do not work under the new rule; reward design and retraining are a follow-up issue.
 
-The user asked (2026-11-15) to go through to the merge so that version-3 episodes can be watched in the viewer. Next, in order: viewer (capture ring reads `captureAngleDeg`; show beam distance), README, record and publish a version-3 baseline run, close, push, PR, merge.
+The user asked (2026-11-15) to go through to the merge so that version-3 episodes can be watched in the viewer. Left: README, close (pointer removal), push, PR, merge.
 
 Two vast.ai instances were created and destroyed on 2026-11-15 without running anything (first image had no sshd; the local measurement finished before the second came up). `vastai show instances` is empty.
 
