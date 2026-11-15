@@ -30,7 +30,8 @@ from .world import UP, Room
 # 실행마다 config.json 의 envVersion 에 적히고, 버전이 다른 모델끼리는 견주지 않는다.
 # 1: #33 까지. pitch 제한 80°.
 # 2: #34. pitch 제한 89°. 학습한 초파리를 넣는 자리, 초파리 관측(초록 레이저로 조준선을 봄, 0.06초 늦게), 초파리 보상.
-ENV_VERSION = 2
+# 3: #42. 포획을 레이저 명중으로 바꿈. 조준 오차 3° 에 0.2초 → 초파리 중심에서 빔까지 1.25mm 에 0.15초.
+ENV_VERSION = 3
 
 
 @dataclass(frozen=True)
@@ -73,9 +74,10 @@ class EnvConfig:
     frame_skip: int = 2  # 행동 하나를 몇 물리 step 동안 유지하나
     max_seconds: float = 10.0
     turret_pos: tuple[float, float, float] = (0.0, 0.1, 0.0)  # m. 조준기 자리. 기본은 바닥 정가운데, 회전축 높이 0.1m
-    capture_angle_deg: float = 3.0
+    # 포획은 레이저 명중이다. 값의 근거는 docs/issues/feature/42-feature-laser-hit-capture/laser-capture-condition.md
+    capture_radius: float = 0.00125  # m. 초파리 중심에서 빔 중심선까지 이 거리 안이면 맞은 것이다. 빔 지름 2.5mm 의 절반
     capture_range: float | None = None  # m. None 이면 거리 조건 없음
-    capture_hold: float = 0.2  # s. 이 시간 동안 조건을 이어서 지키면 포획
+    capture_hold: float = 0.15  # s. 이 시간 동안 이어서 맞아야 포획. 치사 에너지 74mJ ÷ 출력 500mW
     min_start_distance: float = 1.5  # m. 시작할 때 초파리와 조준기 사이 최소 거리
     start_facing_fly: bool = False  # True 면 초파리를, False 면 방 가운데 쪽(바로 아래면 −z)을 수평으로 바라보며 시작한다
     memory_horizon: float = 2.0  # s. 놓친 뒤 지난 시간을 이 값으로 나눈다
@@ -166,7 +168,7 @@ FLY_OBS_FIELDS: tuple[tuple[str, int, float, float], ...] = (
     ("turret_dist", 1, 0.0, 1.0),  # 조준기까지 거리 / 방 대각선
     ("laser_dir", 3, -1.0, 1.0),  # 레이저 빔에서 가장 가까운 점 쪽 방향. 빔 위에 있으면 0
     ("laser_dist", 1, 0.0, 1.0),  # 그 점까지 거리 / 방 대각선
-    ("aim_error", 1, 0.0, 1.0),  # 조준선이 조준기에서 본 초파리 방향과 이루는 각 / 180°. 포획 조건은 3° 다
+    ("aim_error", 1, 0.0, 1.0),  # 조준선이 조준기에서 본 초파리 방향과 이루는 각 / 180°
     ("climb", 1, -1.0, 1.0),  # 진행 방향의 y 성분 / max_climb
     ("speed", 1, 0.0, 1.0),  # 회피 가속까지 반영한 속도 / (speed_max × evade_speed_gain)
     ("room_pos", 3, -1.0, 1.0),  # 방 안 위치. 축마다 양쪽 벽이 −1 과 1
@@ -328,6 +330,7 @@ class FlyChaseEnv(gym.Env):
             "visible": proj.visible,
             "uv": proj.uv.tolist() if proj.in_front else [0.0, 0.0],
             "angleErrDeg": math.degrees(proj.angle_error),
+            "beamDistMm": self._beam_dist * 1000,  # 초파리 중심에서 빔까지. 4자리로 반올림해 저장하므로 mm 로 둔다
             "distance": proj.distance,
             "alarmed": self.fly.alarmed,
             "captureProgress": min(self._capture_timer / self.config.capture_hold, 1.0),
@@ -363,13 +366,20 @@ class FlyChaseEnv(gym.Env):
             self._time_since_seen = 0.0
         else:
             self._time_since_seen = min(self._time_since_seen + cfg.dt, cfg.memory_horizon)
+        self._beam_dist = float(np.linalg.norm(self._to_beam()))
         in_capture = (
             cfg.capture_enabled
             and proj.visible
-            and proj.angle_error <= math.radians(cfg.capture_angle_deg)
+            and self._beam_dist <= cfg.capture_radius
             and (cfg.capture_range is None or proj.distance <= cfg.capture_range)
         )
         self._capture_timer = self._capture_timer + cfg.dt if in_capture else 0.0
+
+    def _to_beam(self) -> np.ndarray:
+        """초파리 중심에서 빔 위의 가장 가까운 점으로 가는 벡터. 빔은 조준기에서 앞으로만 나간다."""
+        fly, aimer = self.fly, self.aimer
+        along = max(0.0, float((fly.pos - aimer.pos) @ aimer.look))
+        return aimer.pos + aimer.look * along - fly.pos
 
     def _aim_error_ratio(self) -> float:
         """조준 오차 / 세로 반시야각. 1 에서 자른다."""
@@ -422,8 +432,7 @@ class FlyChaseEnv(gym.Env):
         to_turret = aimer.pos - fly.pos
         o[FLY_OBS["turret_dir"]] = body(unit(to_turret))
         o[FLY_OBS["turret_dist"]] = np.linalg.norm(to_turret) / room.diagonal
-        along = max(0.0, float((fly.pos - aimer.pos) @ aimer.look))  # 빔은 조준기에서 앞으로만 나간다
-        to_beam = aimer.pos + aimer.look * along - fly.pos
+        to_beam = self._to_beam()
         o[FLY_OBS["laser_dir"]] = body(unit(to_beam))
         o[FLY_OBS["laser_dist"]] = np.linalg.norm(to_beam) / room.diagonal
         o[FLY_OBS["aim_error"]] = self._proj.angle_error / math.pi
@@ -441,6 +450,7 @@ class FlyChaseEnv(gym.Env):
             "t": self.t,
             "visible": proj.visible,
             "angle_error_deg": math.degrees(proj.angle_error),
+            "beam_dist": self._beam_dist,
             "distance": proj.distance,
             "captured": self.captured,
             "fly_alarmed": self.fly.alarmed,
