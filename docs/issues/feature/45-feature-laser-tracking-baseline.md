@@ -59,6 +59,22 @@ Design choices made here: the fly's angular rate is a finite difference of the t
 #### Notes
 - Open issue #44 (`44-chore-sac-v3-episodes`, another worktree) is unrelated work on version-3 episodes.
 
+### feat: 환경 버전 4와 속도 맞춤 기준선 (#45)
+> why: under the laser capture rule the P-only baseline lags a moving fly and catches 5/200; the fix needs the fly's angular rate in the observation, and the 1° blind cone above the turret had no reason to stay
+#### Scope
+`flytracker/geometry.py`, `camera.py`, `aimer.py`, `env.py`, `baseline.py`, `record.py`, `free_flight.py`, `tests/test_env.py`.
+#### Changes
+- `geometry.aim_basis(yaw, pitch)`: camera axes with the right axis taken from yaw, defined at pitch ±90°. `Aimer.basis` uses it; `project` takes an optional `basis`; the env passes it everywhere it projected with `look` alone.
+- `AimerLimits.max_pitch_deg` 89 → 90.
+- Observation 13 → 17: `target_rate` (fly direction's yaw/pitch rate over the last physics step, in action units, only while visible) and `uv_fine` (angular offset from the centre / `fine_error_deg` 0.5°). `ENV_VERSION` 4.
+- `RuleAimer`: tracking law is `target_rate + track_gain * angle error` (`track_gain` 25 /s replaces `turn_gain`); search unchanged.
+- Recording: frame key `aimerAngles` (yaw, pitch in rad); free-flight writes a placeholder.
+#### Verification
+- `uv run python -m pytest -q`: 112 passed, 45 skipped (skips need the local neural source). New tests: fly straight above is captured at pitch 90°; screen coordinates continuous between 89.9° and 90°; `target_rate` and `uv_fine` values for a known offset and motion, zero when not visible; baseline captures at least 4 of seeds 0-4.
+- `runs/_ops/eval_v4.py` (local), seeds 10000-10199, rule fly: 200/200, mean 4.95 s, no failed seed; one episode (seed 10027) reaches pitch 90°. `scripts/record_baseline.py --episodes 200 --seed 10000 --no-save`: 200/200, mean return −19.95, visible 30 %, 4.95 s.
+#### Notes
+- Near straight up the fly direction's yaw rate grows without bound; `target_rate` clips at ±1 and the turret's yaw rate limit applies. No failed seed came from this in the 200.
+
 ## Management Notes
 ### Follow-up Candidates
 - Reward that has a gradient below 0.1° (log-scale beam distance) and SAC retraining under version 4, possibly as a residual policy on top of the feed-forward tracker; fallback: learned search + rule tracking (191/200, 3.24 s in the #42 scratch run).

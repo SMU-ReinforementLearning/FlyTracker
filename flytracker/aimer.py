@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .geometry import approach, look_dir, wrap_angle
+from .geometry import aim_basis, approach, look_dir, wrap_angle
 
 ACTION_NAMES = ("yaw_rate", "pitch_rate")
 ACTION_DIM = len(ACTION_NAMES)
@@ -18,9 +18,9 @@ class AimerLimits:
     max_yaw_rate_deg: float = 180.0  # 도/s
     max_pitch_rate_deg: float = 120.0  # 도/s
     max_ang_accel_deg: float = 720.0  # 도/s²
-    # 위아래로 볼 수 있는 한계 (도). 90° 에서는 카메라 방향 계산이 퇴화한다(camera_basis).
-    # 89° 면 바로 위와 1° 가 남는다. 그 안의 초파리에는 빔이 닿지 않는다.
-    max_pitch_deg: float = 89.0
+    # 위아래로 볼 수 있는 한계 (도). 90° 면 바로 위까지 빔이 닿는다.
+    # 바로 위를 볼 때도 카메라 축이 정해지도록 축을 yaw 로 만든다(geometry.aim_basis).
+    max_pitch_deg: float = 90.0
 
 
 class Aimer:
@@ -50,6 +50,11 @@ class Aimer:
     @property
     def look(self) -> np.ndarray:
         return look_dir(self.yaw, self.pitch)
+
+    @property
+    def basis(self) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """카메라 오른쪽 r, 위 u, 앞 f."""
+        return aim_basis(self.yaw, self.pitch)
 
     def step(self, action: np.ndarray, dt: float) -> None:
         """한 물리 step 동안 조준 방향을 돌린다."""
