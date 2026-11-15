@@ -94,6 +94,20 @@ Trap: a vast `python:3.11-bookworm` instance forces tmux on ssh and runs no comm
 #### Notes
 - The first instance (60796025) was destroyed after a few minutes: ssh ran no command because of the forced tmux login.
 
+### docs: SAC 네 조건의 판정 결과 적기 (#51)
+> why: the 12 runs finished; the verdicts go into the gate exactly as the pre-written rules say
+#### Scope
+`51-feature-sac-laser-training/gate.md` (Verdict), `gate/*.csv` (16 prediction files), `gate/*-gate.json`, `gate/bootstrap-output.md`. Also the merge of `origin/main` (#47) into the branch just before.
+#### Changes
+- Verdict: `sac-beam-assist` adopt (2.941 s vs 4.858 s, P = 1.000 pooled and per seed, 585/600 captured); `sac-beam` (21/600), `sac-angle` (3/600), `sac-angle-assist` (127/600) reject. One of four passed.
+- Unedited bootstrap output with every file's sha256.
+#### Verification
+- 12 `model.zip` and 12 `step_1000000.zip` present; remote marker `training ended with 12 models` (2026-11-15T21:06:48Z).
+- `fetch.sh`: `sha256sum -c` OK for both archives, 16 CSVs of 201 lines; instance 60797094 destroyed afterwards, `vastai show instances` lists none.
+- Baseline and truth sha256 in the output equal the frozen ones.
+#### Notes
+- The prediction files were produced on the instance (as the gate says); they were not re-evaluated locally.
+
 ## Management Notes
 ### Follow-up Candidates
 ### References

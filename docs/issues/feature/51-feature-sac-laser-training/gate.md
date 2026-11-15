@@ -116,4 +116,56 @@ Whatever the verdicts, all runs are published under issue #51 so the conditions 
 
 ## Verdict
 
-<!-- Filled after measuring. -->
+Measured 2026-11-16 (KST). All 12 runs reached 1,000,000 steps (`step_1000000.zip` and
+`model.zip` present in each); training ended 2026-11-15T21:06:48Z on the instance, the 16
+prediction files were produced there, downloaded with a sha256 manifest check, and the
+bootstrap ran locally with `runs/_ops/run_gate.sh boot`. Full unedited output, with the
+sha256 of every file: [`gate/bootstrap-output.md`](gate/bootstrap-output.md). Baseline and
+truth hashes match the ones frozen above.
+
+In the tool's `capture` rows the value is the miss rate (`mae` against truth 1); the table
+below converts it to captures.
+
+| candidate | time, mean (s) | Δ vs baseline 4.858 | 95 % CI of Δ | P(faster) | captures (3 models) | capture rate | per-seed P(faster) | per-seed time (s) | per-seed captures /200 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `sac-beam` | 9.919 | +5.061 | [+4.853, +5.265] | 0.000 | 21/600 | 0.035 | 0.000, 0.000, 0.000 | 9.918, 9.891, 9.948 | 10, 7, 4 |
+| `sac-angle` | 9.981 | +5.123 | [+4.925, +5.318] | 0.000 | 3/600 | 0.005 | 0.000, 0.000, 0.000 | 9.977, 10.000, 9.967 | 1, 0, 2 |
+| `sac-beam-assist` | 2.941 | −1.917 | [−2.202, −1.614] | 1.000 | 585/600 | 0.975 | 1.000, 1.000, 1.000 | 2.995, 3.199, 2.631 | 193, 194, 198 |
+| `sac-angle-assist` | 8.976 | +4.119 | [+3.868, +4.369] | 0.000 | 127/600 | 0.212 | 0.000, 0.000, 0.000 | 9.272, 8.363, 9.294 | 39, 56, 32 |
+
+Baseline: 4.858 s, 198/200.
+
+Exclusions:
+
+- Capture rate below 0.97: fires for `sac-beam`, `sac-angle`, `sac-angle-assist` (all of which also fail on `time`). Does not fire for `sac-beam-assist` (0.975), though it is close: the candidate misses 15 of 600 episodes where the baseline misses 2 of 200 (P(candidate misses fewer) = 0.089, reported only).
+- A training seed with P(faster) < 0.50: fires for the three failing candidates; does not fire for `sac-beam-assist` (1.000 for each seed).
+- Runs short of 1,000,000 steps: none.
+- `sac-angle-s1` captured 0/200; a valid measurement.
+
+Verdicts — one of the four candidates passed:
+
+- `sac-beam-assist` — **adopt**. A working RL aimer under the laser rule: on average 1.9 s faster than the rule baseline, with a capture rate of 0.975 against 0.990.
+- `sac-beam` — **reject**.
+- `sac-angle` — **reject**.
+- `sac-angle-assist` — **reject**.
+
+With four looks at one baseline the chance of a lucky pass was about 34 % for candidates of
+baseline quality; the passing candidate's interval is far from zero (P = 1.000 pooled and
+for each training seed), so luck across looks is not a plausible reading.
+
+Descriptive comparisons (no decision attached):
+
+- Reward, policy alone: `sac-beam` vs `sac-angle` — time 9.919 vs 9.981 s, captures 21 vs 3 of 600. Both fail; the beam reward catches slightly more.
+- Reward, with assist: `sac-beam-assist` vs `sac-angle-assist` — time 2.941 vs 8.976 s (Δ −6.035, CI [−6.268, −5.791]), captures 585 vs 127.
+- Assist, beam reward: `sac-beam-assist` vs `sac-beam` — time 2.941 vs 9.919 s (Δ −6.978, CI [−7.165, −6.777]).
+- Assist, angle reward: `sac-angle-assist` vs `sac-angle` — time 8.976 vs 9.981 s (Δ −1.005, CI [−1.195, −0.829]).
+
+Reading (interpretation, not measured further): at this budget a policy on its own does
+not learn to hold the beam within 1.25 mm for 0.15 s with either reward. The assist alone is
+not enough either: with the angle reward the correction pushes the tracker off the fly in
+most episodes. Only the beam-distance reward together with the assist works. Why the
+angle-reward correction hurts was not investigated.
+
+Consequence: nothing ships. `sac-beam-assist` is the reference RL aimer for later issues;
+the rule baseline stays as the comparison. Changed setups (more steps, other assist scale,
+other weights) are new gates. All 12 runs are published under issue #51.
