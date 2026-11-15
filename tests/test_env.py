@@ -5,7 +5,6 @@ import pytest
 from gymnasium.utils.env_checker import check_env
 
 from flytracker import OBS, OBS_DIM, EnvConfig, FlyChaseEnv, make_env
-from flytracker.aimer import AimerLimits
 from flytracker.fly import FlyParams
 
 
@@ -111,9 +110,9 @@ def test_capture_range_none_captures_far_fly():
     assert info["captured"]
 
 
-@pytest.mark.parametrize("max_pitch, captured", [(89.0, True), (80.0, False)])
-def test_fly_straight_above_turret_is_capturable_only_with_89_deg_limit(max_pitch, captured):
-    env = FlyChaseEnv(static_fly_config(aimer=AimerLimits(max_pitch_deg=max_pitch)))
+def test_fly_straight_above_turret_is_not_capturable():
+    # pitch 는 89° 까지라 바로 위(90°)와는 1° 가 남는다. 1.9m 에서 빔과 33mm 떨어져 레이저 명중(1.25mm)이 되지 않는다.
+    env = FlyChaseEnv(static_fly_config())
     env.reset(seed=0)
     env.fly.pos = env.aimer.pos + np.array([0.0, 1.9, 0.0])  # 바로 위 1.9m. 위협 반경(1m) 밖이라 피하지 않는다
     env._update_vision()
@@ -122,4 +121,68 @@ def test_fly_straight_above_turret_is_capturable_only_with_89_deg_limit(max_pitc
         _, _, terminated, _, info = env.step(np.array([0.0, 1.0]))
         if terminated:
             break
+    assert info["captured"] is False
+    assert info["beam_dist"] == pytest.approx(1.9 * np.sin(np.radians(1.0)), rel=0.02)
+
+
+def _held_fly_env(offset_m: float = 0.0, distance: float = 2.0, **kw) -> FlyChaseEnv:
+    """가만히 있는 초파리를 조준 방향에서 옆으로 offset_m 만큼 떨어뜨려 둔다."""
+    env = FlyChaseEnv(static_fly_config(**kw))
+    env.reset(seed=0)
+    side = np.cross(env.aimer.look, np.array([0.0, 1.0, 0.0]))
+    env.fly.pos = env.aimer.pos + env.aimer.look * distance + side / np.linalg.norm(side) * offset_m
+    env._capture_timer = 0.0
+    env._update_vision()
+    env._capture_timer = 0.0  # 놓은 뒤부터 센다
+    return env
+
+
+def test_capture_needs_fifteen_physics_steps_on_the_beam():
+    env = _held_fly_env()
+    assert env.config.capture_hold == pytest.approx(0.15) and env.config.dt == 0.01
+    for _ in range(7):  # 물리 step 14번
+        _, _, terminated, _, info = env.step(np.zeros(2))
+        assert not terminated and not info["captured"]
+    _, _, terminated, _, info = env.step(np.zeros(2))  # 15번째에서 잡힌다
+    assert terminated and info["captured"]
+    assert info["t"] == pytest.approx(0.15)
+
+
+@pytest.mark.parametrize("offset_mm, captured", [(1.2, True), (1.3, False), (52.0, False)])
+def test_capture_is_decided_by_distance_to_the_beam(offset_mm, captured):
+    # 52mm 는 1m 에서 3° 다. 이전 조건(3°)으로는 잡히던 자리다.
+    env = _held_fly_env(offset_m=offset_mm / 1000, distance=1.0)
+    info = {}
+    for _ in range(20):
+        _, _, terminated, _, info = env.step(np.zeros(2))
+        if terminated:
+            break
     assert info["captured"] is captured
+    assert info["beam_dist"] * 1000 == pytest.approx(offset_mm, abs=1e-6)
+
+
+def test_capture_timer_restarts_when_the_fly_leaves_the_beam():
+    env = _held_fly_env()
+    for _ in range(6):
+        env.step(np.zeros(2))
+    on_beam = env.fly.pos.copy()
+    env.fly.pos = on_beam + np.array([0.0, 0.01, 0.0])  # 빔에서 1cm 벗어난다
+    _, _, terminated, _, _ = env.step(np.zeros(2))
+    assert not terminated and env._capture_timer == 0.0
+    env.fly.pos = on_beam
+    for _ in range(7):
+        _, _, terminated, _, _ = env.step(np.zeros(2))
+        assert not terminated
+    _, _, terminated, _, info = env.step(np.zeros(2))
+    assert terminated and info["captured"]
+
+
+def test_fly_behind_the_turret_is_not_hit():
+    env = FlyChaseEnv(static_fly_config())
+    env.reset(seed=0)
+    env.fly.pos = env.aimer.pos - env.aimer.look * 0.5  # 빔의 연장선 위지만 조준기 뒤다
+    env._update_vision()
+    assert env._info()["beam_dist"] == pytest.approx(0.5)
+    for _ in range(20):
+        _, _, terminated, _, info = env.step(np.zeros(2))
+    assert not info["captured"]

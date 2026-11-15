@@ -19,7 +19,7 @@ class AimerLimits:
     max_pitch_rate_deg: float = 120.0  # 도/s
     max_ang_accel_deg: float = 720.0  # 도/s²
     # 위아래로 볼 수 있는 한계 (도). 90° 에서는 카메라 방향 계산이 퇴화한다(camera_basis).
-    # 89° 면 바로 위의 초파리도 포획 각도(3°) 안에 든다. 80° 였을 때는 올려다보는 각이 83° 를 넘는 곳을 포획하지 못했다.
+    # 89° 면 바로 위와 1° 가 남는다. 그 안의 초파리에는 빔이 닿지 않는다.
     max_pitch_deg: float = 89.0
 
 

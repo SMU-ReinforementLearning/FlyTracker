@@ -17,7 +17,7 @@ def test_capture_demos_keep_published_baseline_contract():
     base = specs[4].config
     for spec in specs[4:]:
         cfg = spec.config
-        assert cfg.capture_enabled and cfg.capture_angle_deg == 3. and cfg.capture_hold == .2
+        assert cfg.capture_enabled and cfg.capture_radius == .00125 and cfg.capture_hold == .2  # 기준선 파일에 적힌 0.2초는 그대로, 판정 거리는 파일에 없어 기본값
         assert cfg.max_seconds == 10. and not cfg.start_facing_fly
         assert replace(cfg, neural=base.neural, stimulus=base.stimulus) == base
     for spec in specs[:4]:

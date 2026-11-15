@@ -15,6 +15,7 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 | rule-based aimer | 기준선 | 베이스라인, 룰 기반 | 에피소드 그룹 이름 |
 | evaluation before training | 학습 전 | 초기 | 평가 tag `initial` |
 | aim error | 조준 오차 | 각도 오차, 에러 | 그래프 제목 |
+| distance from the fly to the laser beam | 빔까지 거리 | 빔 오차, 레이저 거리 | 환경 버전 3부터의 기록에만 나온다. 10cm 아래는 mm, 그 위는 m |
 | cumulative reward | 누적 보상 | 리턴, 리워드 | 그래프 제목 |
 | capture rate of a checkpoint | 포획률 | 성공률, 캡처율 | checkpoint의 평가 에피소드 가운데 포획으로 끝난 비율 |
 | mean episode return of a checkpoint | 평균 보상 | 평균 리턴 | checkpoint의 평가 에피소드 누적 보상 평균 |
@@ -43,3 +44,4 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 - 2026-11-04: 최초 작성. viewer 용어 12개
 - 2026-11-09: 초파리 상태를 평시와 비상시로 바꾸고 초파리 모드(자유비행, 회피)를 없앰
 - 2026-11-11: 실행 패널과 issue 화면 용어 7개 추가 (#27)
+- 2026-11-15: 빔까지 거리 추가 (#42)

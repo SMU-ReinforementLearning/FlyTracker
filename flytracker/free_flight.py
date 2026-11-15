@@ -109,7 +109,7 @@ def record_free_flight(config: EnvConfig, seed: int = 0) -> dict:
     def append(time_ms):
         values = dict(t=time_ms/1000, fly=fly.pos.tolist(), flyHeading=fly.heading.tolist(),
                       aimerC=[0., 0., 0.], aimerLook=[0., 0., -1.], visible=False,
-                      uv=[0., 0.], angleErrDeg=0., distance=0., alarmed=fly.alarmed,
+                      uv=[0., 0.], angleErrDeg=0., beamDistMm=0., distance=0., alarmed=fly.alarmed,
                       captureProgress=0., reward=0., flySpeed=float(fly.speed))
         for key, value in values.items():
             frames[key].append(_round(value))
@@ -129,7 +129,7 @@ def record_free_flight(config: EnvConfig, seed: int = 0) -> dict:
                 flyModel=config.fly_model, unit=UNIT, axes=AXES,
                 room=[config.room.width, config.room.height, config.room.depth],
                 frameDt=.02, fovV=config.camera.fov_v_deg, aspect=config.camera.aspect,
-                captureAngleDeg=config.capture_angle_deg, captureRange=None,
+                captureRadius=config.capture_radius, captureHold=config.capture_hold, captureRange=None,
                 seed=seed, trailSeconds=5., bodyDt=step_ms/1000,
                 stimulus={"enabled": False}, policyDependentTrajectory=False,
                 config=config.to_dict())
