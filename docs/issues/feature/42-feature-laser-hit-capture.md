@@ -30,7 +30,7 @@ Make the capture condition match a laser hit, with values taken from published i
 - Real hardware laser safety.
 
 ## Done Criteria
-- [ ] Capture is decided by distance to the beam (1.25 mm) and hold time (0.15 s); the 3° angle condition is gone from code, recordings, viewer and README.
+- [x] Capture is decided by distance to the beam (1.25 mm) and hold time (0.15 s); the 3° angle condition is gone from code, recordings, viewer and README. (2026-11-15) The viewer keeps the ring for version-2 recordings, and the README names the old rule once as history.
 - [x] `ENV_VERSION` is 3 with a version-table line. (2026-11-15)
 - [x] Tests cover: on-beam for 15 physics steps captures; 14 steps does not; 1.3 mm off does not; a fly behind the turret does not; full test suite passes. (2026-11-15)
 - [x] The design note records evidence, power choice and safety limits; #3 doc states the laser decision and its date. (2026-11-15)
@@ -145,6 +145,23 @@ Management doc, registry row, AGENTS.md pointer.
 - Per-seed baseline run on seeds 10000-10199 (`runs/_ops/eval_v3.py`, local only): 5 captures (seeds 10031, 10069, 10116, 10164, 10196); the beam came within 1.25 mm at least once in 39 episodes, stayed for 0.05 s or more in 9; median of the closest approach 2.51 mm.
 #### Notes
 - `publish_run.py` warns when the issue has no `training` label; #42 is not a training issue.
+
+### docs: README를 레이저 포획 조건에 맞추기 (#42)
+> why: the README still described capture as 3° for 0.2 s and reported the version-2 baseline
+#### Scope
+`README.md`, this doc.
+#### Changes
+- Episode: capture is the fly centre within 1.25 mm of the beam for 0.15 s, with a short paragraph on what the values mean, a link to the design note, and the date the rule changed.
+- Aimer action: the 89° pitch limit now leaves a 1° cone above the turret that the beam cannot reach.
+- Fly state: the aim error entry no longer states the capture rule.
+- Baseline comparison: version-3 numbers on seeds 10000-10199 (5/200, 6.21 s over the captured ones, visible 64 %, mean return −32.26), what the baseline fails at, and the version-2 numbers kept as history with the SAC result (1/1200).
+- Match table example, recording format (`captureRadius`, `captureHold`, `beamDistMm`), playback screen (crosshair, beam distance).
+#### Verification
+- `uv run python scripts/record_baseline.py --episodes 200 --seed 10000 --no-save`: 포획 5/200, 평균 보상 -32.26, 보인 비율 64%, 포획까지 평균 6.21초.
+- `readme_check.py README.md`: 0 fail, 0 warn (URLs not probed). ko-writing `check.py`: no forbidden patterns; the two heading-length hits were there before.
+#### Notes
+- The visible ratio rose from 18 % to 64 % only because episodes no longer end early: the baseline keeps the fly in view and never finishes.
+- No cold-reader pass was run on the README change.
 
 ## Management Notes
 ### Follow-up Candidates
