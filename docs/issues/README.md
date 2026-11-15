@@ -24,4 +24,4 @@ One row per management document, added in the same commit that creates the doc.
 | #34 | docs/issues/feature/34-feature-fly-vs-aimer-env.md | done | 조준기와 초파리를 번갈아 학습하는 환경 만들기 |
 | #35 | docs/issues/feature/35-feature-sac-aimer-training.md | done | SAC로 조준기 학습하기 |
 | #36 | docs/issues/docs/36-docs-readme-aimer-side.md | done | README에서 조준기 쪽 state와 R을 공통 부분과 나누기 |
-| #42 | docs/issues/feature/42-feature-laser-hit-capture.md | in progress | 포획 조건을 레이저 명중으로 바꾸기 |
+| #42 | docs/issues/feature/42-feature-laser-hit-capture.md | done | 포획 조건을 레이저 명중으로 바꾸기 |

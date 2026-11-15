@@ -62,7 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `42-feature-laser-hit-capture` — `docs/issues/feature/42-feature-laser-hit-capture.md` — 포획 조건을 레이저 명중으로 바꾸기
+- (none)
 
 ## Environment (repo slot)
 

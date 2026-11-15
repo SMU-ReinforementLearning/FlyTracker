@@ -4,7 +4,7 @@
 - Issue: #42
 - Branch: `42-feature-laser-hit-capture`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 Capture changes from "fly within 3° of the aim direction for 0.2 s" to "laser beam on the fly's body centre for the lethal exposure time". The team decided (2026-11-15, user) to catch the fly with a laser, so the aim line is the beam itself and a 3° cone (about 10 cm radius at 2 m) no longer means a hit.
@@ -38,13 +38,9 @@ Make the capture condition match a laser hit, with values taken from published i
 - [x] Viewer shows the new condition; screenshot evidence at desktop and 390px. (2026-11-15)
 
 ## Current State
-2026-11-15. Committed: seed, design note + #3 note, capture change with tests, viewer, two published version-3 baseline runs. Values: radius 1.25 mm, hold 0.15 s (500 mW assumption).
+Done 2026-11-15. All done criteria ticked. PR opened and merged at the user's request; the `AGENTS.md` pointer was removed in the branch's last commit.
 
-Measured under version 3 (seeds 10000-10199, rule fly): baseline 5/200, the 6 #35 SAC models 1/1200 in total. The existing aimers do not work under the new rule; reward design and retraining are a follow-up issue.
-
-The user asked (2026-11-15) to go through to the merge so that version-3 episodes can be watched in the viewer. Left: README, close (pointer removal), push, PR, merge.
-
-Two vast.ai instances were created and destroyed on 2026-11-15 without running anything (first image had no sshd; the local measurement finished before the second came up). `vastai show instances` is empty.
+What the next issue starts from: under version 3 (radius 1.25 mm, hold 0.15 s) the rule baseline catches 5/200 and the #35 SAC models 1/1200 on seeds 10000-10199. The baseline brings the beam within 1.25 mm at least once in 39/200 episodes but holds it for 0.05 s or more in 9. `runs/_ops/eval_v3.py` (local, gitignored) writes those per-seed numbers.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -163,8 +159,24 @@ Management doc, registry row, AGENTS.md pointer.
 - The visible ratio rose from 18 % to 64 % only because episodes no longer end early: the baseline keeps the fly in view and never finishes.
 - No cold-reader pass was run on the README change.
 
+### chore: #42 마무리 (#42)
+> why: last commit before the PR; a protected branch cannot take the pointer removal after the merge
+#### Scope
+`AGENTS.md`, `docs/issues/README.md`, this doc.
+#### Changes
+- Pointer line removed, registry row and Status set to done, Current State and Follow-up Candidates written.
+#### Verification
+- `uv run python -m pytest -q`: 109 passed, 45 skipped. `npm run build --prefix viewer` passes and `viewer/dist/runs/index.json` lists the two version-3 runs under issue #42.
+#### Notes
+- None.
+
 ## Management Notes
 ### Follow-up Candidates
+- An aimer that works under version 3: reward that still has a gradient below 0.1° (the aim-error penalty is flat there), possibly a radius curriculum, then retraining. Baseline 5/200 and SAC 1/1200 are the starting numbers.
+- Blind cone within 1° of straight up (pitch limit 89°).
+- A beam-distance chart in the viewer; the aim-error chart cannot show the last 0.1°.
+- The #31 neural demo specs load the version-2 baseline config and so run with hold 0.2 s and the new 1.25 mm radius; the #31 owner decides whether to move them to 0.15 s.
+- Laser dose for Drosophila melanogaster itself (the values here are mosquito data), and the eye-exposure formula checked against the IEC 60825-1 text.
 - Reward shaping or radius curriculum for sub-0.1° aiming, if version 3 measurements show no captures.
 ### References
 - https://www.nature.com/articles/srep20936
