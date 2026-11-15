@@ -237,6 +237,12 @@ uv run python scripts/train.py --side aimer --opponent runs/<초파리 실행 id
 uv run python scripts/train.py --algo sac --reward beam=0 angle=0.05
 ```
 
+`--assist 값`을 주면 조준기 agent의 행동에 기준선의 추적을 더한다. 초파리가 보이는 동안 환경에 들어가는 행동은 기준선의 추적 행동에 `값 × agent의 행동`을 더한 것이고, 안 보이는 동안은 agent의 행동 그대로다. agent는 탐색을 온전히 맡고, 보이는 동안에는 추적을 고치는 보정만 배운다. 값은 `config.json`의 `algo.assist`에 남고, `match.py`와 상대로 불러올 때도 같은 방식으로 더한다. 환경은 그대로라서 환경 버전은 바뀌지 않는다.
+
+```sh
+uv run python scripts/train.py --algo sac --assist 0.2
+```
+
 학습 중 평가는 학습을 시작할 때와 그 뒤 일정 step마다 에피소드 몇 개를 저장하는 것이다. 간격은 `--eval-every`로 기본 20,000 step, 개수는 `--eval-episodes`로 기본 3개다. checkpoint는 그때마다 저장한 모델이다.
 
 학습 중 평가는 매번 같은 seed를 쓴다. 첫 에피소드가 `--eval-seed`(기본 10000)이고 다음 에피소드부터 하나씩 커진다. 조준기 agent를 규칙 초파리 상대로 학습하면 초파리 경로까지 같아서, checkpoint끼리 같은 초파리를 상대로 비교된다. 초파리 agent가 끼면 경로는 정책마다 달라지고, 같은 것은 시작 위치까지다. 학습을 시작할 때 저장한 에피소드는 viewer에 "학습 전"으로 나오고, 그 뒤 것은 "20,000 step"처럼 나온다.

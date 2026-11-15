@@ -16,7 +16,7 @@ Train SAC aimers under environment version 5 (laser-hit capture, 17-dim observat
 ## Scope
 1. Tracking assist: `RuleAimer.track` / `assisted`, `wrappers.TrackingAssist`, `make_env(assist=)`, `train.py --assist`, `PolicyPlayer` and `load_opponent` rebuild it from `config.json` (`algo.assist`). Not an environment change; `ENV_VERSION` stays 5.
 2. Gate: `51-feature-sac-laser-training/gate.md`, `evaluate_gate.py`, frozen baseline and truth files.
-3. Training: 4 conditions x 3 seeds x 500,000 steps on the local machine.
+3. Training: 4 conditions x 3 seeds x 1,000,000 steps on a rented vast.ai instance (the user's instruction, 2026-11-15).
 4. Evaluation, verdicts, published runs, README (training options, results), a Korean result note if the results need more room than the README.
 
 ## Out Of Scope
@@ -26,13 +26,19 @@ Train SAC aimers under environment version 5 (laser-hit capture, 17-dim observat
 ## Done Criteria
 - [ ] Tracking assist implemented and tested; a model trained with it is loaded with the same assist by `load_opponent`.
 - [ ] Gate document complete above "Verdict" and committed before the first training run starts.
-- [ ] 12 runs reach 500,000 steps.
+- [ ] 12 runs reach 1,000,000 steps.
 - [ ] Each candidate evaluated on seeds 20000-20199; bootstrap output and verdicts written into `gate.md`.
 - [ ] Runs published under issue #51; `viewer/dist/runs/index.json` lists them.
 - [ ] README updated; `uv run python -m pytest -q` and `npm run build --prefix viewer` pass.
 
 ## Current State
-2026-11-15: tracking assist implemented (tests pass), gate written, baseline frozen (198/200, 4.858 s on seeds 20000-20199). Next: commit seed, assist and gate, then launch the 12 runs with `runs/_ops/launch.sh` (local, gitignored). Logs go to `runs/_ops/logs/<name>.log`.
+2026-11-16 00:25 KST: the 12 runs are training on vast.ai instance 60797094 (ssh target in `runs/_ops/ssh_target.txt`, `root@175.143.181.143 -p 60362`), started 2026-11-15 15:17 UTC, about 49 steps/s per run, so they end around 2026-11-15 21:00 UTC (06:00 KST). The instance costs about $0.14 per hour and keeps billing until it is destroyed.
+
+The remote job (`/root/ft/remote_train.sh`, a copy of `runs/_ops/remote_train.sh`) needs no laptop: after training it evaluates the 12 models on seeds 20000-20199, averages per condition, packs `/root/gate_out.tgz` and `/root/runs-g51.tgz` with `/root/manifest.sha256`, and writes `/root/ft/state/RESULTS_READY` (or `state/FAILED`).
+
+Next, in order: (1) `bash runs/_ops/fetch.sh` — downloads, verifies sha256, extracts runs to `runs/g51/` and CSVs to the gate folder, destroys the instance only when every check passed; (2) `bash runs/_ops/run_gate.sh boot > .../gate/bootstrap-output.md` and write the verdicts into `gate.md`; (3) publish the 12 runs with `publish_run.py --runs-dir runs/g51/<name> --issue 51`; (4) README results, work log, pointer removal, PR, merge (the user asked for the merge).
+
+Trap: a vast `python:3.11-bookworm` instance forces tmux on ssh and runs no command unless `/root/.no_auto_tmux` exists; create the instance with `--onstart-cmd "touch /root/.no_auto_tmux"`. Parallel `train.py` runs need separate `--runs-dir`.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -73,6 +79,20 @@ Train SAC aimers under environment version 5 (laser-hit capture, 17-dim observat
 - `sha256sum` of both files matches `gate.md`. No training run of this issue had started when this was committed.
 #### Notes
 - 500,000 steps instead of #35's 1,000,000 because of local throughput; stated in the gate as part of the candidate.
+
+### docs: 판정 기준을 100만 step과 인스턴스 학습으로 고치기 (#51)
+> why: the user asked for 1,000,000 steps on a rented instance; the gate has to say so before any candidate is measured
+#### Scope
+`51-feature-sac-laser-training/gate.md`, this doc, `README.md` (the `--assist` option).
+#### Changes
+- Gate: steps 500,000 → 1,000,000, platform and device lines, an amendment note with what existed at that time.
+- README: `--assist` in the training options.
+- Current State rewritten as a resume note: instance, timing, the remote job's markers, the next steps in order.
+#### Verification
+- On the instance: setup log shows torch 2.15.0+cu132, env version 5, 38 tests passed (`test_env`, `test_reward`, `test_assist`, `test_players`); 12 `train.py` processes alive; throughput check cpu 88 s vs cuda 107 s.
+- Local runs: 24 python processes stopped, `runs/g51/` deleted before anything was evaluated.
+#### Notes
+- The first instance (60796025) was destroyed after a few minutes: ssh ran no command because of the forced tmux login.
 
 ## Management Notes
 ### Follow-up Candidates

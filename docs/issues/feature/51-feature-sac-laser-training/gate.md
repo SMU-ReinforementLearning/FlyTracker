@@ -15,6 +15,13 @@ which does not change the environment): capture is a laser hit (fly centre withi
 of the beam for 0.15 s), pitch limit 90°, 17-dim observation with `target_rate` and
 `uv_fine`, dense penalty on the log-scaled beam distance.
 
+Amended 2026-11-16 00:25 KST, still before any candidate was measured: the user asked for
+1,000,000 steps (as in #35) on a rented instance instead of 500,000 steps on the local
+machine. The local runs started under the first version were stopped at about 28,000 steps
+and deleted without being evaluated; their in-training evaluations at step 0 (untrained,
+0/3 each) are the only numbers that existed. Every "500,000" below was changed to
+"1,000,000" and the platform lines were rewritten; nothing else changed.
+
 ## Question
 
 Under environment version 5, does an aimer trained with SAC catch the rule fly faster than
@@ -49,11 +56,12 @@ policy's action is used as is. The policy therefore learns the search and a corr
 
 Training, identical except for the two options above:
 
-- `scripts/train.py --algo sac --steps 500000 --eval-every 50000 --eval-episodes 3 --seed <0|1|2>` plus the condition's options; frame stack 1.
-- Stable-Baselines3 2.9.2 `SAC("MlpPolicy")` defaults (lr 3e-4, buffer 1e6, batch 256, tau 0.005, gamma 0.99, `ent_coef="auto"`, train_freq 1, gradient_steps 1, learning_starts 100), CPU, `OMP_NUM_THREADS=1`.
+- `scripts/train.py --algo sac --steps 1000000 --eval-every 50000 --eval-episodes 3 --seed <0|1|2> --device cpu` plus the condition's options; frame stack 1.
+- Stable-Baselines3 2.9.2 `SAC("MlpPolicy")` defaults (lr 3e-4, buffer 1e6, batch 256, tau 0.005, gamma 0.99, `ent_coef="auto"`, train_freq 1, gradient_steps 1, learning_starts 100), `OMP_NUM_THREADS=1`.
+- Platform: vast.ai instance 60797094 (AMD EPYC 7B13, RTX 5060 Ti), Linux, Python 3.11.18, torch 2.15.0+cu132, numpy 2.4.6. Device: a throughput check on the instance with 12 parallel 4,000-step runs took 88 s on CPU and 107 s on CUDA, so the runs use the CPU. The check runs were deleted unevaluated. Evaluation for the gate runs on the same instance.
 - Default `EnvConfig` otherwise, rule fly, environment version 5.
-- 500,000 steps, half of #35's budget, fixed by the time available on the local machine (about 50 steps/s per run in the smoke runs). It is part of the candidate: "not adopted" means not adopted at this budget.
-- The candidate model is the **final** `model.zip` at 500,000 steps. Checkpoints are for the viewer and the learning curve only; no checkpoint is picked.
+- 1,000,000 steps, the same budget as #35. It is part of the candidate: "not adopted" means not adopted at this budget.
+- The candidate model is the **final** `model.zip` at 1,000,000 steps. Checkpoints are for the viewer and the learning curve only; no checkpoint is picked.
 
 ## Metric
 
@@ -90,7 +98,7 @@ on fresh seeds.
 
 - Candidate capture rate (mean over its 3 models) below 0.97 → not adopted even if `time` passes. Faster on average but losing flies the baseline catches is not better.
 - Any single training seed whose model has P(faster than baseline) < 0.50 on `time` → **undecided**, not adopt: the result depends on the training seed.
-- A run that does not reach 500,000 steps voids that candidate; it is re-run with the same seed, not replaced by a checkpoint.
+- A run that does not reach 1,000,000 steps voids that candidate; it is re-run with the same seed, not replaced by a checkpoint.
 - A run that captures nothing (0/200) is a valid measurement, not a failed run.
 
 ## Gates
