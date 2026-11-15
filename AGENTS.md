@@ -62,7 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- (none)
+- `44-chore-sac-v3-episodes` — `docs/issues/chore/44-chore-sac-v3-episodes.md` — 학습한 조준기로 돌린 버전 3 에피소드 올리기
 
 ## Environment (repo slot)
 
