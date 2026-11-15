@@ -93,7 +93,9 @@ export function AimerRig({ ep, colors, depth, bodyColor }) {
     parts.body.quaternion.setFromRotationMatrix(v.m)
     parts.body.position.copy(v.C)
 
-    const color = s.capture > 0 ? colors.capture : s.visible ? colors.visible : colors.idle
+    const stimulating = ep.meta.stimulus?.mode === 'beam' && ep.events.some((e) => e.onset_ms <= clock.t*1000 && e.end_ms > clock.t*1000 && e.exposure_ms > 0)
+    const color = stimulating ? colors.alarm : s.capture > 0 ? colors.capture : s.visible ? colors.visible : colors.idle
+    parts.bore.material.opacity = stimulating ? .95 : .35
     parts.frustum.material.color.set(color)
     parts.bore.material.color.set(color)
     parts.body.material.color.set(bodyColor)

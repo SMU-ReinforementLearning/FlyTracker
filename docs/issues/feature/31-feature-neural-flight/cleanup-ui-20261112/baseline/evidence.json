@@ -1,0 +1,124 @@
+{
+  "name": "baseline",
+  "generatedAt": "2026-11-12T13:57:23.637Z",
+  "base": "http://127.0.0.1:5181",
+  "pages": [
+    {
+      "url": "http://127.0.0.1:5181/?run=2026-11-11_133858_baseline&tag=baseline&ep=1",
+      "slug": "root"
+    }
+  ],
+  "commit": "7237428 (dirty)",
+  "chrome": {
+    "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "version": "Chrome/157.0.8103.40"
+  },
+  "outDir": "D:\\git clone\\FlyTracker\\docs\\issues\\feature\\31-feature-neural-flight\\cleanup-ui-20261112\\baseline",
+  "options": {
+    "viewports": [
+      {
+        "width": 1600,
+        "height": 900,
+        "mobile": false,
+        "dpr": 1,
+        "label": "1600x900"
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "mobile": true,
+        "dpr": 2,
+        "label": "390x844"
+      }
+    ],
+    "ready": "document.querySelector('.readouts') !== null && document.querySelector('canvas') !== null",
+    "readyTimeout": 30000,
+    "settle": 800,
+    "timeout": 45000,
+    "reducedMotion": true,
+    "console": true,
+    "serveCheck": "document.title === 'FlyTracker' && document.querySelector('.readouts').textContent.includes('포획 진행')",
+    "probes": [
+      "document.querySelector('.readouts')?.textContent"
+    ],
+    "hide": [],
+    "flags": [
+      "--use-angle=swiftshader",
+      "--enable-unsafe-swiftshader",
+      "--use-gl=angle",
+      "--ignore-gpu-blocklist"
+    ],
+    "config": "ui-evidence.config.json"
+  },
+  "shots": [
+    {
+      "page": "/",
+      "url": "http://127.0.0.1:5181/?run=2026-11-11_133858_baseline&tag=baseline&ep=1",
+      "viewport": {
+        "width": 1600,
+        "height": 900,
+        "mobile": false,
+        "dpr": 1,
+        "label": "1600x900"
+      },
+      "file": "baseline-1600x900.png",
+      "ok": true,
+      "probes": [
+        {
+          "expr": "document.querySelector('.readouts')?.textContent",
+          "value": "상태안 보임조준 오차39.6°거리2.28m포획 진행0%초파리평시프레임42 / 170"
+        }
+      ],
+      "overflow": {
+        "innerWidth": 1600,
+        "scrollWidth": 1600,
+        "clientWidth": 1600,
+        "pageScrolls": false,
+        "offenderCount": 0,
+        "offenders": []
+      },
+      "console": [
+        "error: Failed to load resource: the server responded with a status of 404 (Not Found) (http://127.0.0.1:5181/favicon.ico)",
+        "warning: THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+        "warning: [.WebGL-0x640400bb4a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (http://127.0.0.1:5181/?run=2026-11-11_133858_baseline&tag=baseline&ep=1)",
+        "warning: THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+        "warning: [.WebGL-0x640400bb4a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (http://127.0.0.1:5181/?run=2026-11-11_133858_baseline&tag=baseline&ep=1)",
+        "warning: [.WebGL-0x640400bb6e00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (http://127.0.0.1:5181/?run=2026-11-11_133858_baseline&tag=baseline&ep=1)",
+        "warning: [.WebGL-0x640400bb4a00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat) (http://127.0.0.1:5181/?run=2026-11-11_133858_baseline&tag=baseline&ep=1)"
+      ],
+      "durationMs": 1635
+    },
+    {
+      "page": "/",
+      "url": "http://127.0.0.1:5181/?run=2026-11-11_133858_baseline&tag=baseline&ep=1",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "mobile": true,
+        "dpr": 2,
+        "label": "390x844"
+      },
+      "file": "baseline-390x844.png",
+      "ok": true,
+      "probes": [
+        {
+          "expr": "document.querySelector('.readouts')?.textContent",
+          "value": "상태안 보임조준 오차41.7°거리2.26m포획 진행0%초파리평시프레임48 / 170"
+        }
+      ],
+      "overflow": {
+        "innerWidth": 390,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "pageScrolls": false,
+        "offenderCount": 0,
+        "offenders": []
+      },
+      "console": [
+        "warning: THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+        "warning: THREE.Clock: This module has been deprecated. Please use THREE.Timer instead."
+      ],
+      "durationMs": 1500
+    }
+  ]
+}

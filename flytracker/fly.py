@@ -148,11 +148,14 @@ class Fly:
         self._boost_gain = self.p.evade_speed_gain
         self._prev_aimer_dist = None
 
-    def step(self, dt: float, room: Room, aimer_pos: np.ndarray) -> None:
+    def step(self, dt: float, room: Room, aimer_pos: np.ndarray | None = None) -> None:
         p = self.p
         self._cooldown = max(0.0, self._cooldown - dt)
         self._boost_left = max(0.0, self._boost_left - dt)
-        if not self.external_escape:
+        if aimer_pos is None:
+            self._prev_aimer_dist = None
+            self._react_in = None
+        elif not self.external_escape:
             self._update_threat(dt, room, aimer_pos)
 
         if self._turn is None:

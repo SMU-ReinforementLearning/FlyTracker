@@ -21,8 +21,12 @@ function FlyBody({ ep }) {
     sample(ep, clock.t, s)
     const g = group.current
     g.position.set(s.fly[0], s.fly[1], s.fly[2])
-    const [hx, hy, hz] = s.heading
-    g.rotation.set(Math.asin(Math.max(-1, Math.min(1, hy))), Math.atan2(-hx, -hz), 0, 'YXZ')
+    if (s.hasAttitude) {
+      g.quaternion.set(...s.meshQuaternion)
+    } else {
+      const [hx, hy, hz] = s.heading
+      g.rotation.set(Math.asin(Math.max(-1, Math.min(1, hy))), Math.atan2(-hx, -hz), 0, 'YXZ')
+    }
   })
 
   return (

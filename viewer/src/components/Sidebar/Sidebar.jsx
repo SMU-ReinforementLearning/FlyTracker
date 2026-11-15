@@ -44,8 +44,8 @@ function RunRow({ run, selected, onSelect }) {
       <span className={styles.line}>
         <span className={styles.title}>{run.name}</span>
         <span className={`${styles.aside} ${styles.rate}`}>
-          <Sparkline run={run} />
-          {rate !== null && <span aria-label={`포획률 ${percent(rate)}`}>{percent(rate)}</span>}
+          {!['free-flight', 'tracking-observation'].includes(run.algo) && <Sparkline run={run} />}
+          {!['free-flight', 'tracking-observation'].includes(run.algo) && rate !== null && <span aria-label={`포획률 ${percent(rate)}`}>{percent(rate)}</span>}
         </span>
       </span>
       <span className={`${styles.line} ${styles.sub}`}>

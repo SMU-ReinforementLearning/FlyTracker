@@ -115,6 +115,10 @@
   gap: var(--space-3);
 }
 
+.chartsFlight {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .empty {
   margin: auto;
   color: var(--color-text-secondary);

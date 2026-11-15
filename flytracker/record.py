@@ -104,9 +104,22 @@ class EpisodeRecorder(gym.Wrapper):
         snap = self.env.unwrapped.snapshot()
         for k in FRAME_KEYS:
             self._frames[k].append(_round(snap[k]))
+        base = self._base()
+        if not base.config.capture_enabled:
+            self._frames.setdefault("flySpeed", []).append(_round(float(base.fly.speed)))
+        if hasattr(base, "observation_aim_on"):
+            self._frames.setdefault("aimCommanded", []).append(bool(base.observation_aim_on))
+        if base.config.fly_model == "neural":
+            self._frames.setdefault("neuralPhase", []).append(base.fly.sim.motor.phase)
+            self._frames.setdefault("neuralDiagnostics", []).append(base.fly.diagnostics())
+
+    def _base(self):
+        """시뮬레이션을 가진 FlyChaseEnv. 초파리 쪽 환경(FlyEscapeEnv)은 그것을 core 에 둔다."""
+        env = self.env.unwrapped
+        return getattr(env, "core", env)
 
     def _build(self) -> dict:
-        base = self.env.unwrapped
+        base = self._base()
         cfg = base.config
         frames = dict(self._frames)
         frames["reward"] = _round(self._rewards)
@@ -122,6 +135,7 @@ class EpisodeRecorder(gym.Wrapper):
             "captureRange": cfg.capture_range,
             "seed": self._seed,
             **self.extra_meta,
+            **base.recording_metadata(),
         }
         summary = {
             "frames": n,
@@ -130,7 +144,13 @@ class EpisodeRecorder(gym.Wrapper):
             "return": round(sum(self._rewards), 4),
             "visibleRatio": round(sum(frames["visible"]) / n, 4),
         }
-        return {"format": EPISODE_FORMAT, "meta": meta, "summary": summary, "frames": frames}
+        if not cfg.capture_enabled:
+            summary.update(mode="tracking-observation", result="observation_complete")
+        episode = {"format": EPISODE_FORMAT, "meta": meta, "summary": summary, "frames": frames}
+        diagnostics = base.recording_diagnostics()
+        if diagnostics:
+            episode["diagnostics"] = diagnostics
+        return episode
 
 
 def _slug(text: str) -> str:

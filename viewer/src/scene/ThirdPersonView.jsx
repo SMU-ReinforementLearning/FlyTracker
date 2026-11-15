@@ -15,8 +15,8 @@ export function ThirdPersonView({ ep, scheme }) {
     <Canvas dpr={[1, 2]} camera={{ position: [w * 0.85, h * 1.25, d * 1.35], fov: 36, near: 0.002, far: 100 }}>
       <color attach="background" args={[c.background]} />
       <Room size={ep.meta.room} colors={c} />
-      <FlyMarker ep={ep} trailColor={c.trail} />
-      <AimerRig ep={ep} colors={c} depth={depth} bodyColor={c.fly} />
+      <FlyMarker ep={ep} trailColor={c.trail} trailSeconds={ep.meta.trailSeconds ?? 1.5} />
+      {ep.meta.aimerEnabled !== false && <AimerRig ep={ep} colors={c} depth={depth} bodyColor={c.fly} />}
       <OrbitControls makeDefault target={[0, h * 0.4, 0]} enableDamping dampingFactor={0.12} />
       <FrameCounter />
     </Canvas>

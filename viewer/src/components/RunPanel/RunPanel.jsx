@@ -117,6 +117,7 @@ function EpisodeList({ grid, sel, onSelect }) {
       {grid.map((row, r) => {
         const open = isOpen(row.tag)
         const captured = row.items.filter((e) => e.summary.captured).length
+        const observing = row.items.every((e) => e.summary.result === 'observation_complete')
         return (
           <section key={row.tag} className={styles.group} aria-label={tagLabel(row.tag)}>
             <button
@@ -128,8 +129,8 @@ function EpisodeList({ grid, sel, onSelect }) {
             >
               <Chevron />
               <span className={styles.tag}>{tagLabel(row.tag)}</span>
-              <span className={styles.count} aria-label={`포획 ${captured}, 전체 ${row.items.length}`}>
-                {captured} / {row.items.length}
+              <span className={styles.count} aria-label={observing ? `관찰 ${row.items.length}개` : `포획 ${captured}, 전체 ${row.items.length}`}>
+                {observing ? `${row.items.length}개` : `${captured} / ${row.items.length}`}
               </span>
             </button>
             {open && (
@@ -138,9 +139,9 @@ function EpisodeList({ grid, sel, onSelect }) {
                   <ListRow key={e.file} current={r === sel.r && k === sel.k} onClick={() => onSelect(r, k, false)} className={styles.item}>
                     <span className={styles.num}>{k + 1}</span>
                     <Outcome captured={e.summary.captured} className={styles.outcome}>
-                      {e.summary.captured ? `포획 ${seconds(e.summary.duration)}` : '시간 초과'}
+                      {e.summary.result === 'observation_complete' ? `관찰 ${seconds(e.summary.duration)}` : e.summary.captured ? `포획 ${seconds(e.summary.duration)}` : '시간 초과'}
                     </Outcome>
-                    <span className={styles.return}>{signed(e.summary.return)}</span>
+                    {e.summary.result !== 'observation_complete' && <span className={styles.return}>{signed(e.summary.return)}</span>}
                   </ListRow>
                 ))}
               </RowList>
@@ -171,7 +172,7 @@ export function RunPanel({ run, grid, sel, onSelect }) {
 
   return (
     <aside className={styles.panel} aria-label="실행 요약과 에피소드">
-      {checkpoint && <Stats checkpoint={checkpoint} />}
+      {checkpoint && !['free-flight', 'tracking-observation'].includes(run.algo) && <Stats checkpoint={checkpoint} />}
       {stepped.length >= 2 && (
         <section className={styles.section} aria-label="학습 곡선">
           <MetricSwitch metric={metric} onChange={setMetric} />

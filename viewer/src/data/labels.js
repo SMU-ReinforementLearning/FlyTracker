@@ -1,10 +1,13 @@
 // 화면 표기. ui-text.glossary.md 와 같은 표기를 쓴다.
 
-const ALGO = { sac: 'SAC', td3: 'TD3', ppo: 'PPO', dqn: 'DQN', 'rule-baseline': '기준선' }
+const ALGO = { sac: 'SAC', td3: 'TD3', ppo: 'PPO', dqn: 'DQN', 'rule-baseline': '기준선', 'free-flight': '비행 관찰', 'tracking-observation': '추적 관찰', 'neural-tracking': '신경 초파리 추적' }
 
 export const algoLabel = (algo) => ALGO[algo] ?? algo
 
 export function tagLabel(tag) {
+  if (tag === 'free-flight') return '비행 관찰'
+  if (tag === 'tracking-observation') return '추적 관찰'
+  if (tag === 'neural-tracking') return '신경 초파리 추적'
   if (tag === 'baseline') return '기준선'
   const m = /^step_(\d+)$/.exec(tag)
   if (!m) return tag

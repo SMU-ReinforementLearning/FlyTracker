@@ -17,6 +17,8 @@ from .env import (
 from .fly_env import FlyEscapeEnv, make_fly_env
 from .players import Opponent, PolicyPlayer, load_opponent
 from .record import EpisodeRecorder, RunStore
+from .neural_fly import NeuralConfig, NeuralFly
+from .stimulus import StimulusConfig
 from .wrappers import DISCRETE_ACTIONS, DiscreteActions, make_env
 
 __all__ = [
@@ -42,4 +44,7 @@ __all__ = [
     "load_opponent",
     "make_env",
     "make_fly_env",
+    "NeuralConfig",
+    "NeuralFly",
+    "StimulusConfig",
 ]
