@@ -25,3 +25,4 @@ One row per management document, added in the same commit that creates the doc.
 | #35 | docs/issues/feature/35-feature-sac-aimer-training.md | done | SAC로 조준기 학습하기 |
 | #36 | docs/issues/docs/36-docs-readme-aimer-side.md | done | README에서 조준기 쪽 state와 R을 공통 부분과 나누기 |
 | #42 | docs/issues/feature/42-feature-laser-hit-capture.md | done | 포획 조건을 레이저 명중으로 바꾸기 |
+| #44 | docs/issues/chore/44-chore-sac-v3-episodes.md | done | 학습한 조준기로 돌린 버전 3 에피소드 올리기 |
