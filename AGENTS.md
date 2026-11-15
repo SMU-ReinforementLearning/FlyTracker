@@ -62,7 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `47-feature-viewer-issue-info` — `docs/issues/feature/47-feature-viewer-issue-info.md` — viewer issue 페이지에 실험 정보 보여 주기
+- (none)
 
 ## Environment (repo slot)
 

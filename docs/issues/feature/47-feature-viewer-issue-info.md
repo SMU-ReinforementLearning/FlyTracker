@@ -4,7 +4,7 @@
 - Issue: #47
 - Branch: `47-feature-viewer-issue-info`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 Clicking an issue name in the viewer sidebar shows what that batch of episodes is: which fly and which aimer (version and a readable description), the other conditions, why the episodes were made (which experiment step), and how each of those changed against a chosen comparison issue. The user asked for it on 2026-11-15: the issue page repeated the sidebar as a run table, which is not needed because the sidebar already lists the runs and a run opens the player; an issue, the unit that groups episodes, should explain itself instead. Later the same day the user added: sidebar groups start collapsed; explanation text in 한다체; show what changed against the comparison target, set by an explicit field, not "the previous issue"; and a selector for the variations inside one issue.
@@ -51,7 +51,9 @@ Clicking an issue name in the viewer sidebar shows what that batch of episodes i
 - [x] After merging main (#44, #45, #49): every issue with published runs has a file; #42 shows the #44 SAC runs as a variation; #45 shows the new baseline's tracking; #49 shows the reward change. (2026-11-16)
 
 ## Current State
-2026-11-16: all done criteria met; main (#44, #45, #49) merged into the branch and the page extended for their runs. Next: the closing commit (pointer removed, Status done), then push, PR and squash merge at the user's request ("머지해"), then the post-PR cleanup gate.
+Done 2026-11-16. All done criteria ticked; the `AGENTS.md` pointer is removed in this branch's last commit. PR opened and squash-merged at the user's request ("머지해"); then the post-PR cleanup gate.
+
+What the next issue starts from: every issue that publishes runs adds `published/issues/<n>.json` (pytest enforces it); `compare` picks the issue to compare with. The page reads everything else from `config.json`.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -134,6 +136,13 @@ viewer experiment model and issue page, description files, README.
 | `/?issue=49` | 390x3600 | `47-feature-viewer-issue-info/captures/m-49-390x3600.png` | none | clean |
 #### Notes
 - Behaviour that lives only in code (not in `config.json`) is visible only where it can be tied to the environment version, as for the baseline. Anything else needs the description file's `purpose`.
+
+### chore: #47 마무리 (#47)
+> why: the branch's last commit removes the `AGENTS.md` pointer and sets Status to done, because `main` takes PRs only
+#### Changes
+- `AGENTS.md`: pointer line removed. `docs/issues/README.md`: #47 → done. This document: Status done, Current State.
+#### Verification
+- `git diff` shows only these three files.
 
 ## Management Notes
 ### Follow-up Candidates
