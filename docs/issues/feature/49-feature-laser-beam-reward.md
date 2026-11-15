@@ -64,6 +64,17 @@ The weights are starting values chosen by reasoning, not by experiment: `beam` 0
 #### Notes
 - Penalty values: 0 on the beam, 0.010 at 1.25 mm, 0.036 at 12.5 mm, 0.069 at 125 mm, 0.1 from 1 m.
 
+### feat: 버전 5 기준선 실행 올리기 (#49)
+> why: episode files store per-step rewards, so the version-4 baseline run cannot sit next to version-5 training runs in the viewer
+#### Scope
+`published/2026-11-15_223016_baseline/`.
+#### Changes
+- `record_baseline.py --episodes 5 --seed 10000` (5/5, mean return −23.24, 4.87 s), published with `publish_run.py --issue 49`.
+#### Verification
+- `npm run build --prefix viewer`; `viewer/dist/runs/index.json` lists the run under issue 49.
+#### Notes
+- None.
+
 ## Management Notes
 ### Follow-up Candidates
 - SAC training under version 5 with several conditions and a pre-registered gate (next issue).
