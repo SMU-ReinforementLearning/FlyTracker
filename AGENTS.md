@@ -62,7 +62,6 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `64-feature-bundled-neural-flight` — `docs/issues/feature/64-feature-bundled-neural-flight.md` — 신경 비행 코드와 자료를 저장소에 포함
 
 ## Environment (repo slot)
 
