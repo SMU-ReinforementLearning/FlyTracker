@@ -62,7 +62,6 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `54-fix-run-created-at-kst` — `docs/issues/fix/54-fix-run-created-at-kst.md` — #51 실행의 만든 시각을 한국 시각으로 고치기
 
 ## Environment (repo slot)
 

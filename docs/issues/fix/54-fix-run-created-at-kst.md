@@ -4,7 +4,7 @@
 - Issue: #54
 - Branch: `54-fix-run-created-at-kst`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 The 12 SAC runs published under #51 carry a UTC `createdAt` because they were created on a rented instance, so the viewer sidebar sorts issue #51 below #49, #45 and #42 although it is the newest work. Their `createdAt` is rewritten to Korean time, the convention of every run made on the team's machines.
@@ -20,11 +20,11 @@ The 12 SAC runs published under #51 carry a UTC `createdAt` because they were cr
 - Making `record.py` write a time zone; a guard for runs produced on other machines.
 
 ## Done Criteria
-- [ ] The 12 `run.json` files hold `2026-11-16T00:17:01` and nothing else changed in them.
-- [ ] The built `viewer/dist/runs/index.json` lists the #51 runs last (most recent); `uv run python -m pytest -q` passes.
+- [x] The 12 `run.json` files hold `2026-11-16T00:17:01` and nothing else changed in them. (2026-11-16)
+- [x] The built `viewer/dist/runs/index.json` lists the #51 runs last (most recent); `uv run python -m pytest -q` passes. (2026-11-16)
 
 ## Current State
-Seeded 2026-11-16. The fix is a 12-file text replacement; then build, test, PR, merge (the user asked to proceed).
+Done 2026-11-16. The 12 `run.json` files hold the KST time; issue #51 is the most recent group in the built index.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -52,6 +52,17 @@ This doc, `docs/issues/README.md`, `AGENTS.md`.
 - `uv run python -m pytest -q`: 139 passed, 45 skipped.
 #### Notes
 - The sidebar was not opened in a browser; the order follows from the index order (`groupByIssue` keeps the order of the most recent run).
+
+### chore: #54 마무리 (#54)
+> why: last commit of the branch before the PR
+#### Scope
+This doc, `docs/issues/README.md`, `AGENTS.md`.
+#### Changes
+- Status and registry row set to done, done criteria ticked, pointer line removed from `AGENTS.md`.
+#### Verification
+- No behaviour change since the previous commit's build and test run.
+#### Notes
+- None.
 
 ## Management Notes
 ### Follow-up Candidates
