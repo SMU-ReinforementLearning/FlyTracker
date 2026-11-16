@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useId, useMemo, useState } from 'react'
 import { fetchConfig, fetchIssueInfo } from '../../data/api.js'
 import { compareExperiments, experimentOf, variationsOf } from '../../data/experiment.js'
+import { changeOf } from '../../data/history.js'
 import { byCreatedAt, compareGroup, lastCheckpoint, NO_ISSUE, steppedCheckpoints } from '../../data/runs.js'
 import { CurveChart } from '../CurveChart/CurveChart.jsx'
 import { METRICS, MetricSwitch } from '../RunPanel/RunPanel.jsx'
@@ -57,14 +58,40 @@ function Section({ title, children }) {
   )
 }
 
-/** 이름과 값 줄. 비교 대상과 다른 줄은 '비교 대상의 값 → 지금 값'과 차이를 보여 준다. */
-function Rows({ rows }) {
+/**
+ * 줄이나 카드 이름에 붙는 출처. 그 값을 정한 issue 를 마우스를 올리면 상자로 보여 주고, 누르면 GitHub 에서 새 창으로 연다.
+ * 링크는 글자가 없고 ::after 로 부모(position: relative)를 덮는다. 그래서 줄 어디를 눌러도 열린다.
+ */
+function Source({ label, change }) {
+  const id = useId()
+  if (!change) return null
+  const { issue } = change
+  return (
+    <>
+      <a className={styles.source} href={issue.url} target="_blank" rel="noreferrer" aria-label={`${label}, #${issue.number} ${issue.title}`} aria-describedby={id} />
+      <span id={id} role="tooltip" className={styles.pop}>
+        <strong className={styles.popTitle}>
+          #{issue.number} {issue.title}
+        </strong>
+        <span className={styles.popMeta}>
+          {issue.author} · {issue.merged}
+        </span>
+        <span className={styles.popWhy}>{change.why}</span>
+      </span>
+    </>
+  )
+}
+
+/** 이름과 값 줄. 비교 대상과 다른 줄은 '비교 대상의 값 → 지금 값'과 차이를 보여 준다. 값을 정한 issue 를 아는 줄은 출처가 붙는다. */
+function Rows({ rows, envVersion }) {
   return (
     <dl className={styles.rows}>
       {rows.map((r) => {
         const changed = r.prev !== undefined || r.changed
+        const change = r.src ? changeOf(r.src, envVersion) : null
+        const cls = [styles.row, changed && styles.changed, change && styles.sourced].filter(Boolean).join(' ')
         return (
-          <div key={r.label} className={changed ? `${styles.row} ${styles.changed}` : styles.row}>
+          <div key={r.label} className={cls}>
             <dt>{r.label}</dt>
             <dd>
               {r.prev !== undefined && (
@@ -77,6 +104,7 @@ function Rows({ rows }) {
               )}
               <span>{r.value}</span>
               {r.delta && <span className={styles.delta}>{r.delta}</span>}
+              <Source label={r.label} change={change} />
             </dd>
           </div>
         )
@@ -85,17 +113,43 @@ function Rows({ rows }) {
   )
 }
 
-function AgentCard({ card }) {
+function AgentCard({ card, envVersion }) {
   const rows = card.was ? [{ label: '비교 대상', value: card.was, changed: card.was !== '같음' }, ...card.rows] : card.rows
+  const change = card.src ? changeOf(card.src, envVersion) : null
   return (
     <article className={styles.card}>
-      <div className={styles.agentHead}>
+      <div className={change ? `${styles.agentHead} ${styles.sourced}` : styles.agentHead}>
         <h3 className={styles.agentName}>{card.name}</h3>
         {card.version && <span className={styles.version}>{card.version}</span>}
+        <Source label={card.name} change={change} />
       </div>
       {card.text && <p className={styles.text}>{card.text}</p>}
-      {rows.length > 0 && <Rows rows={rows} />}
+      {rows.length > 0 && <Rows rows={rows} envVersion={envVersion} />}
     </article>
+  )
+}
+
+/** 종류와 상관없이 그 칸 전체에 걸리는 줄. 설정과 보상이 여기에 든다. */
+function RowsCard({ title, rows, envVersion }) {
+  if (rows.length === 0) return null
+  return (
+    <article className={styles.card}>
+      <h3 className={styles.agentName}>{title}</h3>
+      <Rows rows={rows} envVersion={envVersion} />
+    </article>
+  )
+}
+
+/** 초파리 칸 또는 조준기 칸. 종류별 카드, 설정, 보상 순서다. */
+function Side({ title, side, envVersion }) {
+  return (
+    <Section title={title}>
+      {side.cards.map((card) => (
+        <AgentCard key={card.key} card={card} envVersion={envVersion} />
+      ))}
+      <RowsCard title="설정" rows={side.settings} envVersion={envVersion} />
+      <RowsCard title="보상" rows={side.rewards} envVersion={envVersion} />
+    </Section>
   )
 }
 
@@ -136,7 +190,7 @@ function Purpose({ issueKey, info, target, onOpenIssue }) {
   )
 }
 
-/** issue 하나가 어떤 실험인지 보여 준다. 실험 이유, variation, 초파리, 조준기, 조건, 보상, 학습 곡선 순서다. */
+/** issue 하나가 어떤 실험인지 보여 준다. 실험 이유, variation, 초파리와 조준기, 환경, 학습 곡선 순서다. */
 export function IssuePage({ group, groups, onOpenIssue }) {
   const [metric, setMetric] = useState('rate')
   const [variation, setVariation] = useState(ALL)
@@ -202,32 +256,17 @@ export function IssuePage({ group, groups, onOpenIssue }) {
             <Segmented label={variations.label} options={options} value={picked ? picked.key : ALL} onChange={setVariation} className={styles.variationSwitch} />
           </div>
         )}
-        {(exp.fly.length > 0 || exp.aimer.length > 0) && (
+        {(exp.fly.cards.length > 0 || exp.aimer.cards.length > 0) && (
           <div className={styles.pair}>
-            <Section title="초파리">
-              {exp.fly.map((card) => (
-                <AgentCard key={card.key} card={card} />
-              ))}
-            </Section>
-            <Section title="조준기">
-              {exp.aimer.map((card) => (
-                <AgentCard key={card.key} card={card} />
-              ))}
-            </Section>
+            <Side title="초파리" side={exp.fly} envVersion={exp.envVersion} />
+            <Side title="조준기" side={exp.aimer} envVersion={exp.envVersion} />
           </div>
         )}
-        <Section title="조건">
+        <Section title="환경">
           <div className={styles.card}>
-            <Rows rows={[...exp.conditions, ...exp.facts]} />
+            <Rows rows={[...exp.environment, ...exp.facts]} envVersion={exp.envVersion} />
           </div>
         </Section>
-        {exp.rewards.length > 0 && (
-          <Section title="보상">
-            <div className={styles.card}>
-              <Rows rows={exp.rewards} />
-            </div>
-          </Section>
-        )}
         {hasCurve && (
           <Section title="학습 곡선">
             <div className={`${styles.card} ${styles.curveCard}`}>

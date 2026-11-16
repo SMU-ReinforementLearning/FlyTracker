@@ -33,7 +33,7 @@ The viewer's issue page now groups every value by its owner (fly, aimer, environ
 - [x] Every row and card name shown for every published issue resolves to an issue in `history.js` (test). (2026-11-16)
 - [x] Hover and keyboard focus show the popover; the link opens `…/issues/<n>` with `target="_blank"`. (2026-11-16, probes)
 - [x] No horizontal overflow at 1600 px and 390 px. (2026-11-16)
-- [ ] User approved the layout and the popover text.
+- [x] User approved the layout and the popover text. (2026-11-16, "머지해", after two rounds on the popover position)
 
 ## Current State
 Implemented and verified locally; uncommitted, waiting at the pre-commit review gate. Preview server of the built site may still be running on `http://127.0.0.1:4962` (started in this session). Nothing pushed.

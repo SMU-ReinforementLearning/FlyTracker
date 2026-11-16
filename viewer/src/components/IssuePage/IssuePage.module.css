@@ -1,4 +1,4 @@
-/* issue 화면: 실험 이유, 초파리, 조준기, 조건, 학습 곡선 */
+/* issue 화면: 실험 이유, 초파리, 조준기, 환경, 학습 곡선 */
 
 .page {
   flex: 1;
@@ -17,6 +17,8 @@
   gap: var(--space-6);
   max-width: 92rem;
   margin: 0 auto;
+  /* 출처 상자가 이 폭을 보고 카드 밖으로 나갈지 정한다 */
+  container: issue-column / inline-size;
 }
 
 .section {
@@ -181,6 +183,104 @@
 
 .issueLink:hover {
   text-decoration: underline;
+}
+
+/* 값을 정한 issue 를 아는 줄과 카드 이름. 마우스를 올리면 그 issue 가 상자로 뜨고, 누르면 GitHub 에서 열린다 */
+.sourced {
+  position: relative;
+  cursor: pointer;
+}
+
+/* 줄 양옆 여백까지 칠한다. 줄의 폭을 바꾸지 않으려고 그림자로 넓힌다 */
+.sourced:hover,
+.sourced:focus-within {
+  background: var(--color-fill);
+  box-shadow:
+    -1.2rem 0 0 var(--color-fill),
+    1.2rem 0 0 var(--color-fill);
+}
+
+/* 글자 없는 링크가 줄 전체를 덮는다 */
+.source::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.source:focus-visible {
+  outline: none;
+}
+
+.source:focus-visible::after {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 0.2rem;
+  border-radius: var(--radius-sm);
+}
+
+/* 줄의 오른쪽 아래 끝에 좁게 뜬다. 줄 폭만큼 넓게 띄우면 아래 줄을 다 가려서 읽던 표를 놓친다.
+   카드 안쪽 여백으로 조금 나가지만 카드를 넘지는 않고, 숨어 있을 때는 자리를 차지하지 않는다 */
+.pop {
+  display: none;
+  position: absolute;
+  top: calc(100% - 0.6rem);
+  right: calc(-1 * var(--space-4));
+  width: max-content;
+  max-width: min(34rem, 100%);
+  z-index: 5;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-separator);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-window);
+  box-shadow: var(--shadow-popover);
+  color: var(--color-text-primary);
+  font-weight: normal;
+  text-align: left;
+  pointer-events: none;
+}
+
+/* 초파리와 조준기가 나란히 있을 때는 상자를 카드 밖으로 뺀다. 초파리 쪽은 오른쪽(조준기 카드 위), 조준기 쪽은 왼쪽(초파리 카드 위)이다.
+   읽고 있는 표는 가리지 않고 옆 칸의 표를 가린다. 한 줄로 쌓이는 폭에서는 옆 칸이 없어서 위의 자리(줄의 오른쪽 아래 끝)를 그대로 쓴다.
+   680px 는 .pair 가 두 칸이 되는 폭(32rem 두 개와 사이 간격)이다. container query 도 rem 을 믿기 어려워 px 로 쓴다 */
+@container issue-column (min-width: 680px) {
+  .pair > :first-child .pop,
+  .pair > :last-child .pop {
+    top: 0;
+    max-width: min(34rem, 100% + 2 * var(--space-6));
+  }
+
+  .pair > :first-child .pop {
+    right: auto;
+    left: calc(100% + var(--space-6) + var(--space-4));
+  }
+
+  .pair > :last-child .pop {
+    right: calc(100% + var(--space-6) + var(--space-4));
+  }
+}
+
+.sourced:hover > .pop,
+.sourced:hover > dd > .pop,
+.sourced:focus-within > .pop,
+.sourced:focus-within > dd > .pop {
+  display: flex;
+}
+
+.popTitle {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+}
+
+.popMeta {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.popWhy {
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
 }
 
 /* variation 고르기. 학습 seed 만 다른 실행끼리 하나다 */
