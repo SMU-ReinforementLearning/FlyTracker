@@ -34,3 +34,4 @@ One row per management document, added in the same commit that creates the doc.
 | #57 | docs/issues/docs/57-docs-readme-neural-fly-sources.md | done | README에 신경 초파리 출처 적기 |
 | #62 | docs/issues/feature/62-feature-issue-page-owner-split-provenance.md | done | issue 화면을 초파리, 조준기, 환경으로 나누고 항목마다 바꾼 issue 보여 주기 |
 | #64 | docs/issues/feature/64-feature-bundled-neural-flight.md | in progress | 신경 비행 코드와 자료를 저장소에 포함 |
+| #66 | docs/issues/chore/66-chore-kit-issue-metadata.md | done | issue에 type, label, 담당자를 채우도록 agent-workflow-kit 올리기 |
