@@ -4,7 +4,7 @@
 - Issue: #66
 - Branch: `66-chore-kit-issue-metadata`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 Update the installed agent-workflow-kit so that `issue-start` registers an issue with its sidebar filled in (Type, label, assignee, Priority, sub-issue link) and checks the title, and give the issues registered before this their Type and label.
@@ -22,21 +22,19 @@ the old ones, closed ones included, must get it afterwards.
   existing issues.
 
 ## Out Of Scope
-- Issues #58, #59, #64 (a teammate's umbrella and its sub-issues): no management document
-  or branch names their type, so the backfill left them alone. Their owner decides.
 - Priority on old issues, milestones, projects: nothing exists to derive them from, and
   the repo has no milestone.
-- Assigning a teammate to #31: it would notify them.
 
 ## Done Criteria
 - [x] `issue-start` creates an issue with Type, label, assignee and Priority set — #66 itself was created by the new script: Task, `chore`, lhk0721, Medium (2026-11-16 KST)
 - [x] Every issue whose type the repo records carries a Type and its label — 30 issues updated, rerun plans nothing (2026-11-16 KST)
 - [x] Installed copy passes its own tests: `issue-start.test` 27 cases (2026-11-16 KST)
+- [x] The teammate's issues carry Type, label and assignee too — #31, #58, #59, #64; no issue is left without a Type or an assignee (2026-11-16 KST)
 - [x] Kit PR #37 merged, so the installed files match a kit commit on `main` — squash commit `68c22ae` (2026-11-16 KST)
 
 ## Current State
-Installer rerun and backfill done. The installed files equal kit `main` at `68c22ae`
-(kit PR #37). Open: types for #58, #59, #64 (see Follow-up Candidates).
+Done. The installed files equal kit `main` at `68c22ae` (kit PR #37). All 34 issues
+carry a Type and an assignee; new issues get them from `issue-start`.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -64,9 +62,19 @@ Kit update (system-owned files only) plus this document, the registry row and th
 - Mapping: `feature` → Feature + `enhancement`; `fix` → Bug + `bug`; `docs` → Task +
   `documentation`; `chore` / `refactor` → Task + a label of the same name.
 
+### chore: #66 마무리 (#66)
+> why: the user asked for the teammate's issues to be filled as well; then close out the branch
+#### Changes
+- GitHub only: #59 and #64 → Feature + `enhancement` (`issue-backfill.mjs --apply --set
+  59=feature --set 64=feature`; #64's PR branch is `64-feature-bundled-neural-flight`),
+  #58 (umbrella) → Type Task with no type label, heohs assigned to #31 and #64.
+- Status done, done criteria ticked, AGENTS.md pointer removed.
+#### Verification
+- API query over all 34 issues: none without a Type, none without an assignee.
+
 ## Management Notes
 ### Follow-up Candidates
-- Ask the owner of #58, #59, #64 for their types, then
-  `issue-backfill.mjs --apply --set <n>=<type>`.
+- `umbrella` is not in `issue_types`, so the kit has no label for an umbrella issue; #58
+  carries Type Task only.
 ### References
 - Kit PR: https://github.com/lhk0721/agent-workflow-kit/pull/37

@@ -62,7 +62,6 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `66-chore-kit-issue-metadata` — `docs/issues/chore/66-chore-kit-issue-metadata.md` — issue에 type, label, 담당자를 채우도록 agent-workflow-kit 올리기
 
 ## Environment (repo slot)
 
