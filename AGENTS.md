@@ -62,7 +62,6 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `57-docs-readme-neural-fly-sources` — `docs/issues/docs/57-docs-readme-neural-fly-sources.md` — README에 신경 초파리 출처 적기
 
 ## Environment (repo slot)
 

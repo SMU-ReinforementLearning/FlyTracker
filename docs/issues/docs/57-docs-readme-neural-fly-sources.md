@@ -4,7 +4,7 @@
 - Issue: #57
 - Branch: `57-docs-readme-neural-fly-sources`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 README gains a `### 신경 초파리` section that says what the neural fly is, that it cannot run from this repository alone, and where each of its four parts comes from. Until now the neural fly (#31) appeared nowhere in the README; its sources were only in the #31 management doc and in `flytracker/neural_fly.py`.
@@ -30,7 +30,7 @@ README gains a `### 신경 초파리` section that says what the neural fly is, 
 - [x] User approved the text. (2026-11-16, "머지해")
 
 ## Current State
-PR #56 was squash-merged at the user's instruction (main @ 7bd0ac8) and this branch was fast-forwarded onto it. README section and the `flysim-source.md` fix are written, uncommitted, waiting at the pre-commit review gate. Nothing pushed.
+PR #56 was squash-merged at the user's instruction (main @ 7bd0ac8) and this branch was fast-forwarded onto it. README section and the `flysim-source.md` fix are committed. Nothing is left on this issue; open items are under Follow-up Candidates.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -66,6 +66,18 @@ Branch cut from `origin/main` @ f542106. The local `main` of the main checkout w
 - Not verified: flysim authorship. It is the user's relay of the teammate's statement; no file in this repo can confirm it. Not run: the neural fly itself — this machine has no flysim source.
 #### Notes
 - `### 초파리` still opens its second paragraph with "피하는 법은 두 가지다" (rule fly, fly agent). Left as is: the neural fly is opt-in and described in its own section.
+
+### chore: #57 마무리 (#57)
+> why: last commit before the PR
+#### Scope
+Status done, AGENTS.md pointer removed, registry row set to done.
+#### Changes
+- This document: Status and Current State.
+- `docs/issues/README.md`: #57 row → done. `AGENTS.md`: pointer line removed.
+#### Verification
+None needed.
+#### Notes
+The user said "머지해" on 2026-11-16; taken as approval to commit, push, open the PR and merge it.
 
 ## Management Notes
 ### Follow-up Candidates

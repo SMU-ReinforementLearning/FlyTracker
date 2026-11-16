@@ -31,4 +31,4 @@ One row per management document, added in the same commit that creates the doc.
 | #49 | docs/issues/feature/49-feature-laser-beam-reward.md | done | 레이저 명중에 맞춰 조준기 보상 바꾸기 |
 | #51 | docs/issues/feature/51-feature-sac-laser-training.md | done | 레이저 명중 조건에서 SAC로 조준기 다시 학습하기 |
 | #54 | docs/issues/fix/54-fix-run-created-at-kst.md | done | #51 실행의 만든 시각을 한국 시각으로 고치기 |
-| #57 | docs/issues/docs/57-docs-readme-neural-fly-sources.md | in progress | README에 신경 초파리 출처 적기 |
+| #57 | docs/issues/docs/57-docs-readme-neural-fly-sources.md | done | README에 신경 초파리 출처 적기 |
