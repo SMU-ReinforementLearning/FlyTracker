@@ -40,6 +40,19 @@ This doc, `docs/issues/README.md`, `AGENTS.md`.
 #### Notes
 - None.
 
+### fix: #51 실행의 만든 시각을 한국 시각으로 고치기 (#54)
+> why: the UTC stamp from the instance sorted the newest issue below three older ones in the sidebar
+#### Scope
+`published/2026-11-15_151701_sac-*/run.json` (12 files).
+#### Changes
+- `createdAt` `2026-11-15T15:17:01` → `2026-11-16T00:17:01` (the same instant in KST).
+#### Verification
+- `git diff --stat`: 12 files, 12 insertions, 12 deletions; one line per file.
+- `npm run build --prefix viewer`: `viewer/dist/runs/index.json` ends with the 12 #51 runs, after #49's `2026-11-15T22:30:16`.
+- `uv run python -m pytest -q`: 139 passed, 45 skipped.
+#### Notes
+- The sidebar was not opened in a browser; the order follows from the index order (`groupByIssue` keeps the order of the most recent run).
+
 ## Management Notes
 ### Follow-up Candidates
 - `record.py` writes `datetime.now()` without a zone, so a run made on a machine in another zone sorts wrongly again; write the zone or convert at publish time.
