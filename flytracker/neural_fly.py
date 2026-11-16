@@ -1,7 +1,7 @@
-"""Local-only adapter for neural wing/body dynamics.
+"""Neural wing/body adapter with bundled source/data and explicit path overrides.
 
-No flysim code or biological data is vendored. Only explicitly selected local
-Python files are executed; their rights are separate from this adapter's code.
+Bundled user-authored code and attributed data live in neural_assets. An external
+path remains trusted executable input selected explicitly by the caller.
 """
 
 from __future__ import annotations
@@ -29,6 +29,31 @@ SOURCE_TO_TRACKER = np.array([[0., -1., 0.], [0., 0., 1.], [-1., 0., 0.]])
 MAP_QUATERNION = (0.5, -0.5, 0.5, 0.5)  # w,x,y,z; source world -> tracker world
 _MODULES = ("core", "neural", "neural_state", "physics", "behavior")
 _LOAD_LOCK = RLock()
+
+
+# Package-owned default; the five source files and data ship with FlyTracker.
+BUNDLED_SOURCE_ID = "flytracker/neural_assets"
+BUNDLED_SOURCE_ROOT = Path(__file__).with_name("neural_assets").resolve()
+
+
+def _resolve_source_path(value):
+    text = os.fspath(value).replace("\\", "/")
+    if text == BUNDLED_SOURCE_ID or text.startswith(BUNDLED_SOURCE_ID + "/"):
+        suffix = text[len(BUNDLED_SOURCE_ID):].lstrip("/")
+        path = (BUNDLED_SOURCE_ROOT / suffix).resolve()
+        if not path.is_relative_to(BUNDLED_SOURCE_ROOT):
+            raise ValueError("동봉 자료 경로가 패키지 폴더를 벗어납니다.")
+        return path
+    return Path(value).expanduser().resolve()
+
+
+def portable_source_path(value):
+    path = _resolve_source_path(value)
+    if path.is_relative_to(BUNDLED_SOURCE_ROOT):
+        rel = path.relative_to(BUNDLED_SOURCE_ROOT).as_posix()
+        return BUNDLED_SOURCE_ID if rel == "." else BUNDLED_SOURCE_ID + "/" + rel
+    return str(path)
+
 
 
 def to_tracker(vector) -> np.ndarray:
@@ -74,6 +99,15 @@ class NeuralConfig:
         if type(self.boundary_enabled) is not bool:
             raise ValueError("boundary_enabled는 bool이어야 합니다.")
 
+    def to_dict(self):
+        values = asdict(self)
+        for key in ("source_root", "data_dir"):
+            if values[key] is not None:
+                path = _resolve_source_path(values[key])
+                if path.is_relative_to(BUNDLED_SOURCE_ROOT):
+                    values[key] = portable_source_path(path)
+        return values
+
     @classmethod
     def from_dict(cls, values):
         # 현재 보존한 기록의 사용하지 않던 설정만 읽는다. 다른 운동 모델은 허용하지 않는다.
@@ -95,11 +129,9 @@ def load_backend(config: NeuralConfig):
     coexist. No gym/rendering/controller modules are imported. Local Python is
     trusted executable input, explicitly selected by API/CLI/environment.
     """
-    root_value = config.source_root or os.environ.get("FLYTRACKER_NEURAL_SOURCE")
-    if not root_value:
-        raise ValueError("Neural flight requires neural.source_root / --neural-source / FLYTRACKER_NEURAL_SOURCE")
-    root = Path(root_value).expanduser().resolve()
-    data = Path(config.data_dir).expanduser().resolve() if config.data_dir else root / "data" / "stage2"
+    root_value = config.source_root or os.environ.get("FLYTRACKER_NEURAL_SOURCE") or BUNDLED_SOURCE_ID
+    root = _resolve_source_path(root_value)
+    data = _resolve_source_path(config.data_dir) if config.data_dir else root / "data" / "stage2"
     paths = {f"flysim/{name}.py": root / "flysim" / f"{name}.py" for name in _MODULES}
     paths.update({f"data/{name}": data / name for name in ("neurons.csv", "edges.csv")})
     for name in ("selection.json", "zenodo_licenses.json"):
@@ -297,11 +329,14 @@ class NeuralFly:
                 "neurons": len(self.backend.circuit.ids), "connections": len(self.backend.circuit.pre),
                 "effective_connections": int(np.count_nonzero(self.sim.neural.weights)),
                 "synapses": int(np.abs(self.backend.circuit.signed_counts).sum()),
-                "resolved_source_root": str(self.backend.root), "resolved_data_dir": str(self.backend.data),
-                "settings": asdict(self.p), "coupling": asdict(self.sim.params),
+                "resolved_source_root": portable_source_path(self.backend.root),
+                "resolved_data_dir": portable_source_path(self.backend.data),
+                "source_kind": "bundled" if self.backend.root == BUNDLED_SOURCE_ROOT else "external",
+                "settings": self.p.to_dict(), "coupling": asdict(self.sim.params),
                 "physics": asdict(self.sim.physics), "lif": asdict(self.sim.neural.params),
                 "seed": self.seed,
-                "rights": "Local flysim code and annotation/derived CSV redistribution rights unresolved; not bundled",
+                "rights": ("사용자 작성 코드, 외부 MIT 고지 및 FlyWire v783 비영리 자료 조건: "
+                           "flytracker/neural_assets/NOTICE.md. 외부 override의 권리는 별도 확인"),
                 "surveyed_references": {
                     "shiu_model": "https://github.com/philshiu/Drosophila_brain_model/tree/91bdd1e7dcf193f3e7ca5a8933497fcef63b7960",
                     "annotations": "https://github.com/flyconnectome/flywire_annotations/tree/a83b2776d60d5764cef36b927f5f9679c16c47a2",

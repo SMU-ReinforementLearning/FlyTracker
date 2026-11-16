@@ -109,7 +109,9 @@ class EnvConfig:
                 raise ValueError("Neural max_seconds must be a positive multiple of 10 ms")
 
     def to_dict(self) -> dict:
-        return asdict(self)
+        values = asdict(self)
+        values["neural"] = self.neural.to_dict()
+        return values
 
     @classmethod
     def from_dict(cls, d: dict) -> "EnvConfig":

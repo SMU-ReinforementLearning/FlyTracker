@@ -15,8 +15,6 @@ from flytracker.record import FRAME_KEYS
 @pytest.mark.parametrize('model', ['rule', 'neural'])
 def test_free_flight_has_no_aim_stimulus_or_capture_and_replays(model, monkeypatch):
     root = os.environ.get('FLYTRACKER_NEURAL_SOURCE')
-    if model == 'neural' and not root:
-        pytest.skip('Local neural source not selected')
     # Prove that the recording path never constructs an Aimer or queries vision.
     def forbidden(*args, **kwargs):
         raise AssertionError('Aiming must not run during free flight')
@@ -66,8 +64,6 @@ def test_free_flight_rejects_ignored_clock_settings(kwargs):
 @pytest.mark.parametrize('model', ['rule', 'neural'])
 def test_disabled_capture_keeps_aligned_tracking_alive_until_horizon(model):
     root = os.environ.get('FLYTRACKER_NEURAL_SOURCE')
-    if model == 'neural' and not root:
-        pytest.skip('Local neural source not selected')
     cfg = EnvConfig(fly_model=model, neural=NeuralConfig(source_root=root), capture_enabled=False,
                     capture_hold=.01, start_facing_fly=True, max_seconds=.3)
     env = FlyChaseEnv(cfg)
@@ -81,8 +77,6 @@ def test_disabled_capture_keeps_aligned_tracking_alive_until_horizon(model):
 
 def test_tracking_observation_has_real_aim_and_stimulus_but_no_capture():
     root = os.environ.get('FLYTRACKER_NEURAL_SOURCE')
-    if not root:
-        pytest.skip('Local neural source not selected')
     cfg = EnvConfig(fly_model='neural', neural=NeuralConfig(source_root=root),
                     stimulus=StimulusConfig(max_events=100), turret_pos=(0, 1.2, 0),
                     capture_hold=.01, max_seconds=.3)
@@ -109,8 +103,6 @@ def test_capture_flag_defaults_on_and_roundtrips():
 
 def test_aim_schedule_uses_current_circuit_and_remains_diagnostic():
     root = os.environ.get("FLYTRACKER_NEURAL_SOURCE")
-    if not root:
-        pytest.skip("Local neural source not selected")
     cfg = EnvConfig(fly_model="neural", neural=NeuralConfig(source_root=root),
                     max_seconds=2.)
     ep = record_tracking_observation(cfg, seed=0, aim_on_seconds=1., aim_off_seconds=1.)

@@ -17,8 +17,6 @@ from flytracker.world import Room
 @pytest.fixture
 def local_config():
     root = os.environ.get("FLYTRACKER_NEURAL_SOURCE")
-    if not root:
-        pytest.skip("Local neural integration needs FLYTRACKER_NEURAL_SOURCE")
     return NeuralConfig(source_root=root)
 
 
@@ -70,7 +68,7 @@ def test_saved_neural_events_config_and_hashes_are_actual(local_config, tmp_path
     assert events[0]["end_ms"] == 370
     assert events[0]["exposure_ms"] == 250
     assert saved["meta"]["stimulus"] == asdict(cfg.stimulus)
-    root = Path(local_config.source_root)
+    root = load_backend(local_config).root
     for name in ("core", "neural", "neural_state", "physics", "behavior"):
         key = f"flysim/{name}.py"
         assert saved["meta"]["neural"]["sha256"][key] == hashlib.sha256((root / key).read_bytes()).hexdigest()
