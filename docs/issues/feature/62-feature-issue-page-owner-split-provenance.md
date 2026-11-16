@@ -4,7 +4,7 @@
 - Issue: #62
 - Branch: `62-feature-issue-page-owner-split-provenance`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 The viewer's issue page now groups every value by its owner (fly, aimer, environment) and shows, on hover, which issue set each value. Before, one "조건" card mixed environment rules with aimer hardware and held no fly value at all, and the "보상" card showed only the aimer reward although every run also stores the fly reward. Each row and card name is now a link: hovering shows the issue number and title, who opened the PR, the merge date and the reason; clicking opens that GitHub issue in a new window.
@@ -36,7 +36,7 @@ The viewer's issue page now groups every value by its owner (fly, aimer, environ
 - [x] User approved the layout and the popover text. (2026-11-16, "머지해", after two rounds on the popover position)
 
 ## Current State
-Implemented and verified locally; uncommitted, waiting at the pre-commit review gate. Preview server of the built site may still be running on `http://127.0.0.1:4962` (started in this session). Nothing pushed.
+Done and committed. When an issue changes a default value or what a value means, add one line to `viewer/src/data/history.js`; open items are under Follow-up Candidates.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -85,6 +85,21 @@ See Scope above. One commit: the split and the provenance touch the same functio
 - The published neural runs have no `envVersion` (counted as 1) although #31 merged during version 2, so #31's `env` is 1 in the table.
 - Row order inside environment changed (capture rows now follow room and episode length).
 
+### chore: #62 마무리 (#62)
+> why: last commit before the PR
+#### Scope
+Status done, AGENTS.md pointer removed, registry row set to done.
+#### Changes
+- This document: Status, Current State, follow-up candidates. `docs/issues/README.md`: #62 row → done. `AGENTS.md`: pointer line removed.
+#### Verification
+None needed.
+#### Notes
+The user said "머지해" on 2026-11-16; taken as approval to commit, push, open the PR and merge it, as for #57.
+
 ## Management Notes
 ### Follow-up Candidates
+- Real mouse hover and click were not exercised by the captures (keyboard focus was). The user was asked to try them on the preview.
+- The reasons for #1's initial values (room size, FOV, turn rates, reward weights) are recorded nowhere; the popover says so. Fill them in if the team lead supplies them.
+- The fly reward card has not been seen with real data: no published run has a learned fly.
+- Popover text for a run that overrides a default (`--reward beam=0`) names the issue that set the default, not the run's own issue.
 ### References
