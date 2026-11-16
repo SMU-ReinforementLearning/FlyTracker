@@ -62,6 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
+- `62-feature-issue-page-owner-split-provenance` — `docs/issues/feature/62-feature-issue-page-owner-split-provenance.md` — issue 화면을 초파리, 조준기, 환경으로 나누고 항목마다 바꾼 issue 보여 주기
 
 ## Environment (repo slot)
 
