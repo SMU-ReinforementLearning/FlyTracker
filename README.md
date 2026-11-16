@@ -53,6 +53,23 @@ Claude Code, Codex, ChatGPT desktop 같은 AI 코딩 도구로 작업할 때 지
 
 비행 값에는 문헌에서 가져온 값과 가정한 값이 섞여 있다. 값마다 출처는 [초파리 비행 모델과 기준선 탐색](docs/issues/feature/9-feature-fly-realism-search/fly-flight-and-search-model.md)에 있고, `flytracker/fly.py`의 `FlyParams`에서 바꾼다.
 
+### 신경 초파리
+
+신경 초파리는 초파리 뇌의 실제 신경 연결 일부를 계산해서 나는 세 번째 초파리다. 뉴런 547개와 연결 16,344개로 발화를 계산하고, 그 발화에서 날개 힘을 구해 몸을 움직인다. 연결은 측정 자료에서 가져왔지만 어느 뉴런을 고를지와 발화에서 날개 힘으로 바꾸는 식은 가정이다. 가중치를 학습한 결과가 아니고, 실제 초파리의 움직임과 맞는지는 확인하지 않았다.
+
+기본은 규칙 초파리이고 `--fly-model neural`을 주면 신경 초파리로 바뀐다. 신경 초파리는 이 저장소만으로는 돌지 않는다. 아래 표의 flysim 프로젝트와 신경 자료를 따로 가지고 있어야 하고, 그 경로를 `--neural-source`나 환경 변수 `FLYTRACKER_NEURAL_SOURCE`로 알려 준다. 의존성은 `uv sync --extra neural`로 깐다. 규칙 초파리와 초파리 agent는 이것들 없이 돈다.
+
+| 구성 | 출처 | 저장소에 들어 있나 |
+|---|---|---|
+| 신경 연결 자료와 LIF 모델의 참고 기반 | Philip Shiu 등의 [Drosophila_brain_model](https://github.com/philshiu/Drosophila_brain_model/tree/91bdd1e7dcf193f3e7ca5a8933497fcef63b7960)(MIT). 연결 자료는 [Zenodo 10676866](https://zenodo.org/records/10676866) | 아니다 |
+| 뉴런 종류와 주석 | [FlyWire neuron annotations](https://github.com/flyconnectome/flywire_annotations/tree/a83b2776d60d5764cef36b927f5f9679c16c47a2). [FlyWire 이용 조건](https://flywire.ai/tos)을 따른다 | 아니다 |
+| 실제로 실행하는 LIF와 감각 코드(flysim) | 팀원이 위 두 자료를 바탕으로 Codex로 작성한 로컬 프로젝트 | 아니다 |
+| 날개 힘과 신체 운동, FlyTracker 연결 | #31에서 만든 `flytracker/neuromechanics.py`와 `flytracker/neural_fly.py` | 들어 있다 |
+
+저장소에 올린 신경 초파리 실행은 세 개이고, viewer의 [issue #31 화면](https://flytracker-ewk.pages.dev/?issue=31)에서 재생한다. 재생에는 flysim이 필요 없다. 세 실행은 2026-11-12에 예전 포획 조건(조준 방향에서 3° 안에 0.2초)으로 만든 기록이다.
+
+필요한 파일과 실행 명령은 [flysim 출처와 실행](docs/issues/feature/31-feature-neural-flight/flysim-source.md)에, 모델의 가정은 [신경 날개 비행](docs/issues/feature/31-feature-neural-flight.md)에 있다.
+
 ### 에피소드
 
 에피소드는 `reset`으로 시작해서 포획하거나 시간 초과로 끝난다.
