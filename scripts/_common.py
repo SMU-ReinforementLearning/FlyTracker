@@ -21,7 +21,7 @@ for _stream in (sys.stdout, sys.stderr):
 def add_env_args(p: argparse.ArgumentParser) -> None:
     g = p.add_argument_group("환경")
     g.add_argument("--fly-model", choices=("rule", "neural"), default="rule")
-    g.add_argument("--neural-source", default=None, help="로컬 flysim 프로젝트 경로. 지정한 Python 코드를 실행하며 FLYTRACKER_NEURAL_SOURCE도 사용할 수 있습니다.")
+    g.add_argument("--neural-source", default=None, help="선택적 외부 flysim 경로. 지정한 Python 코드를 실행합니다. 없으면 환경 변수 또는 패키지 동봉 자료를 사용합니다.")
     g.add_argument("--neural-data", default=None, help="neurons.csv와 edges.csv가 있는 로컬 폴더")
     g.add_argument("--no-stimulus", action="store_true", help="신경 비행의 가상 자극 끄기")
     for name in ("align_deg", "charge_ms", "discharge_ms", "pulse_ms", "cooldown_ms", "max_events",

@@ -15,8 +15,6 @@ from flytracker.world import Room
 
 @pytest.fixture(scope='module')
 def config():
-    if not os.environ.get('FLYTRACKER_NEURAL_SOURCE'):
-        pytest.skip('FLYTRACKER_NEURAL_SOURCE로 로컬 원본을 지정해야 합니다.')
     return NeuralConfig(dynamics='neuromechanical',boundary_enabled=False)
 
 
@@ -195,19 +193,22 @@ def test_cli_selects_new_dynamics_without_changing_rule_default():
     assert config_from_args(parser.parse_args(['--fly-model','neural'])).neural.dynamics=='neuromechanical'
 
 
-def test_alignment_can_end_in_capture_without_detected_threat(config):
+def test_alignment_can_end_in_capture_without_detected_threat(config, track_neural_fly_on_beam):
     env=FlyChaseEnv(EnvConfig(fly_model='neural',neural=config,max_seconds=.3))
     env.reset(seed=301)
     env.fly.reset([0,1.5,-1.5],[0,0,-1])
     d=env.fly.pos-env.aimer.pos; d/=np.linalg.norm(d)
     env.aimer.reset(env.aimer.pos,math.atan2(-d[0],-d[2]),math.asin(d[1]))
+    env._capture_timer=0.  # 새 배치 전 reset 판정 시간을 이월하지 않는다.
+    track_neural_fly_on_beam(env)
     peak=0.
     while env.t<.3:
         _,_,terminated,truncated,_=env.step([0,0])
         diag=env.fly.diagnostics(); peak=max(peak,diag['left_input_hz'],diag['right_input_hz'])
         if terminated or truncated: break
     assert env._stimulus.events[0]['onset_ms']==120
-    assert env.captured and env.t==pytest.approx(.2)
+    assert env.captured and env.t==pytest.approx(.15)
+    assert env.config.capture_radius==.00125 and env.config.capture_hold==.15
     assert peak==0 and not env.fly.phase_events
 
 

@@ -25,7 +25,7 @@ npm run dev --prefix viewer
 
 브라우저에서 http://localhost:5180 을 연다. 왼쪽 목록에 방금 돌린 실행과 저장소에 올라 있는 실행이 보인다. 실행은 스크립트를 한 번 돌려 생긴 결과 전체다. 실행 안의 에피소드를 고르면 바로 재생된다.
 
-`train` extra는 Stable-Baselines3와 TensorBoard를, `dev` extra는 pytest를 설치한다. 기준선만 돌릴 때는 `uv sync`로 충분하다. 테스트는 `uv run pytest`로 돌린다.
+`train` extra는 Stable-Baselines3와 TensorBoard를, `dev` extra는 pytest를 설치한다. 기준선만 돌릴 때는 `uv sync`로 충분하다. 신경 모델을 포함한 전체 테스트는 `uv sync --extra neural --extra dev`로 의존성을 설치한 뒤 `uv run python -m pytest -q`로 돌린다.
 
 Claude Code, Codex, ChatGPT desktop 같은 AI 코딩 도구로 작업할 때 지킬 규칙은 `AGENTS.md`에 있다. Claude Code는 `claude`를 띄우고 채팅에 `run onboarding`이라고 입력하면 저장소의 git hook과 Claude Code hook을 켜고 Node와 GitHub CLI가 있는지 확인한다. 다른 AI 코딩 도구는 `AGENTS.md`를 읽게 하고, git hook은 `git config core.hooksPath .githooks`로 직접 켠다. 코드만 돌려 볼 때는 건너뛰어도 된다.
 
@@ -57,13 +57,18 @@ Claude Code, Codex, ChatGPT desktop 같은 AI 코딩 도구로 작업할 때 지
 
 신경 초파리는 초파리 뇌의 실제 신경 연결 일부를 계산해서 나는 세 번째 초파리다. 뉴런 547개와 연결 16,344개로 발화를 계산하고, 그 발화에서 날개 힘을 구해 몸을 움직인다. 연결은 측정 자료에서 가져왔지만 어느 뉴런을 고를지와 발화에서 날개 힘으로 바꾸는 식은 가정이다. 가중치를 학습한 결과가 아니고, 실제 초파리의 움직임과 맞는지는 확인하지 않았다.
 
-기본은 규칙 초파리이고 `--fly-model neural`을 주면 신경 초파리로 바뀐다. 신경 초파리는 이 저장소만으로는 돌지 않는다. 아래 표의 flysim 프로젝트와 신경 자료를 따로 가지고 있어야 하고, 그 경로를 `--neural-source`나 환경 변수 `FLYTRACKER_NEURAL_SOURCE`로 알려 준다. 의존성은 `uv sync --extra neural`로 깐다. 규칙 초파리와 초파리 agent는 이것들 없이 돈다.
+기본은 규칙 초파리이고 `--fly-model neural`을 주면 신경 초파리로 바뀐다. 실행 코드와 필요한 신경 자료는 `flytracker/neural_assets`에 포함돼 있어 별도 프로젝트나 환경 변수 없이 실행한다. `--neural-source`와 `FLYTRACKER_NEURAL_SOURCE`는 외부 원본을 의도적으로 선택할 때만 사용한다. 자료의 저작자표시 및 비영리 조건은 [동봉 고지](flytracker/neural_assets/NOTICE.md)를 확인한다.
+
+```sh
+uv sync --extra neural --extra dev
+uv run python scripts/record_baseline.py --fly-model neural --episodes 1 --seed 10000 --no-save
+```
 
 | 구성 | 출처 | 저장소에 들어 있나 |
 |---|---|---|
-| 신경 연결 자료와 LIF 모델의 참고 기반 | Philip Shiu 등의 [Drosophila_brain_model](https://github.com/philshiu/Drosophila_brain_model/tree/91bdd1e7dcf193f3e7ca5a8933497fcef63b7960)(MIT). 연결 자료는 [Zenodo 10676866](https://zenodo.org/records/10676866) | 아니다 |
-| 뉴런 종류와 주석 | [FlyWire neuron annotations](https://github.com/flyconnectome/flywire_annotations/tree/a83b2776d60d5764cef36b927f5f9679c16c47a2). [FlyWire 이용 조건](https://flywire.ai/tos)을 따른다 | 아니다 |
-| 실제로 실행하는 LIF와 감각 코드(flysim) | 팀원이 위 두 자료를 바탕으로 Codex로 작성한 로컬 프로젝트 | 아니다 |
+| 신경 연결 자료와 LIF 모델의 참고 기반 | Philip Shiu 등의 [Drosophila_brain_model](https://github.com/philshiu/Drosophila_brain_model/tree/91bdd1e7dcf193f3e7ca5a8933497fcef63b7960)(MIT). Parquet의 직접 출처이며 [Zenodo](https://zenodo.org/records/10676866)는 관련 원자료 출처다 | 들어 있다. MIT 고지 보존 |
+| 뉴런 종류와 주석 | [FlyWire neuron annotations](https://github.com/flyconnectome/flywire_annotations/tree/a83b2776d60d5764cef36b927f5f9679c16c47a2). [v783 공개 자료 안내](https://flywire.ai/guidelines)의 CC BY-NC 4.0 조건을 보존한다 | 들어 있다. 비영리 자료 조건 적용 |
+| 실제로 실행하는 LIF와 감각 코드(flysim) | 사용자가 외부 자료를 참고해 Codex로 작성하고 직접 포함을 요청한 팀 코드 | 들어 있다 |
 | 날개 힘과 신체 운동, FlyTracker 연결 | #31에서 만든 `flytracker/neuromechanics.py`와 `flytracker/neural_fly.py` | 들어 있다 |
 
 저장소에 올린 신경 초파리 실행은 세 개이고, viewer의 [issue #31 화면](https://flytracker-ewk.pages.dev/?issue=31)에서 재생한다. 재생에는 flysim이 필요 없다. 세 실행은 2026-11-12에 예전 포획 조건(조준 방향에서 3° 안에 0.2초)으로 만든 기록이다.
