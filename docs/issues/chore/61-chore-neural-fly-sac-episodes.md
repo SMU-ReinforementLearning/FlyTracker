@@ -59,6 +59,25 @@ Management doc, registry row, `AGENTS.md` pointer.
 #### Notes
 - No umbrella: the open umbrella #58 is the teammate's workstream.
 
+### chore: 조준기 하나를 임의의 환경 설정으로 녹화하는 스크립트 (#61)
+> why: `record_baseline.py` records only the rule aimer and `match.py` saves no episodes; #44's `record_model_v3.py` calls `model.predict` directly, which would drop the tracking assist `sac-beam-assist` was trained with
+#### Scope
+`docs/issues/chore/61-chore-neural-fly-sac-episodes/record_match.py`. No change to `scripts/`, the package or the viewer.
+#### Changes
+- `record_match.py <baseline | run folder>` plus the env flags of `record_baseline.py`. The aimer comes from `load_opponent` and sees the raw observation, as in `matchup.play_cell`. Defaults: seeds 10000-10002. Run name `<rule | neural-stim | neural-nostim>-<aimer name>`; episodes tagged `step_<steps>` for a model, `baseline` for the rule aimer.
+- `config.json` of a model run keeps the model's `algo` block and adds `model` and `trainedEnvVersion` (as #44 did). `algo.opponent` stays the fly the model was trained against; the fly of the run is `env.fly_model`.
+#### Verification
+All against the rule fly, seeds 10000-10002, on the user's laptop (torch 2.15.0+cpu, SB3 2.9.2):
+- Baseline: 5.13 / 5.03 / 4.16 s, 3/3 captured, mean return -22.58, visible 26%. `scripts/record_baseline.py --seed 10000 --episodes 3 --no-save` prints the same summary line.
+- `sac-beam-assist-s0/s1/s2`: 3.03, 2.73, 1.63 / 3.02, 2.59, 5.37 / 1.29, 1.19, 2.40 s, 9/9 captured. The training-time path (`make_env(assist=0.2)` + `model.predict`) gives the same nine durations and visible ratios on this machine.
+- Against the runs published in #51 (recorded on the vast.ai instance): five of nine durations equal, four differ by 0.01-0.12 s (s0 seed 10001 2.73 vs 2.69; s2 1.29 / 1.19 / 2.40 vs 1.32 / 1.20 / 2.28). Since both paths agree here, the difference is between machines, not between the script and training.
+- Saving: a saved rule-fly run of `sac-beam-assist-s0` has `envVersion` 5, the model's `algo` block plus `model` / `trainedEnvVersion`, and three episodes under `step_1000000` (written to a scratch folder outside the repo).
+- `--fly-model neural` without the flysim project stops with `Neural flight requires neural.source_root / --neural-source / FLYTRACKER_NEURAL_SOURCE` and leaves no run folder (the run is created after the first episode).
+- Not run: the full pytest suite (no package code changed), anything with the neural fly.
+#### Notes
+- Episodes are not bit-reproducible across machines, so all eight runs must be recorded on the same machine, the baseline included.
+- `--neural-source` puts the local path into `config.json`; use `FLYTRACKER_NEURAL_SOURCE`. Episode files still carry `resolved_source_root` / `resolved_data_dir` (`NeuralFly.provenance`) and must be stripped before publishing.
+
 ## Management Notes
 ### Follow-up Candidates
 - Viewer: show the neural fly on the issue page's experiment card (`viewer/src/data/experiment.js` reads only `algo.opponent`).
