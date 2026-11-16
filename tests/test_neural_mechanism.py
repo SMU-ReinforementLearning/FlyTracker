@@ -20,8 +20,6 @@ def test_only_current_neural_model_is_selectable(settings):
 
 def test_provenance_contains_only_active_physics():
     root = os.environ.get("FLYTRACKER_NEURAL_SOURCE")
-    if not root:
-        pytest.skip("Local neural source not selected")
     fly = NeuralFly(NeuralConfig(source_root=root), np.random.default_rng(101))
     fly.reset([0, 1.2, 0], [0, 0, -1])
     fly.step(.05, Room())

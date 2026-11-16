@@ -21,8 +21,6 @@ def test_native_yaw_elevation_from_tracker_headings():
 
 def test_bank_is_attitude_tilt_not_heading_elevation():
     source = os.environ.get('FLYTRACKER_NEURAL_SOURCE')
-    if not source:
-        pytest.skip('Local neural source not selected')
     fly = make(NeuralConfig(source_root=source, boundary_enabled=False), 11)
     fly.heading = [0, .5, -math.sqrt(.75)]
     assert bank_angle(fly) == pytest.approx(0., abs=1e-14)
@@ -70,8 +68,6 @@ def test_empirical_metric_rejects_ambiguous_clock():
 
 def test_source_encoder_saturates_across_published_expansion_speed_range():
     source = os.environ.get('FLYTRACKER_NEURAL_SOURCE')
-    if not source:
-        pytest.skip('Local neural source not selected')
     fly = make(NeuralConfig(source_root=source, boundary_enabled=False), 11)
     b = fly.backend
     body = replace(fly.sim.body, velocity=b.physics.ZERO)
