@@ -24,10 +24,10 @@ README gains a `### 신경 초파리` section that says what the neural fly is, 
 - Any code or test change.
 
 ## Done Criteria
-- [ ] README has the section; every link in it resolves (`readme_check.py --online`).
-- [ ] Every fact in the section is traceable: option names to `scripts/_common.py`, extra name to `pyproject.toml`, neuron/edge counts and URLs to the #31 doc and its rights file, flysim authorship to the user's statement.
-- [ ] The teammate's local path (`D:\...`) is not in the repo.
-- [ ] User approved the text.
+- [x] README has the section; every link in it resolves (`readme_check.py --online`). (2026-11-16)
+- [x] Every fact in the section is traceable: option names to `scripts/_common.py`, extra name to `pyproject.toml`, neuron/edge counts and URLs to the #31 doc and its rights file, flysim authorship to the user's statement. (2026-11-16)
+- [x] The teammate's local path (`D:\...`) is not in the repo. (2026-11-16)
+- [x] User approved the text. (2026-11-16, "머지해")
 
 ## Current State
 PR #56 was squash-merged at the user's instruction (main @ 7bd0ac8) and this branch was fast-forwarded onto it. README section and the `flysim-source.md` fix are written, uncommitted, waiting at the pre-commit review gate. Nothing pushed.
@@ -62,6 +62,7 @@ Branch cut from `origin/main` @ f542106. The local `main` of the main checkout w
 - Deployed site after the #56 merge: `https://flytracker-ewk.pages.dev/runs/index.json` lists 29 runs, the three `2026-11-12_18*` runs carry issue 31, and each of their episode files answers 200.
 - `python .claude/skills/ko-writing/scripts/check.py README.md --from "### 신경 초파리" --to "### 에피소드"` → no failures; warnings read and kept (one date, which is the "as of" of an undecided fact).
 - `grep -n "D:" README.md` → no local path.
+- `uv run --extra dev python -m pytest -q` → 139 passed, 47 skipped (after `npm ci --prefix viewer`; without `viewer/node_modules` one viewer test fails in a fresh worktree).
 - Not verified: flysim authorship. It is the user's relay of the teammate's statement; no file in this repo can confirm it. Not run: the neural fly itself — this machine has no flysim source.
 #### Notes
 - `### 초파리` still opens its second paragraph with "피하는 법은 두 가지다" (rule fly, fly agent). Left as is: the neural fly is opt-in and described in its own section.
