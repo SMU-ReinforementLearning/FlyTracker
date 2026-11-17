@@ -1,0 +1,110 @@
+{
+  "format": "flytracker.neural-assets/1",
+  "reference_episode": "published/2026-11-12_180717_03/episodes/neural-tracking/ep_000.json",
+  "files": [
+    {
+      "path": "flysim/core.py",
+      "bytes": 2936,
+      "sha256": "51601ed47401210a2fc66756de3e4c840b55a0fc21ce66568c7b43ad25b77dc3",
+      "episode_hash_key": "flysim/core.py",
+      "matches_published_episode": true,
+      "runtime_role": "code"
+    },
+    {
+      "path": "flysim/neural.py",
+      "bytes": 4946,
+      "sha256": "d08776c3f880bd99edd2020ac0e0f4c92b1fffd832ca1d31a5af105a1c15cd37",
+      "episode_hash_key": "flysim/neural.py",
+      "matches_published_episode": true,
+      "runtime_role": "code"
+    },
+    {
+      "path": "flysim/neural_state.py",
+      "bytes": 4374,
+      "sha256": "fbfbd99fc988a5e481377c90675b2bc6edcf9c7d01501e51daab42cec7c7a050",
+      "episode_hash_key": "flysim/neural_state.py",
+      "matches_published_episode": true,
+      "runtime_role": "code"
+    },
+    {
+      "path": "flysim/physics.py",
+      "bytes": 3963,
+      "sha256": "1e7012b521cced43bbc73d20064ce3be4ed1cb6ace9aa15145af563194dd7fe5",
+      "episode_hash_key": "flysim/physics.py",
+      "matches_published_episode": true,
+      "runtime_role": "code"
+    },
+    {
+      "path": "flysim/behavior.py",
+      "bytes": 11818,
+      "sha256": "14b0a138289e2685652a4947d36044a156100f10b999d7519c49cd45f2e7a22d",
+      "episode_hash_key": "flysim/behavior.py",
+      "matches_published_episode": true,
+      "runtime_role": "code"
+    },
+    {
+      "path": "data/stage2/neurons.csv",
+      "bytes": 22842,
+      "sha256": "284e7f01145aad39540beeb6b355bf8d0790478a5785d8aa53d892a6866383ac",
+      "episode_hash_key": "data/neurons.csv",
+      "matches_published_episode": true,
+      "runtime_role": "computation_data"
+    },
+    {
+      "path": "data/stage2/edges.csv",
+      "bytes": 408743,
+      "sha256": "cbac9429f8c67636a541b9fec22239d18fcb8308d8f92224549650da600eb362",
+      "episode_hash_key": "data/edges.csv",
+      "matches_published_episode": true,
+      "runtime_role": "computation_data"
+    },
+    {
+      "path": "data/stage2/selection.json",
+      "bytes": 4035,
+      "sha256": "9c044f989e1c3290d7e5f31a86124aec8df6d576d282d2e790dc0d9d0c4e4595",
+      "episode_hash_key": "data/selection.json",
+      "matches_published_episode": true,
+      "runtime_role": "hash_only_optional"
+    },
+    {
+      "path": "data/stage2/zenodo_licenses.json",
+      "bytes": 95,
+      "sha256": "136704f5e64b630a92732001d1b3e75f3c237fcaa09056a70160e564e0e084c5",
+      "episode_hash_key": "data/zenodo_licenses.json",
+      "matches_published_episode": true,
+      "runtime_role": "hash_only_optional"
+    },
+    {
+      "path": "data/raw/manifest.json",
+      "bytes": 2719,
+      "sha256": "66cad9ce08da4b8f811ef7e5f56623a1fdf5ea6748f47c74761b74d386adec42",
+      "episode_hash_key": "data/raw/manifest.json",
+      "matches_published_episode": true,
+      "runtime_role": "hash_only_optional"
+    },
+    {
+      "path": "data/raw/Drosophila_brain_model/LICENSE",
+      "bytes": 1085,
+      "sha256": "3621f6d6476189190e2960fa43f11b275ba4eca848fdac50a1ba2925de6223e8",
+      "episode_hash_key": "data/raw/Drosophila_brain_model/LICENSE",
+      "matches_published_episode": true,
+      "runtime_role": "hash_only_optional"
+    },
+    {
+      "path": "data/raw/Drosophila_brain_model/Connectivity_783.parquet",
+      "bytes": 100804642,
+      "sha256": "efeb23fb99098e9c390f6869969b2a121a2ee92c833cfc45ecb2c1d8e1af0347",
+      "episode_hash_key": "raw_connectivity",
+      "matches_published_episode": true,
+      "runtime_role": "computation_data"
+    },
+    {
+      "path": "data/raw/flywire_annotations/supplemental_files/Supplemental_file1_neuron_annotations.tsv",
+      "bytes": 31720298,
+      "sha256": "b214970b55d2fbe0853bba536fdcb9e28730f4eb7ab06f600491df795da683cd",
+      "episode_hash_key": "raw_annotations",
+      "matches_published_episode": true,
+      "runtime_role": "computation_data"
+    }
+  ]
+}

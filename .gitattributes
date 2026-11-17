@@ -1,3 +1,6 @@
 .githooks/** text eol=lf
 # experiment-gate CSVs: their sha256 is recorded in gate documents, so keep LF on every checkout
 docs/issues/**/gate/*.csv text eol=lf
+
+# Preserve the exact published neural source/data bytes on every platform.
+flytracker/neural_assets/** -text

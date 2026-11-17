@@ -35,6 +35,10 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 | environment version | 환경 버전 | env 버전 | `config.json`의 `envVersion` |
 | frame stack | 함께 보는 최근 관측 | 프레임 스택, 관측 묶음 | 값은 "1개, 4개" |
 | tracking assist | 추적 보조 | 어시스트, 보조 제어 | 알고리즘 설정의 `assist`. 값은 "없음" 또는 "기준선 추적 + 행동 × 0.2" |
+| rules that apply to both sides | 환경 | 조건, 공통 | issue 화면의 칸 제목. 환경 버전, 방, 포획 조건이 든다 (#62) |
+| values of one side that do not depend on its kind | 설정 | 조건, 파라미터, 공통 설정 | 초파리 칸과 조준기 칸의 카드 제목 (#62) |
+| reward weights of one side | 보상 | 보상 가중치, 리워드 | 초파리 칸과 조준기 칸의 카드 제목. 조준기 쪽 항목은 벌점, 초파리 쪽 항목은 보상으로 끝난다 (#62) |
+| virtual looming stimulus shown to the neural fly | 자극 | 스티뮬러스, 가상 원반 | 신경 초파리 설정의 줄 이름에 쓴다. 예: 자극 횟수 (#62) |
 | training seed | 학습 seed | 시드 | 알고리즘 설정의 `seed` |
 | seeds of recorded episodes | 에피소드 seed | 평가 시드 | 설명 파일의 `notes`에 적는다 |
 
@@ -61,3 +65,4 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 - 2026-11-15: 확대 화면 추가 (#45)
 - 2026-11-16: 추적 보조 추가 (#51)
 - 2026-11-15: issue 화면의 실험, 초파리, 조준기, 조건 용어 11개 추가 (#47)
+- 2026-11-16: issue 화면의 조건 칸을 환경으로 바꾸고 설정, 보상, 자극 추가 (#62)

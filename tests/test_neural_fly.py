@@ -1,8 +1,4 @@
-"""Unit tests plus opt-in integration with a user-selected local flysim source.
-
-Set FLYTRACKER_NEURAL_SOURCE to run the real circuit tests. No source or data is
-copied, generated, downloaded, or written in that project.
-"""
+"""동봉 신경 자료의 기본 통합 검사와 선택적 외부 원본 검사. 입력 파일은 수정하지 않는다."""
 
 import argparse
 from dataclasses import replace
@@ -17,8 +13,8 @@ import subprocess
 import numpy as np
 import pytest
 
-from flytracker import EnvConfig, EpisodeRecorder, FlyChaseEnv, NeuralConfig, NeuralFly, StimulusConfig
-from flytracker.neural_fly import SOURCE_TO_TRACKER, heading_quaternion, load_backend, to_source, to_tracker
+from flytracker import OBS_DIM, EnvConfig, EpisodeRecorder, FlyChaseEnv, NeuralConfig, NeuralFly, StimulusConfig
+from flytracker.neural_fly import BUNDLED_SOURCE_ROOT, portable_source_path, SOURCE_TO_TRACKER, heading_quaternion, load_backend, to_source, to_tracker
 from flytracker.record import FRAME_KEYS
 from flytracker.stimulus import StimulusScheduler
 from flytracker.world import Room
@@ -26,16 +22,14 @@ from flytracker.world import Room
 
 @pytest.fixture(scope="module")
 def local_config():
-    root = os.environ.get("FLYTRACKER_NEURAL_SOURCE")
-    if not root:
-        pytest.skip("Select a local source with FLYTRACKER_NEURAL_SOURCE")
-    root = Path(root)
+    root_value = os.environ.get("FLYTRACKER_NEURAL_SOURCE")
+    root = Path(root_value) if root_value else BUNDLED_SOURCE_ROOT
     def inventory():
         return {str(p): (p.stat().st_size, p.stat().st_mtime_ns)
                 for name in ("flysim", "data/stage2", "output")
                 for p in (root / name).rglob("*") if p.is_file()}
     before = inventory()
-    yield NeuralConfig(source_root=str(root), boundary_enabled=False)
+    yield NeuralConfig(source_root=root_value, boundary_enabled=False)
     assert inventory() == before, "Source project was modified"
 
 
@@ -140,10 +134,9 @@ def test_coordinate_map_is_proper_rotation_and_heading_convention():
     np.testing.assert_array_equal(np.cross(to_tracker([1,0,0]), to_tracker([0,1,0])), to_tracker([0,0,1]))
 
 
-def test_missing_local_source_fails_explicitly(monkeypatch):
+def test_unset_local_source_selects_bundled_source(monkeypatch):
     monkeypatch.delenv("FLYTRACKER_NEURAL_SOURCE", raising=False)
-    with pytest.raises(ValueError, match="requires"):
-        load_backend(NeuralConfig())
+    assert load_backend(NeuralConfig()).root == BUNDLED_SOURCE_ROOT
 
 
 def test_common_cli_selects_model_and_stimulus():
@@ -190,7 +183,7 @@ def test_neural_reset_and_seed_reproduce(local_config):
         rows = [obs]
         for _ in range(5):
             obs, *_ = env.step([.2, -.1]); rows.append(obs)
-            assert obs.shape == (13,) and env.observation_space.contains(obs)
+            assert OBS_DIM == 17 and obs.shape == (OBS_DIM,) and env.observation_space.contains(obs)
         return np.array(rows), env.snapshot(), env.fly.sim.neural.voltage.copy()
     a = rollout(); b = rollout()
     np.testing.assert_array_equal(a[0], b[0]); assert a[1] == b[1]
@@ -256,10 +249,11 @@ def test_corner_contact_preserves_pose_and_wing_commands(local_config):
     np.testing.assert_array_equal(fly.sim.motor.force_body, force)
 
 
-def test_capture_before_charge_does_not_present_future_stimulus(local_config):
+def test_capture_before_charge_does_not_present_future_stimulus(local_config, track_neural_fly_on_beam):
     env = FlyChaseEnv(EnvConfig(fly_model="neural", neural=local_config,
                               capture_hold=.05, max_seconds=.3, start_facing_fly=True))
     env.reset(seed=0)
+    track_neural_fly_on_beam(env)
     for _ in range(5):
         _,_,terminated,_,_ = env.step([0,0])
         if terminated:
@@ -268,12 +262,13 @@ def test_capture_before_charge_does_not_present_future_stimulus(local_config):
     assert env._stimulus.events == [] and env.fly.phase_events == []
 
 
-def test_capture_at_pulse_onset_has_zero_delivered_exposure(local_config):
+def test_capture_at_pulse_onset_has_zero_delivered_exposure(local_config, track_neural_fly_on_beam):
     # Existing reset vision contributes one capture tick. At 120 ms the gate
     # schedules onset and capture terminates before a sensory sample at 120 ms.
     env = FlyChaseEnv(EnvConfig(fly_model="neural", neural=local_config,
                               capture_hold=.13, max_seconds=.3, start_facing_fly=True))
     env.reset(seed=0)
+    track_neural_fly_on_beam(env)
     for _ in range(10):
         _,_,terminated,_,_ = env.step([0,0])
         if terminated:
@@ -290,4 +285,4 @@ def test_disabled_stimulus_metadata_and_gym_contract(local_config):
                               stimulus=StimulusConfig(enabled=False), max_seconds=.1))
     check_env(env, skip_render_check=True)
     assert env.recording_metadata()["policyDependentTrajectory"] is False
-    assert env.recording_metadata()["neural"]["resolved_source_root"] == str(Path(local_config.source_root).resolve())
+    assert env.recording_metadata()["neural"]["resolved_source_root"] == portable_source_path(load_backend(local_config).root)

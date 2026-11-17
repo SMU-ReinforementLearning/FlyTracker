@@ -25,7 +25,7 @@ npm run dev --prefix viewer
 
 브라우저에서 http://localhost:5180 을 연다. 왼쪽 목록에 방금 돌린 실행과 저장소에 올라 있는 실행이 보인다. 실행은 스크립트를 한 번 돌려 생긴 결과 전체다. 실행 안의 에피소드를 고르면 바로 재생된다.
 
-`train` extra는 Stable-Baselines3와 TensorBoard를, `dev` extra는 pytest를 설치한다. 기준선만 돌릴 때는 `uv sync`로 충분하다. 테스트는 `uv run pytest`로 돌린다.
+`train` extra는 Stable-Baselines3와 TensorBoard를, `dev` extra는 pytest를 설치한다. 기준선만 돌릴 때는 `uv sync`로 충분하다. 신경 모델을 포함한 전체 테스트는 `uv sync --extra neural --extra dev`로 의존성을 설치한 뒤 `uv run python -m pytest -q`로 돌린다.
 
 Claude Code, Codex, ChatGPT desktop 같은 AI 코딩 도구로 작업할 때 지킬 규칙은 `AGENTS.md`에 있다. Claude Code는 `claude`를 띄우고 채팅에 `run onboarding`이라고 입력하면 저장소의 git hook과 Claude Code hook을 켜고 Node와 GitHub CLI가 있는지 확인한다. 다른 AI 코딩 도구는 `AGENTS.md`를 읽게 하고, git hook은 `git config core.hooksPath .githooks`로 직접 켠다. 코드만 돌려 볼 때는 건너뛰어도 된다.
 
@@ -57,13 +57,18 @@ Claude Code, Codex, ChatGPT desktop 같은 AI 코딩 도구로 작업할 때 지
 
 신경 초파리는 초파리 뇌의 실제 신경 연결 일부를 계산해서 나는 세 번째 초파리다. 뉴런 547개와 연결 16,344개로 발화를 계산하고, 그 발화에서 날개 힘을 구해 몸을 움직인다. 연결은 측정 자료에서 가져왔지만 어느 뉴런을 고를지와 발화에서 날개 힘으로 바꾸는 식은 가정이다. 가중치를 학습한 결과가 아니고, 실제 초파리의 움직임과 맞는지는 확인하지 않았다.
 
-기본은 규칙 초파리이고 `--fly-model neural`을 주면 신경 초파리로 바뀐다. 신경 초파리는 이 저장소만으로는 돌지 않는다. 아래 표의 flysim 프로젝트와 신경 자료를 따로 가지고 있어야 하고, 그 경로를 `--neural-source`나 환경 변수 `FLYTRACKER_NEURAL_SOURCE`로 알려 준다. 의존성은 `uv sync --extra neural`로 깐다. 규칙 초파리와 초파리 agent는 이것들 없이 돈다.
+기본은 규칙 초파리이고 `--fly-model neural`을 주면 신경 초파리로 바뀐다. 실행 코드와 필요한 신경 자료는 `flytracker/neural_assets`에 포함돼 있어 별도 프로젝트나 환경 변수 없이 실행한다. `--neural-source`와 `FLYTRACKER_NEURAL_SOURCE`는 외부 원본을 의도적으로 선택할 때만 사용한다. 자료의 저작자표시 및 비영리 조건은 [동봉 고지](flytracker/neural_assets/NOTICE.md)를 확인한다.
+
+```sh
+uv sync --extra neural --extra dev
+uv run python scripts/record_baseline.py --fly-model neural --episodes 1 --seed 10000 --no-save
+```
 
 | 구성 | 출처 | 저장소에 들어 있나 |
 |---|---|---|
-| 신경 연결 자료와 LIF 모델의 참고 기반 | Philip Shiu 등의 [Drosophila_brain_model](https://github.com/philshiu/Drosophila_brain_model/tree/91bdd1e7dcf193f3e7ca5a8933497fcef63b7960)(MIT). 연결 자료는 [Zenodo 10676866](https://zenodo.org/records/10676866) | 아니다 |
-| 뉴런 종류와 주석 | [FlyWire neuron annotations](https://github.com/flyconnectome/flywire_annotations/tree/a83b2776d60d5764cef36b927f5f9679c16c47a2). [FlyWire 이용 조건](https://flywire.ai/tos)을 따른다 | 아니다 |
-| 실제로 실행하는 LIF와 감각 코드(flysim) | 팀원이 위 두 자료를 바탕으로 Codex로 작성한 로컬 프로젝트 | 아니다 |
+| 신경 연결 자료와 LIF 모델의 참고 기반 | Philip Shiu 등의 [Drosophila_brain_model](https://github.com/philshiu/Drosophila_brain_model/tree/91bdd1e7dcf193f3e7ca5a8933497fcef63b7960)(MIT). Parquet의 직접 출처이며 [Zenodo](https://zenodo.org/records/10676866)는 관련 원자료 출처다 | 들어 있다. MIT 고지 보존 |
+| 뉴런 종류와 주석 | [FlyWire neuron annotations](https://github.com/flyconnectome/flywire_annotations/tree/a83b2776d60d5764cef36b927f5f9679c16c47a2). [v783 공개 자료 안내](https://flywire.ai/guidelines)의 CC BY-NC 4.0 조건을 보존한다 | 들어 있다. 비영리 자료 조건 적용 |
+| 실제로 실행하는 LIF와 감각 코드(flysim) | 사용자가 외부 자료를 참고해 Codex로 작성하고 직접 포함을 요청한 팀 코드 | 들어 있다 |
 | 날개 힘과 신체 운동, FlyTracker 연결 | #31에서 만든 `flytracker/neuromechanics.py`와 `flytracker/neural_fly.py` | 들어 있다 |
 
 저장소에 올린 신경 초파리 실행은 세 개이고, viewer의 [issue #31 화면](https://flytracker-ewk.pages.dev/?issue=31)에서 재생한다. 재생에는 flysim이 필요 없다. 세 실행은 2026-11-12에 예전 포획 조건(조준 방향에서 3° 안에 0.2초)으로 만든 기록이다.
@@ -476,7 +481,7 @@ npm run dev --prefix viewer
 
 ### issue 화면
 
-실행 목록에서 issue 제목을 누르면 그 issue가 어떤 실험인지 보여 주는 화면이 열린다. 위에서부터 실험, variation 버튼, 초파리, 조준기, 조건, 보상, 학습 곡선이 나온다. 실행 하나하나는 실행 목록에서 고른다.
+실행 목록에서 issue 제목을 누르면 그 issue가 어떤 실험인지 보여 주는 화면이 열린다. 위에서부터 실험, variation 버튼, 초파리와 조준기, 환경, 학습 곡선이 나온다. 실행 하나하나는 실행 목록에서 고른다.
 
 실험 칸에는 실험 단계와 에피소드를 만든 이유가 나온다. [실행 올리기](#실행-올리기)에서 쓴 설명 파일의 `phase`와 `purpose`다. 설명 파일에 `compare`가 있으면 그 아래에 비교 대상 issue가 나오고, 누르면 그 issue 화면으로 간다.
 
@@ -484,11 +489,20 @@ npm run dev --prefix viewer
 
 초파리와 조준기 칸에는 종류, 버전, 짧은 설명이 나온다. 종류는 규칙 초파리, 학습한 초파리, 기준선, 학습한 조준기 가운데 하나다. 학습한 쪽이면 알고리즘, 학습 step, 학습 seed, 함께 보는 최근 관측 수(frame stack)도 나온다. 다른 환경 버전에서 학습한 모델을 돌린 실행이면 학습한 환경 버전과 모델의 실행 id도 나온다. 기준선에는 따라가는 방식이 나온다. 기준선은 환경 버전 4(#45)부터 초파리 방향의 각속도에 맞춰 돌고, 그 전에는 조준 오차만 보고 돌았다.
 
-조건 칸에는 환경 버전, 포획 범위, 포획 유지 시간, 에피소드 길이, 방 크기, 조준기 자리, 시야각, 위아래 조준 한계, 확대 화면 배율, 시작 방향, 실행과 에피소드 수가 나오고, 그 아래에 설명 파일의 `notes`가 붙는다. 초파리, 조준기, 조건은 실행마다 `config.json`에서 읽는다. 실행끼리 값이 다르면 `0, 1, 2`처럼 나란히 적는다.
+종류 카드 아래에는 설정 카드와 보상 카드가 붙는다. 값마다 주인이 있어서, 초파리의 비행과 감각은 초파리 칸에, 조준기의 몸과 화면은 조준기 칸에, 양쪽에 똑같이 적용되는 규칙은 환경 칸에 둔다.
 
-보상 칸에는 조준기 보상의 가중치가 항목마다 한 줄씩 나온다. 항목의 뜻은 [조준기의 R](#조준기의-r)에 있다.
+| 칸 | 카드 | 나오는 줄 |
+|---|---|---|
+| 초파리 | 설정 | 규칙 초파리와 학습한 초파리는 비행 속도, 급선회 각도와 시간, 피할 때 속도. 규칙 초파리는 위협을 느끼는 거리, 무조건 피하는 거리, 반응 지연도. 학습한 초파리는 관측 지연도. 신경 초파리는 가상 자극의 값 |
+| 초파리 | 보상 | 학습한 초파리 보상의 가중치. 학습한 초파리가 있는 실행에서만 나온다 |
+| 조준기 | 설정 | 조준기 자리, 시야각, 확대 화면 배율, 좌우와 위아래 회전 속도, 각가속도, 위아래 조준 한계, 시작 방향 |
+| 조준기 | 보상 | 조준기 보상의 가중치. 항목의 뜻은 [조준기의 R](#조준기의-r)에 있다 |
 
-비교 대상이 있으면 초파리, 조준기, 조건, 보상 칸이 저마다 비교 대상 issue의 실행 전체와 견준 결과를 보여 준다. 초파리나 조준기의 종류나 버전이 바뀌었으면 카드의 비교 대상 줄에 이전 종류가 나오고, 그대로면 "같음"이 나온다. 값이 바뀐 줄은 이름 앞에 파란 점이 붙고 "0.2초 → 0.15초"처럼 비교 대상의 값과 지금 값을 함께 보여 준다. 같은 단위의 수가 바뀌었으면 "−0.05초"처럼 차이도 적는다. 실행과 에피소드 수, 설명 파일의 `notes`는 견주지 않는다.
+환경 칸에는 환경 버전, 방 크기, 에피소드 길이, 포획 범위, 포획 유지 시간, 초파리 시작 거리, 실행과 에피소드 수가 나오고, 그 아래에 설명 파일의 `notes`가 붙는다. 포획 조건은 조준기가 맞히는 것이지만 승패를 정하는 규칙이라 환경에 둔다. 초파리, 조준기, 환경은 실행마다 `config.json`에서 읽는다. 실행끼리 값이 다르면 `0, 1, 2`처럼 나란히 적는다.
+
+비교 대상이 있으면 초파리, 조준기, 환경 칸이 저마다 비교 대상 issue의 실행 전체와 견준 결과를 보여 준다. 초파리나 조준기의 종류나 버전이 바뀌었으면 카드의 비교 대상 줄에 이전 종류가 나오고, 그대로면 "같음"이 나온다. 값이 바뀐 줄은 이름 앞에 파란 점이 붙고 "0.2초 → 0.15초"처럼 비교 대상의 값과 지금 값을 함께 보여 준다. 같은 단위의 수가 바뀌었으면 "−0.05초"처럼 차이도 적는다. 실행과 에피소드 수, 설명 파일의 `notes`는 견주지 않는다. 한쪽에만 있는 카드도 견주지 않는다. 비교 대상에 학습한 초파리가 없었다면 초파리 보상은 바뀐 것이 아니라 새로 생긴 것이기 때문이다.
+
+줄이나 카드 이름에 마우스를 올리면 그 값을 정한 issue가 상자로 뜬다. issue 번호와 제목, PR을 올린 사람, merge한 날짜, 그렇게 정한 이유가 나온다. 누르면 GitHub의 그 issue가 새 창으로 열린다. 같은 줄이라도 환경 버전에 따라 가리키는 issue가 다르다. 포획 범위는 환경 버전 2의 실행에서는 #1을, 환경 버전 3부터는 #42를 가리킨다. 이 표는 `viewer/src/data/history.js`에 손으로 적어 둔 것이라, 기본값이나 뜻을 바꾸는 issue를 merge할 때 한 줄을 더해야 한다. 줄을 새로 만들고 표에 적지 않으면 `tests/test_viewer_experiment.py`가 실패한다.
 
 학습 곡선은 step이 있는 실행이 있을 때만 나온다. 실행들의 곡선을 겹쳐 그리고, step이 없는 실행(기준선)은 점선 가로줄이다. 어느 선이 어느 실행인지는 곡선 아래의 색 점과 실행 이름이 알려 준다.
 
