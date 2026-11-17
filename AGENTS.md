@@ -62,7 +62,6 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `70-docs-readme-aimer-state-date` — `docs/issues/docs/70-docs-readme-aimer-state-date.md` — README의 조준기 state 기준 날짜 고치기
 
 ## Environment (repo slot)
 

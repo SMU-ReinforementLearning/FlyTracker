@@ -4,7 +4,7 @@
 - Issue: #70
 - Branch: `70-docs-readme-aimer-state-date`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 The README's aimer state paragraph dates the choice of state items to 2026-11-12, but the 17-dimension state it describes was fixed by #45 on 2026-11-15. This issue corrects that one date.
@@ -25,7 +25,7 @@ The date in `README.md`, section "조준기의 state와 action", matches the sta
 - [x] No other README text changes. (2026-11-18 00:00)
 
 ## Current State
-README date corrected and committed. Not pushed; no PR yet. Before the PR, remove this branch's pointer line from `AGENTS.md` as the last commit.
+Done 2026-11-18. The aimer state paragraph of the README now says 2026-11-15. The aimer reward paragraph's date is a follow-up candidate, not handled here.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -54,6 +54,16 @@ Management doc, Master Registry row, `AGENTS.md` pointer line.
 - Fly state paragraph left alone: `git log -L` on `FLY_OBS_FIELDS` shows 64c60ff (#34, 2026-11-12) and 7a81d0a (#42), and the #42 diff changes one comment, no item.
 #### Notes
 - The aimer reward paragraph's date was not touched (out of scope, listed under Follow-up Candidates).
+
+### chore: #70 마무리 (#70)
+> why: last commit before the PR; a protected base branch cannot take the pointer removal after the merge
+#### Scope
+`AGENTS.md`, `docs/issues/README.md`, this doc.
+#### Changes
+- Status done here and in the Master Registry; `AGENTS.md` pointer line removed.
+#### Verification
+- `git diff --stat`: three files, no README change.
+#### Notes
 
 ## Management Notes
 ### Follow-up Candidates
