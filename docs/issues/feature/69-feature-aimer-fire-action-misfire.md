@@ -73,6 +73,42 @@ Management doc, registry row, `AGENTS.md` pointer.
 - Priority Medium was proposed by the agent, not stated by the user: nothing waits on this, and the detector issue (#13) comes after it.
 - No umbrella: the only open umbrella (#58) is the teammate's workstream.
 
+### feat: 레이저를 한 발씩 쏘게 하고 오발을 세기 (#69)
+> why: the laser was implicitly always on, so a beam pointed away from the fly cost nothing and "fire only when sure" could not be expressed or measured
+#### Scope
+Env version 6: action, shot rule, counts, observation, baseline trigger, recorder fields, tests, README, measuring script. No viewer change, no training.
+#### Changes
+- `env.py`: `step` starts a shot when `fire > 0` and none is running; `_advance_shot` runs once per physics step after the vision update, marks the shot a misfire the first time the beam is off the fly, and returns capture when a clean shot ends. `captureProgress` is now the clean fraction of the running shot (0 when not firing or after a miss, 1 on capture). `info` gains `firing`, `shots`, `misfires`; the observation gains `shot` (remaining fraction of the running shot), so 18 dims.
+- `baseline.py`: `beam_distance(obs)` = distance x sin(angle from `uv_fine`); the rule fires when it is within `fire_radius` (default: the capture radius). `track()` and `assisted()` never fire on their own, so with the tracking assist the policy's `fire` value decides.
+- `wrappers.py`: discrete action 5 is `fire`. A shot lasts 7.5 action steps and turning is allowed during it, so one discrete action per step is enough.
+- `record.py`: frame key `firing`, summary `shots` / `misfires`. `free_flight.py` passes a third action value 0 and writes `firing: false`.
+- `measure_fire.py`: prints the table below; with `--out DIR` it also writes `episodes.csv`, `shots.csv` and `meta.json` (the raw rows are committed in the next commit, measured at this one).
+- Reward: the action-change penalty averages the two turning values only. With the third value included, the same turning sequence would have been penalised two thirds as much, which changed a pinned rule-fly rollout (`test_default_rule_matches_prechange_rollout`).
+- Tests: 2-dim actions widened to 3; capture tests fire; four new or rewritten shot tests in `tests/test_env.py`. In the teammate's tests: `[0,0]` -> `[0,0,1]` where capture is expected, `OBS_DIM == 18`, one unused `env._capture_timer = 0.` line removed, and `test_capture_at_pulse_onset_has_zero_delivered_exposure` uses `capture_hold=.12` instead of `.13` (the old timer counted the reset's vision update as one tick; a shot fired on the first step ends at 0.12 s only if it is 12 steps long).
+#### Verification
+- `uv run pytest -q`: 205 passed (203 before, plus 2 net new).
+- Baseline against the rule fly, seeds 20000-20199, `measure_fire.py --fire-radius-mm always 2.5 1.25 0.9 0.6 0.3`:
+
+| Trigger | Captured | Mean time (miss = 10 s) | Shots / ep | Misfires / ep | Episodes with no misfire | Hit rate |
+|---|---|---|---|---|---|---|
+| always firing | 198/200 | 4.965 s | 31.10 | 30.11 | 0/200 | 0.032 |
+| 2.5 mm | 198/200 | 4.949 s | 2.19 | 1.20 | 67/200 | 0.452 |
+| 1.25 mm (default) | 198/200 | 4.894 s | 1.49 | 0.50 | 138/200 | 0.664 |
+| 0.9 mm | 198/200 | 4.901 s | 1.41 | 0.42 | 147/200 | 0.702 |
+| 0.6 mm | 198/200 | 4.919 s | 1.31 | 0.33 | 155/200 | 0.753 |
+| 0.3 mm | 198/200 | 4.971 s | 1.24 | 0.25 | 166/200 | 0.798 |
+
+  Under env version 5 the baseline took 4.86 s on these seeds (198/200, #51). The same two episodes are missed at every trigger.
+- README table seeds (10000-10199), default trigger: 200/200, 4.99 s (version 5: 4.95 s), 1.54 shots and 0.55 misfires per episode, 134/200 with no misfire. `scripts/record_baseline.py --episodes 200 --seed 10000 --no-save` prints the same capture count and time.
+- Baseline against the neural fly, stimulus off, seeds 20000-20019 (`measure_fire.py --fire-radius-mm always 1.25 --fly-model neural --no-stimulus --episodes 20`): always firing 20/20, 5.062 s, 31.70 shots and 30.70 misfires per episode; default trigger 20/20, 4.920 s, 1.80 shots and 0.80 misfires per episode, 10/20 episodes with no misfire. Twenty seeds only.
+- `scripts/train.py --algo sac --steps 300 --assist 0.2` runs end to end with the 3-dim action (smoke test, scratch folder).
+- `npm run build --prefix viewer`: built. The viewer ignores the new fields for now.
+- Not run: lint (`ruff` is not installed in this environment).
+#### Notes
+- Read of the numbers: the trigger radius trades misfires for time only weakly; from 2.5 mm to 0.3 mm misfires fall from 1.20 to 0.25 per episode while the mean time moves by 0.08 s. Most of an episode is search, so waiting for a better lock is cheap. One in three default-trigger episodes still has a misfire: a single observation does not tell whether the lock will hold for 0.15 s.
+- "Always firing" is not the old rule: shots restart every 0.15 s, so a 0.15 s on-target window that straddles two shots does not capture. It costs 0.1 s on average here.
+- Episodes recorded before version 6 have no `firing`, `shots`, `misfires`; readers must treat them as absent.
+
 ## Management Notes
 ### Follow-up Candidates
 - Train an aimer under env version 6 once the detector's error model exists (#13); decide the misfire term of the reward there.

@@ -69,7 +69,7 @@ def test_disabled_capture_keeps_aligned_tracking_alive_until_horizon(model):
     env = FlyChaseEnv(cfg)
     env.reset(seed=0)
     for _ in range(15):
-        _, _, terminated, truncated, _ = env.step([0, 0])
+        _, _, terminated, truncated, _ = env.step([0, 0, 0])
         assert not terminated and env.snapshot()['captureProgress'] == 0
     assert truncated and env.t == pytest.approx(.3)
     assert not env.captured

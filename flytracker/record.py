@@ -35,7 +35,7 @@ EPISODE_FORMAT = "flytracker.episode/1"
 INDEX_FORMAT = "flytracker.runs/1"
 
 # 항목별 배열로 저장한다. 프레임마다 객체를 두는 것보다 파일이 작다.
-FRAME_KEYS = ("t", "fly", "flyHeading", "aimerC", "aimerLook", "aimerAngles", "visible", "uv", "angleErrDeg", "beamDistMm", "distance", "alarmed", "captureProgress")
+FRAME_KEYS = ("t", "fly", "flyHeading", "aimerC", "aimerLook", "aimerAngles", "visible", "uv", "angleErrDeg", "beamDistMm", "distance", "alarmed", "captureProgress", "firing")
 
 
 def _round(v, nd: int = 4):
@@ -144,6 +144,8 @@ class EpisodeRecorder(gym.Wrapper):
             "captured": bool(base.captured),
             "return": round(sum(self._rewards), 4),
             "visibleRatio": round(sum(frames["visible"]) / n, 4),
+            "shots": int(base.shots),  # 쏜 발 수
+            "misfires": int(base.misfires),  # 그 가운데 빗나간 발 수
         }
         if not cfg.capture_enabled:
             summary.update(mode="tracking-observation", result="observation_complete")

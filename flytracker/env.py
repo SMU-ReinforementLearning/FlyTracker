@@ -1,6 +1,7 @@
 """Gymnasium 환경. 방 안 정해진 자리의 조준기(고정 포대)가 초파리를 겨눈다.
 
-행동은 조준 방향을 돌리는 연속 2차원(`aimer.ACTION_NAMES`)이다. 이산 행동은 `wrappers.DiscreteActions` 로 감싼다.
+행동은 조준 방향을 돌리는 두 값과 레이저를 쏘는 값 하나(`aimer.ACTION_NAMES`)다. 이산 행동은 `wrappers.DiscreteActions` 로 감싼다.
+레이저는 쏠 때만 나간다. 한 발은 capture_hold 동안 이어지고 도중에 끌 수 없다. 그 한 발 내내 빔이 초파리에 닿아 있어야 포획이다.
 관측은 조준기가 자기 시야로 아는 정보와 자기 상태뿐이다. 3인칭 viewer 가 보여 주는 정보는 넣지 않는다.
 
 초파리 자리에는 규칙 초파리(기본) 또는 학습한 초파리를 넣는다. 학습한 초파리는 `fly` 인자로 넘기는 player 이고,
@@ -33,7 +34,9 @@ from .world import UP, Room
 # 3: #42. 포획을 레이저 명중으로 바꿈. 조준 오차 3° 에 0.2초 → 초파리 중심에서 빔까지 1.25mm 에 0.15초.
 # 4: #45. pitch 제한 90°. 조준기 관측에 초파리 방향의 각속도(target_rate)와 가운데를 확대한 조준 오차(uv_fine)를 넣음.
 # 5: #49. 보일 때의 벌점을 조준 오차(각도에 비례)에서 빔까지 거리(log 눈금)로 바꿈. 초파리 보상도 같이 바꿈.
-ENV_VERSION = 5
+# 6: #69. 행동에 발사(fire)를 넣음. 레이저가 늘 켜져 있던 것을 한 발(capture_hold) 단위로 쏘게 바꾸고,
+#    한 발 내내 맞아야 포획으로 침. 빗나간 발은 오발로 셈. 조준기 관측에 발사 중인지(shot)를 넣음.
+ENV_VERSION = 6
 
 
 @dataclass(frozen=True)
@@ -86,7 +89,9 @@ class EnvConfig:
     # 포획은 레이저 명중이다. 값의 근거는 docs/issues/feature/42-feature-laser-hit-capture/laser-capture-condition.md
     capture_radius: float = 0.00125  # m. 초파리 중심에서 빔 중심선까지 이 거리 안이면 맞은 것이다. 빔 지름 2.5mm 의 절반
     capture_range: float | None = None  # m. None 이면 거리 조건 없음
-    capture_hold: float = 0.15  # s. 이 시간 동안 이어서 맞아야 포획. 치사 에너지 74mJ ÷ 출력 500mW
+    # s. 한 발의 길이. 쏘면 이 시간 동안 빔이 나가고 도중에 끌 수 없다. 한 발 내내 맞아야 포획이다.
+    # 치사 에너지 74mJ ÷ 출력 500mW
+    capture_hold: float = 0.15
     fine_error_deg: float = 0.5  # 도. 관측 uv_fine 이 ±1 로 나타내는 범위. 2m 에서 약 ±17mm
     min_start_distance: float = 1.5  # m. 시작할 때 초파리와 조준기 사이 최소 거리
     start_facing_fly: bool = False  # True 면 초파리를, False 면 방 가운데 쪽(바로 아래면 −z)을 수평으로 바라보며 시작한다
@@ -157,6 +162,7 @@ OBS_FIELDS: tuple[tuple[str, int, float, float], ...] = (
     ("pitch", 1, -1.0, 1.0),  # pitch / 최대 pitch
     ("yaw_rate", 1, -1.0, 1.0),
     ("pitch_rate", 1, -1.0, 1.0),
+    ("shot", 1, 0.0, 1.0),  # 발사 중이면 그 한 발의 남은 시간 / capture_hold, 아니면 0. 0 일 때만 새로 쏠 수 있다
 )
 
 
@@ -259,7 +265,13 @@ class FlyChaseEnv(gym.Env):
         self.t = 0.0
         self.steps = 0
         self.captured = False
-        self._capture_timer = 0.0
+        self.shots = 0  # 쏜 발 수
+        self.misfires = 0  # 그 가운데 한 번이라도 빗나간 발 수
+        self._shot_steps = max(1, math.ceil(cfg.capture_hold / cfg.dt - 1e-9))  # 한 발이 이어지는 물리 step 수
+        self._shot_left = 0  # 지금 발의 남은 물리 step. 0 이면 쏘고 있지 않다
+        self._shot_clean = True  # 지금 발이 아직 한 번도 빗나가지 않았다
+        self._on_target = False
+        self._firing = False  # 직전 step 동안 빔이 나간 적이 있다 (기록용)
         self._last_seen_pos: np.ndarray | None = None
         self._time_since_seen = cfg.memory_horizon
         self._prev_action = np.zeros(ACTION_DIM)
@@ -277,6 +289,10 @@ class FlyChaseEnv(gym.Env):
         a = np.clip(np.asarray(action, dtype=float).reshape(ACTION_DIM), -1.0, 1.0)
         if self.fly_player is not None:  # 학습한 초파리는 늦게 받은 관측으로 이번 step 의 회피를 정한다
             self.apply_fly_action(self.fly_player.act(self.fly_observation()))
+        if cfg.capture_enabled and a[2] > 0.0 and self._shot_left == 0:  # 쏘는 중에 또 당긴 방아쇠는 무시한다
+            self._shot_left, self._shot_clean = self._shot_steps, True
+            self.shots += 1
+        self._firing = self._shot_left > 0
         for _ in range(cfg.frame_skip):
             if self._stimulus is None:
                 # Preserve the original rule path, including RNG and integration.
@@ -295,7 +311,7 @@ class FlyChaseEnv(gym.Env):
                         raise RuntimeError("Stimulus/body clock mismatch")
                 self.t = self.fly.sim.clock.tick / 1000
             self._update_vision()
-            if cfg.capture_enabled and self._capture_timer >= cfg.capture_hold - 1e-9:
+            if self._advance_shot():
                 self.captured = True
                 break
             if (self._stimulus is not None or not cfg.capture_enabled) and self.t >= cfg.max_seconds - 1e-9:
@@ -354,7 +370,9 @@ class FlyChaseEnv(gym.Env):
             "beamDistMm": self._beam_dist * 1000,  # 초파리 중심에서 빔까지. 4자리로 반올림해 저장하므로 mm 로 둔다
             "distance": proj.distance,
             "alarmed": self.fly.alarmed,
-            "captureProgress": min(self._capture_timer / self.config.capture_hold, 1.0),
+            # 지금 발이 빗나가지 않고 지나온 비율. 빗나간 발과 쏘지 않는 동안은 0, 포획하면 1 이다
+            "captureProgress": 1.0 if self.captured else self._shot_progress(),
+            "firing": self._firing,
         }
 
     # 내부 계산
@@ -400,7 +418,22 @@ class FlyChaseEnv(gym.Env):
             and self._beam_dist <= cfg.capture_radius
             and (cfg.capture_range is None or proj.distance <= cfg.capture_range)
         )
-        self._capture_timer = self._capture_timer + cfg.dt if in_capture else 0.0
+        self._on_target = in_capture
+
+    def _advance_shot(self) -> bool:
+        """쏘는 중이면 한 발을 물리 step 하나만큼 진행한다. 한 발이 빗나가지 않고 끝났으면 True (포획)."""
+        if self._shot_left == 0:
+            return False
+        if not self._on_target and self._shot_clean:
+            self._shot_clean = False
+            self.misfires += 1
+        self._shot_left -= 1
+        return self._shot_left == 0 and self._shot_clean
+
+    def _shot_progress(self) -> float:
+        if self._shot_left == 0 or not self._shot_clean:
+            return 0.0
+        return 1.0 - self._shot_left / self._shot_steps
 
     def _to_beam(self) -> np.ndarray:
         """초파리 중심에서 빔 위의 가장 가까운 점으로 가는 벡터. 빔은 조준기에서 앞으로만 나간다."""
@@ -425,7 +458,8 @@ class FlyChaseEnv(gym.Env):
             r -= w.beam * self._beam_ratio() + w.angle * self._aim_error_ratio()
         else:
             r -= w.lost
-        r -= w.action_change * float(np.mean((a - self._prev_action) ** 2))
+        turn = slice(0, 2)  # 돌리는 두 값만 본다. 쏘는 값은 방아쇠라서 바뀌는 것이 정상이다
+        r -= w.action_change * float(np.mean((a[turn] - self._prev_action[turn]) ** 2))
         if self.captured:
             r += w.capture
         return float(r)
@@ -451,6 +485,7 @@ class FlyChaseEnv(gym.Env):
         o[OBS["pitch"]] = aimer.pitch / math.radians(lim.max_pitch_deg)
         o[OBS["yaw_rate"]] = aimer.yaw_rate / math.radians(lim.max_yaw_rate_deg)
         o[OBS["pitch_rate"]] = aimer.pitch_rate / math.radians(lim.max_pitch_rate_deg)
+        o[OBS["shot"]] = self._shot_left / self._shot_steps
         return np.clip(o, self._obs_low, self._obs_high).astype(np.float32)
 
     def _fly_obs_now(self) -> np.ndarray:
@@ -490,6 +525,9 @@ class FlyChaseEnv(gym.Env):
             "distance": proj.distance,
             "captured": self.captured,
             "fly_alarmed": self.fly.alarmed,
+            "firing": self._firing,
+            "shots": self.shots,
+            "misfires": self.misfires,
         }
         if self._stimulus is not None:
             info["neural"] = self.fly.diagnostics()
