@@ -162,6 +162,28 @@ Viewer (aim line, zoom circle, readouts, issue-page history), two more frame key
 #### Notes
 - The first two capture attempts failed in the helper script (playback auto-starts, so stepping forward from frame 0 did not land on the frame; then a regex lost its backslashes). Not a viewer fault.
 
+### chore: 환경 버전 6 기준선 에피소드 올리기 (#69)
+> why: the issue page needs episodes to watch; no published run was recorded under the shot rule
+#### Scope
+`published/`: three runs and `published/issues/69.json`. No code change.
+#### Changes
+- Recorded with #61's `record_match.py baseline` (default seeds 10000-10002) at 4f73d3c's code, then `scripts/publish_run.py <run> --issue 69`:
+
+| Run | Fly | Flags | Captured | Time (s) | Shots / misfires per episode |
+|---|---|---|---|---|---|
+| `2026-11-17_231802_rule-baseline` | rule | (none) | 3/3 | 5.15, 5.05, 4.17 | 1/0, 1/0, 1/0 |
+| `2026-11-17_231813_neural-nostim-baseline` | neural | `--fly-model neural --no-stimulus` | 3/3 | 5.29, 5.37, 5.07 | 1/0, 1/0, 5/4 |
+| `2026-11-17_231839_neural-stim-baseline` | neural | `--fly-model neural` | 3/3 | 5.35, 5.53, 4.91 | 2/1, 2/1, 4/3 |
+
+- `published/issues/69.json` (Korean, screen text): the rule, what the three runs show, the 200-seed and 20-seed numbers, where the raw rows are, why no learned aimer exists yet. `compare` is 61 (the same baseline against the same flies under version 5).
+#### Verification
+- Each published episode has `firing`, `shots`, `misfires` in `frames` and `shots` / `misfires` in `summary`; the counts above were read back from the published files.
+- `npm run build` in `viewer` with the three runs and `69.json` present: built; the captures in the previous section were taken from this build.
+- `publish_run.py` warned that #69 has no `training` label: expected, nothing was trained.
+#### Notes
+- Under version 5 the baseline took 4.89-5.45 s on these seeds against the neural fly (#61); the times here are in the same range.
+- Three seeds per run: these are for watching, not for rates. Rates are in `data/`.
+
 ## Management Notes
 ### Follow-up Candidates
 - Train an aimer under env version 6 once the detector's error model exists (#13); decide the misfire term of the reward there.
