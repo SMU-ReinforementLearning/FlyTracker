@@ -62,7 +62,6 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `72-feature-aimer-v1-sac-rule-trigger` — `docs/issues/feature/72-feature-aimer-v1-sac-rule-trigger.md` — SAC 조준기를 환경 버전 6에 세우고 조준기 v1로 정하기
 
 ## Environment (repo slot)
 

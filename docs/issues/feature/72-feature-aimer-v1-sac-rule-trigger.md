@@ -4,7 +4,7 @@
 - Issue: #72
 - Branch: `72-feature-aimer-v1-sac-rule-trigger`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 Stand the #51 SAC aimer up under env version 6 and decide whether it becomes aimer v1, with the rule aimer kept as v0. Since #51 the SAC aimer (`sac-beam-assist`) has been faster than the rule aimer (2.94 s vs 4.86 s under version 5), yet #61 and #69 kept reporting only the rule aimer; #69's fire action made the version 5 models unloadable. The user (2026-11-18): "it is the aimer's next generation; time for the aimer baseline to move on", then agreed to the order below.
@@ -37,15 +37,24 @@ Also from the same conversation: firing belongs to the aimer, not the environmen
 - [x] Gate document written before the candidate is measured on the gate seeds; baseline frozen by sha256. (2026-11-17 23:55; committed together with the results)
 - [x] Candidate measured on seeds 20000-20199 (three models) and against the neural fly (60 seeds, stimulus off and on); raw rows committed. (2026-11-18 00:40)
 - [x] Verdict appended to the gate document. (2026-11-18 00:50, adopt)
-- [ ] Published runs and `published/issues/72.json`.
-- [ ] README and viewer name v0 / v1 per the verdict; firing shown as the aimer's.
-- [ ] Full test suite passes; viewer builds.
-- [ ] PR merged; `AGENTS.md` pointer removed in the branch's last commit.
+- [x] Published runs and `published/issues/72.json`. (2026-11-18 01:20)
+- [x] README and viewer name v0 / v1 per the verdict; firing shown as the aimer's. (2026-11-18 01:15)
+- [x] Full test suite passes; viewer builds. (2026-11-18 01:10, 211 passed)
+- [x] PR merged; `AGENTS.md` pointer removed in the branch's last commit. (pointer removed in this commit; merge follows)
 
 ## Current State
-2026-11-18. Adapter and tests written; gate document written; baseline frozen (4.894 s, 198/200, 0.50 misfires per episode). Candidate measurements running. Nothing committed yet.
+2026-11-18 01:30. Done. Verdict: adopt. Aimer v0 = rule aimer (fixed yardstick), aimer v1 = #51 `sac-beam-assist` models steering + the baseline's firing rule.
 
-Gate: `docs/issues/feature/72-feature-aimer-v1-sac-rule-trigger/gate.md`.
+| Fly | Seeds | v0 | v1 (three models) |
+|---|---|---|---|
+| rule | 20000-20199 | 198/200, 4.894 s, 0.50 misfires/ep | 584/600, 3.026 s, 0.60 misfires/ep |
+| neural, stimulus off | 20000-20059 | 59/60, 5.110 s, 0.62 | 155/180, 4.258 s, 1.94 |
+| neural, stimulus on | 20000-20059 | 59/60, 5.397 s, 1.93 | 164/180, 4.058 s, 2.04 |
+
+- Gate and verdict: `docs/issues/feature/72-feature-aimer-v1-sac-rule-trigger/gate.md`. Raw rows and re-run commands: `.../data/README.md`.
+- v1's weakness is the neural fly: faster on average, loses many more flies. It does not decide when to fire.
+- To use v1: `load_opponent("runs/2026-11-15_151701_sac-beam-assist-s<k>", "aimer", cfg)`; the model folders are not in the repository.
+- Next (not started): aimer v2 that learns to fire, after the detector (#13).
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -142,6 +151,18 @@ Management doc, registry row, `AGENTS.md` pointer.
 #### Notes
 - `publish_run.py` warned that #72 has no `training` label: expected, nothing was trained.
 - The three baseline runs repeat #69's (same seeds, same code) so that the #72 page shows v0 and v1 side by side.
+
+### chore: #72 마무리 (#72)
+> why: last commit before the PR
+#### Scope
+Status done, registry row done, `AGENTS.md` pointer removed, Current State.
+#### Changes
+- This document, `docs/issues/README.md` (#72 row -> done), `AGENTS.md` (pointer removed).
+#### Verification
+- `uv run pytest -q`: 211 passed, no code changed after that run. `git status` clean after this commit.
+#### Notes
+- The preview server on port 4972 was stopped. `runs/` of this worktree (models and recorded runs) is not committed.
+- The user approved the chain on 2026-11-18 ("끝나면 머지까지 진행해").
 
 ## Management Notes
 ### Follow-up Candidates
