@@ -99,6 +99,35 @@ Management doc, registry row, `AGENTS.md` pointer.
 - The misfire rule in the gate was written after seeing 9 pilot episodes on non-gate seeds (12 misfires, 8 in one episode); the gate says so.
 - `run_gate.py` first crashed printing the tables to a cp949 console after the file had been written; it now prints the path only.
 
+### feat: 조준기 v0과 v1을 README와 issue 화면에 올리기 (#72)
+> why: the verdict adopts v1, and the user pointed out that firing is the aimer's, not the environment's
+#### Scope
+`README.md`, viewer issue-page data (`experiment.js`, `history.js`, one CSS rule), `ui-text.glossary.md`, one sentence of `published/issues/69.json`. No package code.
+#### Changes
+- README: new section "조준기 v0과 v1" (what each is, the six-row table for the three fly settings, the gate in two sentences, links to `gate.md` and `data/README.md`, the two commands); firing stated as the aimer's with the env only judging hits; `record_match.py` listed among the scripts; `match.py`'s version rule now mentions the version 5 exception.
+- Issue page: learned-aimer card row `쏘는 방식` (`algo.fire`), baseline card row `쏘는 기준` (env version 6 and later), aimer settings row `한 발 길이` (the value of `env.capture_hold` for version 6 and later; the environment row `포획 유지 시간` is shown for earlier versions only), fly settings row `자극` (켬 / 끔). `history.js` entries for each, and issue 72.
+- Variations: runs that differ only in the re-run model id are one variation (as runs that differ only in training seed already were), and variations of the same kinds get the first differing row appended to their name. #72 goes from 12 buttons to 6, #61 from 8 to 4. The button row scrolls inside itself when wider than the screen.
+- `69.json`: "환경을 바꾸고" reworded so that the aimer fires and the environment judges.
+#### Verification
+- `uv run pytest -q`: 211 passed (209 + the issue-72 cases of the published-run tests). `npm run build` in `viewer`: built.
+- `scripts/match.py --aimer baseline --aimer runs/2026-11-15_151701_sac-beam-assist-s0 --episodes 3`, as documented in README: prints `baseline 3/3, 4.79초` and `…sac-beam-assist-s0+rule-fire 3/3, 2.49초`.
+- ui-evidence on the built site (`vite preview`, port 4972), tree: uncommitted on d695ddb, Chrome 157, serve check `document.title === 'FlyTracker'`, ready when fonts are loaded and more than 10 rows exist. Probes: the new rows' values and the variation button names.
+
+| page | viewport | overflow | new rows | variation buttons |
+| --- | --- | --- | --- | --- |
+| /?issue=72 | 1600x2600 | none | 쏘는 방식 기준선의 규칙; 쏘는 기준 빔까지 1.25mm 안; 한 발 길이 0.15초; no 포획 유지 시간 | 전체, 규칙 초파리 v0 + 기준선 v0, 규칙 초파리 v0 + 학습한 조준기 v1, 신경 초파리 x (기준선 v0, 학습한 조준기 v1) x (자극 끔, 자극 켬) |
+| /?issue=72 | 390x4200 (mobile, dpr 2) | page does not scroll; one button of the variation row ends 18 px past the edge inside the row's own scroll | same | same |
+| /?issue=69 | 1600x2600, 390x4200 | none | 쏘는 기준 없음→빔까지 1.25mm 안; 한 발 길이 없음→0.15초; 포획 유지 시간 0.15초→없음 (vs #61) | none |
+| /?issue=61 | 1600x2600, 390x4200 | none (390 px overflowed before this change: scrollWidth 522) | | 전체, 기준선 v0 x (자극 끔, 자극 켬), 학습한 조준기 x (자극 끔, 자극 켬) |
+| /?issue=51 | 1600x2600, 390x4200 | none | 포획 유지 시간 0.15초; no 한 발 길이 | unchanged (4 conditions) |
+| /?issue=35 | 1600x2600, 390x4200 | none | | unchanged (1개, 4개) |
+
+  Console: favicon 404 only (present on main). Captures are in the session scratchpad, not committed. Looked at: #72 desktop (text, v0 and v1 cards with the new rows, `한 발 길이` under the aimer's settings).
+- Not verified: the light colour scheme; the popover text of the new rows was read from the DOM, not hovered.
+#### Notes
+- Decided by the agent, reported to the user: the config key `capture_hold` stays in `EnvConfig` (see Out Of Scope). Only where it is shown and how it is described changed.
+- The variation grouping change was not in the plan; the #72 page was unusable without it (12 buttons, 9 of them sharing three names).
+
 ## Management Notes
 ### Follow-up Candidates
 - Aimer v2: SAC that learns to fire, on observations with the detector's error (#13); decide the misfire term of the reward there.

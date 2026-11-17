@@ -297,6 +297,12 @@
   font-size: var(--font-size-md);
 }
 
+/* variation 이 많으면 버튼 줄이 화면보다 넓어진다. 줄 안에서만 옆으로 넘긴다 */
+.variationSwitch {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
 .variationSwitch button {
   min-width: 5.6rem;
   padding: 0.5rem var(--space-3);
