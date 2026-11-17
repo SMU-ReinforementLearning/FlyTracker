@@ -36,3 +36,4 @@ One row per management document, added in the same commit that creates the doc.
 | #62 | docs/issues/feature/62-feature-issue-page-owner-split-provenance.md | done | issue 화면을 초파리, 조준기, 환경으로 나누고 항목마다 바꾼 issue 보여 주기 |
 | #64 | docs/issues/feature/64-feature-bundled-neural-flight.md | in progress | 신경 비행 코드와 자료를 저장소에 포함 |
 | #66 | docs/issues/chore/66-chore-kit-issue-metadata.md | done | issue에 type, label, 담당자를 채우도록 agent-workflow-kit 올리기 |
+| #70 | docs/issues/docs/70-docs-readme-aimer-state-date.md | in progress | README의 조준기 state 기준 날짜 고치기 |
