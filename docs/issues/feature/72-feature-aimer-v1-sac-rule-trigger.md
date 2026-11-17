@@ -33,10 +33,10 @@ Also from the same conversation: firing belongs to the aimer, not the environmen
 - The fly's side.
 
 ## Done Criteria
-- [ ] Version 5 aimer models load under version 6 with rule firing; tests cover the observation slice, the fire rule and the version check.
-- [ ] Gate document written before the candidate is measured on the gate seeds; baseline frozen by sha256.
-- [ ] Candidate measured on seeds 20000-20199 (three models) and against the neural fly (60 seeds, stimulus off and on); raw rows committed.
-- [ ] Verdict appended to the gate document.
+- [x] Version 5 aimer models load under version 6 with rule firing; tests cover the observation slice, the fire rule and the version check. (2026-11-17 23:50)
+- [x] Gate document written before the candidate is measured on the gate seeds; baseline frozen by sha256. (2026-11-17 23:55; committed together with the results)
+- [x] Candidate measured on seeds 20000-20199 (three models) and against the neural fly (60 seeds, stimulus off and on); raw rows committed. (2026-11-18 00:40)
+- [x] Verdict appended to the gate document. (2026-11-18 00:50, adopt)
 - [ ] Published runs and `published/issues/72.json`.
 - [ ] README and viewer name v0 / v1 per the verdict; firing shown as the aimer's.
 - [ ] Full test suite passes; viewer builds.
@@ -80,6 +80,24 @@ Management doc, registry row, `AGENTS.md` pointer.
 - The steering cannot be compared frame by frame with the published version 5 episodes: those were recorded on the vast.ai instance and differ from this machine by up to 0.04 rad within an episode (float differences that grow along a trajectory).
 - The file move of `record_match.py` (rename only) went into the registration commit b7641f4 by mistake: it was already staged by `git mv` when that commit was made. Its content edits are in this commit.
 - A side effect worth knowing: `train.py --opponent <version 5 aimer run>` for the fly now works under version 6 too, since it also goes through `load_opponent`.
+
+### chore: 조준기 v0과 v1 후보를 재고 판정하기 (#72)
+> why: whether the SAC aimer becomes v1 was to be decided by a rule written before measuring, and the rows kept for later analysis
+#### Scope
+`docs/issues/feature/72-feature-aimer-v1-sac-rule-trigger/`: `gate.md` (pre-registration and verdict), `gate/`, `data/`, `measure_aimers.py`, `run_gate.py`. No package code.
+#### Changes
+- `measure_aimers.py`: one aimer per call (`baseline` or a model run), writes `episodes.csv`, `shots.csv`, `gate.csv`, `meta.json`; `mean` pools the three models per seed. `run_gate.py`: every bootstrap named in the gate, output to `gate/bootstrap-<fly>.md`.
+- `gate.md`: question, frozen baseline (sha256), candidate, metric, threshold 0.90 on time, exclusions (capture below 0.97, a model below 0.50, misfires above twice v0's), the neural fly as reported-only, then the verdict.
+- `data/`: 12 folders (3 fly settings x 4 aimers), 200 seeds for the rule fly and 60 for the neural fly, and a README with re-run commands.
+#### Verification
+- Verdict: **adopt**. Rule fly, 200 seeds: v0 4.894 s, 198/200, 0.50 misfires per episode; candidate 3.026 s, 584/600 (0.973), 0.60 misfires; P(faster) 1.000 pooled and for each model; no exclusion fired (capture by two episodes of 600).
+- Neural fly, 60 seeds, reported only: stimulus off v0 5.110 s, 59/60, 0.62 misfires vs candidate 4.258 s, 155/180 (0.861), 1.94 misfires; stimulus on v0 5.397 s, 59/60, 1.93 misfires vs candidate 4.058 s, 164/180 (0.911), 2.04 misfires. Faster on average, loses many more flies; one model (s0, stimulus off) is slower than v0.
+- The baseline's rule-fly rows equal #69's (`198/200, 4.894 s, 1.49 shots, 0.50 misfires`).
+- `paired_bootstrap.py`: 10,000 resamples, seed 42; unedited output with file hashes in `gate/bootstrap-*.md`.
+#### Notes
+- Deviations are listed at the end of `gate.md`: the gate text was written before measuring but not committed before it; every `meta.json` has `gitDirty: true` (code as in a4a6c12); the `+rule-fire` label suffix appears in the stimulus-on `meta.json` files only.
+- The misfire rule in the gate was written after seeing 9 pilot episodes on non-gate seeds (12 misfires, 8 in one episode); the gate says so.
+- `run_gate.py` first crashed printing the tables to a cp949 console after the file had been written; it now prints the path only.
 
 ## Management Notes
 ### Follow-up Candidates
