@@ -62,7 +62,6 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `61-chore-neural-fly-sac-episodes` — `docs/issues/chore/61-chore-neural-fly-sac-episodes.md` — 신경망 초파리와 SAC 조준기 대결 에피소드 올리기
 
 ## Environment (repo slot)
 

@@ -4,7 +4,7 @@
 - Issue: #61
 - Branch: `61-chore-neural-fly-sac-episodes`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 Record and publish episodes of the adopted SAC aimer (`sac-beam-assist`, #51) and the rule baseline against the neural fly (#31) under env version 5. The aimers were trained and tuned against the rule fly only, so these episodes show how they do against a fly they have never seen. Nothing is trained here.
@@ -37,7 +37,7 @@ The stimulus-off setting is the fair comparison: with the stimulus on, the fly's
 - [x] Eight runs recorded on one machine that has the flysim project, all with env version 5. (2026-11-17 20:18, the user's laptop, bundled assets of #64)
 - [x] Published copies contain no local path (`grep` for the flysim location and the user folder returns nothing). (2026-11-17)
 - [x] `published/issues/61.json` written; `npm run build --prefix viewer` lists the eight runs under issue 61. (2026-11-17)
-- [ ] PR merged; `AGENTS.md` pointer removed in the branch's last commit.
+- [x] PR merged; `AGENTS.md` pointer removed in the branch's last commit. (2026-11-17, pointer removed in the commit below; merge follows it)
 
 ## Current State
 2026-11-17 20:40. The teammate's PR #65 (#64, flysim code and neural data bundled under `flytracker/neural_assets/`) was merged on 2026-11-16; `origin/main` is merged into this branch. The eight runs are recorded on the user's laptop, copied to `published/` and described in `published/issues/61.json`. The user approved commit, push, PR and squash merge on 2026-11-17.
@@ -103,6 +103,17 @@ Durations in seconds for seeds 10000 / 10001 / 10002, all env version 5, user's 
 #### Notes
 - `load_opponent` warns that the env differs from training (`fly_model`); expected here.
 - Seed 10002 with the stimulus off is slow or missed for all three SAC models (9.71, 10.0, 9.81 s) while the baseline takes 5.01 s. One seed; no claim made. Worth a look if the measured comparison below is done.
+
+### chore: #61 pointer 지우고 문서 닫기 (#61)
+> why: the protected base branch cannot take this edit after the merge
+#### Scope
+`AGENTS.md` pointer line, registry row status, this document's status.
+#### Changes
+- Pointer line removed; registry row and `Status` set to done.
+#### Verification
+- `git show origin/main:AGENTS.md` has an empty pointer slot; this branch's slot is empty again after the edit.
+#### Notes
+- Follow-up outside this issue, raised by the user on 2026-11-17: a fire action for the aimer with a cost for firing (the laser is implicitly always on today). Not decided; needs its own issue.
 
 ## Management Notes
 ### Follow-up Candidates
