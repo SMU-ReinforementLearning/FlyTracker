@@ -37,4 +37,5 @@ One row per management document, added in the same commit that creates the doc.
 | #64 | docs/issues/feature/64-feature-bundled-neural-flight.md | in progress | 신경 비행 코드와 자료를 저장소에 포함 |
 | #66 | docs/issues/chore/66-chore-kit-issue-metadata.md | done | issue에 type, label, 담당자를 채우도록 agent-workflow-kit 올리기 |
 | #69 | docs/issues/feature/69-feature-aimer-fire-action-misfire.md | done | 조준기에 레이저 발사 행동과 오발 측정 넣기 |
+| #70 | docs/issues/docs/70-docs-readme-aimer-state-date.md | done | README의 조준기 state 기준 날짜 고치기 |
 | #73 | docs/issues/docs/73-docs-sac-concepts-qna.md | done | SAC 개념을 쉬운 문답으로 정리하기 |
