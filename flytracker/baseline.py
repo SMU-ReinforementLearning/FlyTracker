@@ -103,7 +103,7 @@ class RuleAimer:
         if o[OBS["visible"]][0] > 0.5:
             self.mode, self._f8_t, self._local_done = "track", 0.0, False
             a = self.track(o)
-            a[2] = 1.0 if self.beam_distance(o) <= self.fire_radius else -1.0
+            a[2] = 1.0 if self.wants_fire(o) else -1.0
             return a
 
         last = o[OBS["last_seen_dir"]]
@@ -132,6 +132,11 @@ class RuleAimer:
         """
         angle = float(np.hypot(*o[OBS["uv_fine"]])) * self.fine_error
         return float(o[OBS["distance"]][0]) * self.room_diagonal * math.sin(angle)
+
+    def wants_fire(self, obs) -> bool:
+        """쏘는 규칙. 초파리가 보이고, 어림한 빔까지 거리가 fire_radius 안이면 쏜다. obs 는 가장 최근 관측 하나다."""
+        o = np.asarray(obs, dtype=float)
+        return bool(o[OBS["visible"]][0] > 0.5 and self.beam_distance(o) <= self.fire_radius)
 
     def assisted(self, obs, action, scale: float) -> np.ndarray:
         """정책의 행동에 추적을 더한다. 초파리가 보이면 추적 행동 + scale × 정책 행동, 안 보이면 정책 행동 그대로다.

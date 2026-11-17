@@ -90,3 +90,68 @@ def test_model_from_another_env_version_is_refused(tmp_path):
     path.write_text(json.dumps(config), encoding="utf-8")
     with pytest.raises(ValueError, match="환경 버전"):
         load_opponent(str(run_dir), "fly", EnvConfig())
+
+
+class TwoValuePolicy(Recorder):
+    """발사 행동이 없던 때의 정책처럼 yaw, pitch 두 값만 낸다."""
+
+    def predict(self, obs, deterministic=True):
+        self.seen.append(np.array(obs))
+        return np.array([0.5, -0.5], dtype=np.float32), None
+
+
+def test_rule_fire_player_hides_shot_and_fires_by_the_baseline_rule():
+    cfg = EnvConfig(start_facing_fly=True)
+    tracker = load_opponent("baseline", "aimer", cfg).player.policy
+    player = PolicyPlayer(TwoValuePolicy(), tracker=tracker, rule_fire=True)
+    env = FlyChaseEnv(cfg)
+    obs, _ = env.reset(seed=3)
+    fired = set()
+    for _ in range(40):
+        a = player.act(obs)
+        assert a.shape == (3,) and tuple(a[:2]) == (0.5, -0.5)
+        assert a[2] == (1.0 if tracker.wants_fire(obs) else -1.0)
+        fired.add(float(a[2]))
+        np.testing.assert_array_equal(player.policy.seen[-1], np.asarray(obs, dtype=np.float32)[:-1])  # shot 은 마지막 칸이다
+        obs, _, terminated, truncated, _ = env.step(tracker.act(obs))  # 기준선이 몰아서 쏘는 상황과 안 쏘는 상황을 다 지난다
+        if terminated or truncated:
+            break
+    assert fired == {1.0, -1.0}
+    with pytest.raises(ValueError):
+        PolicyPlayer(TwoValuePolicy(), rule_fire=True)  # 쏘는 규칙을 줄 tracker 가 없다
+
+
+class Version5AimerEnv(gym.Env):
+    """환경 버전 5의 조준기 쪽 모양: 관측 17차원, 행동 2차원."""
+
+    observation_space = gym.spaces.Box(-1.0, 1.0, (17,), np.float32)
+    action_space = gym.spaces.Box(-1.0, 1.0, (2,), np.float32)
+
+    def reset(self, *, seed=None, options=None):
+        return np.zeros(17, np.float32), {}
+
+    def step(self, action):
+        return np.zeros(17, np.float32), 0.0, False, False, {}
+
+
+def test_version_5_aimer_model_loads_with_rule_fire(tmp_path):
+    sb3 = pytest.importorskip("stable_baselines3")
+    cfg = EnvConfig()
+    model = sb3.PPO("MlpPolicy", Version5AimerEnv(), n_steps=64, batch_size=64, n_epochs=1, device="cpu", seed=0)
+    model.learn(total_timesteps=64)
+    algo = {"name": "ppo", "frameStack": 1, "side": "aimer", "assist": 0.2}
+    run = RunStore(tmp_path).create_run("old-aimer", "ppo", "continuous", {"env": cfg.to_dict(), "algo": algo})
+    model.save(run.dir / "model")
+    path = run.dir / "config.json"
+    config = json.loads(path.read_text(encoding="utf-8"))
+
+    config["envVersion"] = 5
+    path.write_text(json.dumps(config), encoding="utf-8")
+    aimer = load_opponent(str(run.dir), "aimer", cfg)
+    assert (aimer.env_version, aimer.fire) == (5, "rule") and aimer.player.rule_fire
+    assert _play(FlyChaseEnv(cfg), aimer.player.act) > 0
+
+    config["envVersion"] = 4  # 관측이 더 다르다. 붙일 수 없다
+    path.write_text(json.dumps(config), encoding="utf-8")
+    with pytest.raises(ValueError, match="환경 버전"):
+        load_opponent(str(run.dir), "aimer", cfg)

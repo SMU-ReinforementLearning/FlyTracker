@@ -69,7 +69,8 @@ function sidesOf(cfg) {
   const name = algo.name ?? cfg.policy ?? cfg.mode ?? null
   const ruleFly = { kind: cfg.env?.fly_model === 'neural' ? 'neural' : 'rule' }
   // 기준선은 #45(환경 버전 4)부터 초파리 방향의 각속도에 맞춰 돈다. 그 전에는 조준 오차만 보고 돌았다.
-  const baseline = { kind: 'baseline', tracking: (cfg.envVersion ?? 1) >= 4 }
+  // 환경 버전 6(#69)부터 조준기가 쏜다. 기준선은 어림한 빔까지 거리가 포획 범위 안이면 쏜다.
+  const baseline = { kind: 'baseline', tracking: (cfg.envVersion ?? 1) >= 4, fireRadius: (cfg.envVersion ?? 1) >= 6 ? (cfg.env?.capture_radius ?? null) : null }
   if (LEARNED.has(name)) {
     const self = {
       kind: 'learned',
@@ -80,6 +81,7 @@ function sidesOf(cfg) {
       assist: algo.assist, // 초파리가 보이는 동안 기준선의 추적 행동에 더하는 정책 행동의 배율(#51). 0 이면 정책 혼자 조준한다
       model: algo.model, // 이미 학습한 모델을 다른 환경에서 돌린 실행(#44)이면 그 모델의 실행 id
       trainedEnv: algo.trainedEnvVersion,
+      fire: algo.fire, // 쏠지를 누가 정하나(#72). 'rule' 이면 조준만 학습한 모델에 기준선의 쏘는 규칙을 붙인 것이다
     }
     const opponent = algo.opponent
     if (algo.side === 'fly') {
@@ -114,10 +116,14 @@ function cardsOf(side, sides, table, versionLabel) {
         makeRow('함께 보는 최근 관측', 'algo.frameStack', list.map((s) => (has(s.frameStack) ? qty(s.frameStack, '개') : null))),
         makeRow('추적 보조', 'algo.assist', list.map((s) => (has(s.assist) ? item(s.assist > 0 ? `기준선 추적 + 행동 × ${fmtNum(s.assist)}` : '없음') : null))),
         makeRow('학습한 환경 버전', 'algo.trainedEnvVersion', list.map((s) => (has(s.trainedEnv) ? item(String(s.trainedEnv)) : null))),
+        makeRow('쏘는 방식', 'algo.fire', list.map((s) => (has(s.fire) ? item(s.fire === 'rule' ? '기준선의 규칙' : '정책이 정함') : null))),
         makeRow('모델', 'algo.model', list.map((s) => (has(s.model) ? item(s.model) : null))),
       ].filter(Boolean)
     } else if (first.kind === 'baseline') {
-      rows = [makeRow('따라가는 방식', 'baseline.tracking', list.map((s) => item(s.tracking ? '초파리 각속도에 맞춰 돌림' : '조준 오차만 보고 돌림')))]
+      rows = [
+        makeRow('따라가는 방식', 'baseline.tracking', list.map((s) => item(s.tracking ? '초파리 각속도에 맞춰 돌림' : '조준 오차만 보고 돌림'))),
+        makeRow('쏘는 기준', 'baseline.fire', list.map((s) => (has(s.fireRadius) ? within(qty(s.fireRadius * 1000, 'mm', '빔까지 ')) : null))),
+      ].filter(Boolean)
     }
     return {
       key,
@@ -157,7 +163,8 @@ function environmentOf(configs) {
     makeRow('방', 'env.room', envs.map((e) => (e.room ? item(`가로 ${fmtNum(e.room.width)}m, 높이 ${fmtNum(e.room.height)}m, 깊이 ${fmtNum(e.room.depth)}m`) : null))),
     makeRow('에피소드 길이', 'env.max_seconds', envs.map((e) => (has(e.max_seconds) ? qty(e.max_seconds, '초', '최대 ') : null))),
     makeRow('포획 범위', 'env.capture_radius', envs.map((e) => within(captureRangeOf(e)))),
-    makeRow('포획 유지 시간', 'env.capture_hold', envs.map((e) => (e.capture_enabled !== false && has(e.capture_hold) ? qty(e.capture_hold, '초') : null))),
+    // 환경 버전 6부터 이 값은 한 발의 길이이고 조준기 줄에 나온다(aimerSettingsOf)
+    makeRow('포획 유지 시간', 'env.capture_hold', configs.map((c) => ((c.envVersion ?? 1) < 6 && c.env?.capture_enabled !== false && has(c.env?.capture_hold) ? qty(c.env.capture_hold, '초') : null))),
     makeRow('포획 거리', 'env.capture_range', envs.map((e) => (has(e.capture_range) ? within(qty(e.capture_range, 'm')) : null))),
     makeRow('초파리 시작 거리', 'env.min_start_distance', envs.map((e) => (has(e.min_start_distance) ? item(`조준기에서 ${fmtNum(e.min_start_distance)}m 이상`, e.min_start_distance, 'm') : null))),
   ].filter(Boolean)
@@ -175,6 +182,8 @@ function aimerSettingsOf(configs) {
     makeRow('위아래 회전 속도', 'env.aimer.max_pitch_rate_deg', envs.map((e) => (has(e.aimer?.max_pitch_rate_deg) ? qty(e.aimer.max_pitch_rate_deg, '°/s', '최대 ') : null))),
     makeRow('각가속도', 'env.aimer.max_ang_accel_deg', envs.map((e) => (has(e.aimer?.max_ang_accel_deg) ? qty(e.aimer.max_ang_accel_deg, '°/s²', '최대 ') : null))),
     makeRow('위아래 조준 한계', 'env.aimer.max_pitch_deg', envs.map((e) => (has(e.aimer?.max_pitch_deg) ? qty(e.aimer.max_pitch_deg, '°', '±') : null))),
+    // 한 발의 길이. 레이저 장치의 값이라 조준기 줄에 둔다. config.json 에서는 env.capture_hold 에 있다(#69, #72)
+    makeRow('한 발 길이', 'env.aimer.shot', configs.map((c) => ((c.envVersion ?? 1) >= 6 && c.env?.capture_enabled !== false && has(c.env?.capture_hold) ? qty(c.env.capture_hold, '초') : null))),
     makeRow('시작 방향', 'env.start_facing_fly', envs.map((e) => (has(e.start_facing_fly) ? item(e.start_facing_fly ? '초파리 쪽' : '방 가운데 쪽') : null))),
   ].filter(Boolean)
 }
@@ -199,6 +208,7 @@ function flySettingsOf(configs, sides) {
     makeRow('반응 지연', 'env.fly.evade_reaction', rule.map((f) => (f && has(f.evade_reaction) ? ms(f.evade_reaction) : null))),
     makeRow('피할 때 속도', 'env.fly.evade_speed_gain', flight.map((f) => (f && has(f.evade_speed_gain) ? qty(f.evade_speed_gain, '배', '최대 ') : null))),
     makeRow('관측 지연', 'env.fly_reaction_delay', learned.map((e) => (e && has(e.fly_reaction_delay) ? ms(e.fly_reaction_delay) : null))),
+    makeRow('자극', 'env.stimulus.enabled', envOf('neural').map((e) => (e?.stimulus && has(e.stimulus.enabled) ? item(e.stimulus.enabled ? '켬' : '끔') : null))),
     makeRow('자극을 주는 조준 오차', 'env.stimulus.align_deg', stim.map((t) => (t && has(t.align_deg) ? within(qty(t.align_deg, '°')) : null))),
     makeRow('자극 전 조준 시간', 'env.stimulus.charge_ms', stim.map((t) => (t && has(t.charge_ms) ? qty(t.charge_ms, 'ms') : null))),
     makeRow('자극 길이', 'env.stimulus.pulse_ms', stim.map((t) => (t && has(t.pulse_ms) ? qty(t.pulse_ms, 'ms') : null))),
@@ -320,10 +330,13 @@ function stableJson(v) {
   return JSON.stringify(v)
 }
 
-/** 학습 seed 를 뺀 config. 이 값이 같은 실행끼리 한 variation 이다. 학습 seed 만 다른 실행은 같은 설정을 되풀이한 것이다. */
+/**
+ * 학습 seed 를 뺀 config. 이 값이 같은 실행끼리 한 variation 이다. 학습 seed 만 다른 실행은 같은 설정을 되풀이한 것이다.
+ * 이미 학습한 모델을 다시 돌린 실행의 모델 id(algo.model)도 뺀다. 학습 seed 만 다른 모델은 id 만 다르다.
+ */
 function signatureOf(cfg) {
   const { algo = {}, ...rest } = cfg
-  const { seed: _seed, ...algoRest } = algo
+  const { seed: _seed, model: _model, ...algoRest } = algo
   return stableJson({ ...rest, algo: algoRest })
 }
 
@@ -365,9 +378,17 @@ export function variationsOf(runs, configs, info) {
   // 초파리나 조준기의 종류가 다르면 그것만으로 이름을 짓는다. 종류가 다르면 딸린 줄도 다 달라서, 모두 적으면 이름이 너무 길다.
   const titles = ['fly|초파리', 'aimer|조준기'].filter(differs)
   const differing = titles.length ? titles : keys.filter(differs)
+  const nameOf = (i, ks) => ks.map((k) => shown[i].get(k) ?? '없음').join(', ')
+  // 종류가 같은 variation 이 둘 이상이면(신경 초파리의 자극 켬과 끔) 이름이 겹친다. 겹친 것끼리 다른 줄을 '이름 값' 으로 덧붙인다.
+  const extraOf = (i) => {
+    const same = list.map((_, j) => j).filter((j) => nameOf(j, differing) === nameOf(i, differing))
+    if (!titles.length || same.length < 2) return []
+    const k = keys.find((key) => !titles.includes(key) && new Set(same.map((j) => shown[j].get(key) ?? '없음')).size > 1)
+    return k ? [`${k.split('|')[1]} ${shown[i].get(k) ?? '없음'}`] : []
+  }
   const items = list.map((g, i) => ({
     key: g.runs[0].id,
-    label: differing.length ? differing.map((k) => shown[i].get(k) ?? '없음').join(', ') : `설정 ${i + 1}`,
+    label: differing.length ? [nameOf(i, differing), ...extraOf(i)].join(', ') : `설정 ${i + 1}`,
     runIds: g.runs.map((r) => r.id),
   }))
   items.sort((a, b) => a.label.localeCompare(b.label, 'ko', { numeric: true }))
