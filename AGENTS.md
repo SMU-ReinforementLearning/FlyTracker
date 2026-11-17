@@ -62,7 +62,6 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `69-feature-aimer-fire-action-misfire` — `docs/issues/feature/69-feature-aimer-fire-action-misfire.md` — 조준기에 레이저 발사 행동과 오발 측정 넣기
 
 ## Environment (repo slot)
 

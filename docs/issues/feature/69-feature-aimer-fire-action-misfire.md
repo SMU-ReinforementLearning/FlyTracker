@@ -4,7 +4,7 @@
 - Issue: #69
 - Branch: `69-feature-aimer-fire-action-misfire`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 Give the aimer a fire action so the laser is on only when it shoots, and count the shots that miss. Until env version 5 the laser was implicitly always on: capture was "beam within 1.25 mm for 0.15 s" and a beam pointed anywhere else cost nothing. The user's point (2026-11-17): a real laser must not be left on; it should be fired briefly, when the aimer is sure of the kill.
@@ -49,14 +49,31 @@ Premise for later (#13, detector on the aimer's view): capture and misfire are j
 - [x] Full test suite passes. (2026-11-17 21:50, 205 passed)
 - [x] Baseline measured over 200 seeds against the rule fly: capture rate, mean time, shots, misfires. (2026-11-17 21:55)
 - [x] Baseline measured against the neural fly. (2026-11-17 22:10, 20 seeds, stimulus off)
-- [ ] Viewer shows when the laser fires and the shot / misfire counts.
-- [ ] Published baseline runs under env version 6 and `published/issues/69.json`.
-- [ ] PR merged; `AGENTS.md` pointer removed in the branch's last commit.
+- [x] Viewer shows when the laser fires and the shot / misfire counts. (2026-11-17 23:25, captures in the work log)
+- [x] Published baseline runs under env version 6 and `published/issues/69.json`. (2026-11-17 23:30)
+- [x] Raw rows and re-run commands committed for later analysis (added 2026-11-17 on the user's request). (`data/`, 2026-11-17 23:05)
+- [x] PR merged; `AGENTS.md` pointer removed in the branch's last commit. (pointer removed in this commit; merge follows)
 
 ## Current State
-2026-11-17 22:00. Env, baseline, tests, README and the measuring script are written and verified; nothing is committed yet (waiting at the review gate, two commits: registration, then the rule).
+2026-11-17 23:40. Done. The user approved the whole chain on 2026-11-17 ("머지까지 진행해"): commits, push, PR, squash merge.
 
-Next: commit after approval -> viewer unit (beam drawn only while firing, misfire readout, `history.js` entry for env version 6; needs `ko-ui-text` and screenshot evidence) -> record and publish baseline runs under version 6 with `published/issues/69.json` -> PR.
+Result in one place:
+
+| Question | Answer | Where |
+|---|---|---|
+| What changed | Env version 6: `fire` action, 0.15 s shots that cannot be stopped, capture = a whole shot on the fly, misfires counted, no limit | Goal table above, `README.md` |
+| Does the baseline still capture | Rule fly, seeds 20000-20199: 198/200, 4.894 s (version 5: 4.86 s) | `data/rule-fly/` |
+| How often does it misfire | 0.50 misfires per episode at the default trigger; 138/200 episodes with none; 1 shot in 3 misses | same |
+| Does a stricter trigger help | 2.5 mm -> 0.3 mm: misfires 1.20 -> 0.25 per episode, time within 4.89-4.97 s | same, six triggers |
+| Neural fly | 20/20, 4.920 s, 0.80 misfires per episode, 10/20 with none (20 seeds, stimulus off) | `data/neural-fly-nostim/` |
+| Why it misses | Not observation error (there is none yet: estimated = true beam distance in every shot row). Hits and misfires look alike at the trigger; 60% of misfires leave the fly within 40 ms | `shots.csv`, third work-log section |
+| What to watch | Three published runs, seeds 10000-10002 | viewer issue page #69 |
+
+To reproduce or extend: `docs/issues/feature/69-feature-aimer-fire-action-misfire/data/README.md` (commands, columns, loading example).
+
+Not done here, by decision: SAC retraining and a misfire term in the reward (after the detector's error is known, #13); a failure condition on misfires; anything on the fly's side.
+
+For the teammate: taking `main` moves the env to version 6. The aimer's action is 3 values and its observation 18; version 5 aimer models are refused by `load_opponent`. The fly's observation and reward are unchanged.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -183,6 +200,19 @@ Viewer (aim line, zoom circle, readouts, issue-page history), two more frame key
 #### Notes
 - Under version 5 the baseline took 4.89-5.45 s on these seeds against the neural fly (#61); the times here are in the same range.
 - Three seeds per run: these are for watching, not for rates. Rates are in `data/`.
+
+### chore: #69 마무리 (#69)
+> why: last commit before the PR
+#### Scope
+Status done, registry row done, `AGENTS.md` pointer removed, result summary in Current State.
+#### Changes
+- This document: Status, Done Criteria, Current State (result table, reproduction pointer, note for the teammate). `docs/issues/README.md`: #69 row -> done. `AGENTS.md`: pointer line removed.
+#### Verification
+- `uv run pytest -q`: 205 passed at 4f73d3c; no code changed after it.
+- `git status` clean after this commit.
+#### Notes
+- The preview server used for the captures (port 4969) was stopped. Local `runs/` folders of this worktree are not committed (gitignored).
+- The #61 worktree (`FlyTracker-61`) is still on disk; the user said to leave it for now.
 
 ## Management Notes
 ### Follow-up Candidates
