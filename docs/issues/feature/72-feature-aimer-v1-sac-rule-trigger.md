@@ -128,6 +128,21 @@ Management doc, registry row, `AGENTS.md` pointer.
 - Decided by the agent, reported to the user: the config key `capture_hold` stays in `EnvConfig` (see Out Of Scope). Only where it is shown and how it is described changed.
 - The variation grouping change was not in the plan; the #72 page was unusable without it (12 buttons, 9 of them sharing three names).
 
+### chore: 조준기 v0과 v1 에피소드 올리기 (#72)
+> why: the issue page needs episodes of v1 under the shot rule next to v0's
+#### Scope
+`published/`: twelve runs and `published/issues/72.json`.
+#### Changes
+- `scripts/record_match.py <aimer> [fly flags]` for `baseline` and the three models against the rule fly, the neural fly with the stimulus off, and with it on; seeds 10000-10002; then `scripts/publish_run.py <run> --issue 72`.
+- Captured 35 of 36 episodes. Mean time of the captured ones per run (s): rule fly v0 4.79, v1 2.49 / 4.78 / 1.68; neural, stimulus off v0 5.24, v1 5.17 / 2.81 (2 of 3) / 4.16; neural, stimulus on v0 5.26, v1 2.73 / 4.93 / 2.26.
+- `72.json` (Korean, screen text): what v0 and v1 are, the gate numbers, the weakness against the neural fly, what the twelve runs are. `aimer: v1`, `compare: 69`.
+#### Verification
+- Each SAC run's `config.json` has `algo.fire: "rule"`, `trainedEnvVersion: 5`, `model`. Episodes carry `firing`, `shots`, `misfires`.
+- The viewer build and the captures of the previous section include these runs.
+#### Notes
+- `publish_run.py` warned that #72 has no `training` label: expected, nothing was trained.
+- The three baseline runs repeat #69's (same seeds, same code) so that the #72 page shows v0 and v1 side by side.
+
 ## Management Notes
 ### Follow-up Candidates
 - Aimer v2: SAC that learns to fire, on observations with the detector's error (#13); decide the misfire term of the reward there.
