@@ -28,7 +28,7 @@ A formula-free question-and-answer explainer of the SAC networks used for the ai
 - [x] Worked numbers are arithmetically right (tanh values, 68% / 95%). (2026-11-18 00:11)
 - [x] `ko-writing` `check.py` run; remaining warnings judged one by one. (2026-11-18 00:11)
 - [x] Cold-reader pass by a subagent that saw only the file; every item fixed or answered. Two passes run. (2026-11-18 00:11)
-- [ ] User approved the text.
+- [x] User approved the text. (2026-11-18, "머지까지 해")
 
 ## Current State
 Document written and reviewed, not committed. Waiting on the user's approval at the review gate. After approval: seed commit, then the docs commit; before the PR, remove the AGENTS.md pointer as the last commit.
