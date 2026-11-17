@@ -63,6 +63,24 @@ Management doc, registry row, `AGENTS.md` pointer.
 - The main checkout's local `main` was fast-forwarded to `origin/main` first (it was at 7bd0ac8 and its copy of `issue-start.mjs` predated `--priority`).
 - Open issue #70 (README date of the aimer state) also edits `README.md`; it is not part of this work.
 
+### feat: 환경 버전 5 조준기 모델을 쏘는 규칙과 함께 불러오기 (#72)
+> why: #69's fire action made every trained aimer unloadable, so only the rule aimer could be measured under env version 6
+#### Scope
+`flytracker/players.py`, `baseline.py`, `scripts/record_match.py`, `tests/test_players.py`. No env change, no training.
+#### Changes
+- `RuleAimer.wants_fire(obs)`: the firing rule as one method (visible and estimated beam distance within `fire_radius`); `act` uses it.
+- `PolicyPlayer(rule_fire=True)`: the policy gets the observation without `shot` (the last field), its two outputs are padded to three, the tracking assist is applied as trained, then `fire` is set by `tracker.wants_fire`. Continuous-action policies only.
+- `load_opponent`: an aimer model with `envVersion` in `RULE_FIRE_VERSIONS` (5) is loaded that way instead of being refused. Version 5 differs from 6 for the aimer only in that field and that action; other versions and fly models are refused as before. `Opponent.fire` is `"rule"` or `"policy"`, and the label gets `+rule-fire`.
+- `scripts/record_match.py`: moved from `docs/issues/chore/61-chore-neural-fly-sac-episodes/` (third issue to use it); writes `algo.fire` into the run's config and says so in the notes.
+#### Verification
+- `uv run pytest -q`: 209 passed (205 before, 2 new tests here; the suite was first run before `npm ci`, where `test_viewer_attitude` failed for lack of `node_modules`, and passed after it).
+- New tests: the policy sees the observation minus `shot`, the action is 3 values, `fire` equals the baseline rule over a 40-step chase that both fires and does not; a version 5 PPO stub (17-dim observation, 2-dim action) loads with `fire == "rule"` and plays an episode; version 4 is refused.
+- On seeds 10000-10002 (rule fly) the three `sac-beam-assist` models capture 9/9 in 3.07, 2.75, 1.65 / 3.03, 2.61, 8.71 / 1.31, 1.33, 2.41 s; under version 5 on this machine they took 3.03, 2.73, 1.63 / 3.02, 2.59, 5.37 / 1.29, 1.19, 2.40 s (#61). Eight of nine are within one shot length of the version 5 time; s1 on seed 10002 misfires 8 times.
+#### Notes
+- The steering cannot be compared frame by frame with the published version 5 episodes: those were recorded on the vast.ai instance and differ from this machine by up to 0.04 rad within an episode (float differences that grow along a trajectory).
+- The file move of `record_match.py` (rename only) went into the registration commit b7641f4 by mistake: it was already staged by `git mv` when that commit was made. Its content edits are in this commit.
+- A side effect worth knowing: `train.py --opponent <version 5 aimer run>` for the fly now works under version 6 too, since it also goes through `load_opponent`.
+
 ## Management Notes
 ### Follow-up Candidates
 - Aimer v2: SAC that learns to fire, on observations with the detector's error (#13); decide the misfire term of the reward there.
