@@ -17,13 +17,15 @@ def _axis(i: int, sign: float) -> np.ndarray:
     return v
 
 
-# 한 step 에 축 하나만 돌리는 이산 행동 5개. 순서가 행동 번호다.
+# 한 step 에 축 하나만 돌리거나 한 발 쏘는 이산 행동 6개. 순서가 행동 번호다.
+# 한 발은 여러 step 이어지므로, 쏜 뒤에는 돌리는 행동으로 초파리를 따라갈 수 있다.
 DISCRETE_ACTIONS: tuple[tuple[str, np.ndarray], ...] = (
     ("idle", np.zeros(ACTION_DIM, dtype=np.float32)),
     ("yaw_left", _axis(0, 1.0)),
     ("yaw_right", _axis(0, -1.0)),
     ("pitch_up", _axis(1, 1.0)),
     ("pitch_down", _axis(1, -1.0)),
+    ("fire", _axis(2, 1.0)),
 )
 
 
@@ -43,6 +45,7 @@ class TrackingAssist(gym.Wrapper):
 
     초파리가 보이면 환경에 들어가는 행동은 추적 행동 + scale × 정책 행동이고, 안 보이면 정책 행동 그대로다.
     정책이 아무것도 배우지 않은 때에도 보이는 초파리는 빔 근처에 있게 된다.
+    추적 행동은 쏘지 않으므로 쏠지는 정책의 fire 값이 정한다.
     """
 
     def __init__(self, env: gym.Env, scale: float):

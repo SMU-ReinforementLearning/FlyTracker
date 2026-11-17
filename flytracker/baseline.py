@@ -3,6 +3,7 @@
 관측 벡터만 보고 움직인다. 환경 내부 상태(파리의 실제 위치)는 보지 않는다.
 - 보이면: 초파리 방향이 도는 각속도(관측 target_rate)에 맞춰 돌면서, 남은 조준 오차에 비례해 더 돌린다.
   오차에만 비례해 돌리면 움직이는 초파리를 (초파리 각속도 ÷ gain)만큼 뒤에서 따라가서 레이저 명중(1.25mm)이 안 된다.
+  빔이 초파리에서 fire_radius 안에 있다고 보이면 한 발 쏜다. 빔까지 거리는 관측의 거리와 조준 오차(uv_fine)로 어림한다.
 - 놓쳤으면: 국소 탐색. 마지막으로 본 방향(datum)으로 돌린 뒤, 그 방향을 가운데 두고 8자를 그리며
   한 바퀴마다 8자를 키운다. 8자는 yaw 와 pitch 의 주파수 비가 1:2 인 Lissajous 곡선이다.
   datum 에서 시작해 점점 넓히는 생각은 IAMSAR 의 확장 사각형 탐색과 섹터 탐색에서 가져왔다.
@@ -21,6 +22,7 @@ import numpy as np
 from .aimer import ACTION_DIM
 from .env import OBS
 from .geometry import aim_basis, unit, wrap_angle, yaw_pitch_of
+from .world import Room
 
 
 class RuleAimer:
@@ -42,8 +44,14 @@ class RuleAimer:
         band_overlap_deg: float = 5.0,  # 이웃한 띠가 겹치는 폭
         min_pitch_deg: float = -10.0,  # 탐색할 때 이보다 아래는 보지 않는다 (바닥)
         error_full_deg: float = 30.0,  # 목표 방향과 이만큼 어긋나면 최대 각속도로 돈다
+        fire_radius: float = 0.00125,  # m. 빔이 초파리에서 이 거리 안이라고 보이면 쏜다. 기본값은 환경의 capture_radius
+        fine_error_deg: float = 0.5,  # 도. 관측 uv_fine 이 ±1 로 나타내는 범위 (환경의 fine_error_deg)
+        room_diagonal: float | None = None,  # m. 관측 distance 를 나눈 값. None 이면 기본 방의 대각선
     ):
         self.track_gain = track_gain
+        self.fire_radius = fire_radius
+        self.fine_error = math.radians(fine_error_deg)
+        self.room_diagonal = Room().diagonal if room_diagonal is None else room_diagonal
         self.tan_half_v = math.tan(math.radians(fov_v_deg) / 2)
         self.tan_half_h = aspect * self.tan_half_v
         self.max_pitch = math.radians(max_pitch_deg)
@@ -94,7 +102,9 @@ class RuleAimer:
 
         if o[OBS["visible"]][0] > 0.5:
             self.mode, self._f8_t, self._local_done = "track", 0.0, False
-            return self.track(o)
+            a = self.track(o)
+            a[2] = 1.0 if self.beam_distance(o) <= self.fire_radius else -1.0
+            return a
 
         last = o[OBS["last_seen_dir"]]
         if np.any(last != 0) and not self._local_done:
@@ -115,8 +125,17 @@ class RuleAimer:
         a[1] = np.clip(rate[1] + self.track_gain * (t_pitch - pitch) / self.max_pitch_rate, -1, 1)
         return a
 
+    def beam_distance(self, o: np.ndarray) -> float:
+        """초파리가 보이는 관측 하나로 어림한 초파리 중심에서 빔까지 거리 (m).
+
+        조준 오차가 fine_error_deg 를 넘으면 uv_fine 이 ±1 에서 잘려서 실제보다 작게 나온다.
+        """
+        angle = float(np.hypot(*o[OBS["uv_fine"]])) * self.fine_error
+        return float(o[OBS["distance"]][0]) * self.room_diagonal * math.sin(angle)
+
     def assisted(self, obs, action, scale: float) -> np.ndarray:
         """정책의 행동에 추적을 더한다. 초파리가 보이면 추적 행동 + scale × 정책 행동, 안 보이면 정책 행동 그대로다.
+        추적 행동은 쏘지 않는다(fire 0). 쏠지는 정책의 fire 값이 정한다.
 
         정책은 탐색을 온전히 맡고, 보이는 동안에는 추적을 고치는 보정만 낸다. obs 는 가장 최근 관측 하나다.
         """

@@ -81,6 +81,10 @@ export function prepareEpisode(raw) {
     visible: Uint8Array.from(f.visible, Number),
     alarmed: Uint8Array.from(f.alarmed ?? f.evading, Number), // evading 은 이 필드가 생기기 전 기록
     capture: Float32Array.from(f.captureProgress),
+    // 레이저를 쏠 때만 켜는 기록(환경 버전 6부터)에만 있다. 없으면 레이저가 늘 켜져 있던 기록이다
+    firing: f.firing ? Uint8Array.from(f.firing, Number) : null,
+    shots: f.shots ? Uint16Array.from(f.shots) : null,
+    misfires: f.misfires ? Uint16Array.from(f.misfires) : null,
     angle: Float32Array.from(f.angleErrDeg),
     beam: f.beamDistMm ? Float32Array.from(f.beamDistMm) : null, // mm. 포획이 레이저 명중으로 바뀐 뒤(환경 버전 3)의 기록에만 있다
     distance: Float32Array.from(f.distance),
@@ -166,6 +170,8 @@ export function sample(ep, t, out) {
   out.visible = ep.visible[i] === 1
   out.alarmed = ep.alarmed[i] === 1
   out.capture = ep.capture[i]
+  out.firing = ep.firing === null || ep.firing[i] === 1
+  out.missed = ep.firing !== null && out.firing && out.capture === 0 // 쏘는 중인 발이 이미 빗나갔다
   out.u = ep.uv[i * 2]
   out.v = ep.uv[i * 2 + 1]
   return out
@@ -175,5 +181,5 @@ export function newSample() {
   return { fly: [0, 0, 0], heading: [0, 0, -1], C: [0, 0, 0], look: [0, 0, -1],
     hasAttitude: false, attitude: [1, 0, 0, 0], meshQuaternion: [0, 0, 0, 1],
     hasAngles: false, yaw: 0, pitch: 0,
-    i: 0, visible: false, alarmed: false, capture: 0, u: 0, v: 0 }
+    i: 0, visible: false, alarmed: false, capture: 0, firing: true, missed: false, u: 0, v: 0 }
 }

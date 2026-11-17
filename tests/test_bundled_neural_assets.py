@@ -59,7 +59,7 @@ def test_bundled_record_and_config_contain_no_absolute_local_paths(monkeypatch, 
     restored = EnvConfig.from_dict(cfg_data)
     recorder = EpisodeRecorder(FlyChaseEnv(restored))
     recorder.reset(seed=42)
-    recorder.step([0, 0]); recorder.step([0, 0])
+    recorder.step([0, 0, 0]); recorder.step([0, 0, 0])
     ep = recorder.last_episode
     assert ep["meta"]["neural"]["source_kind"] == "bundled"
     assert ep["meta"]["neural"]["resolved_source_root"] == BUNDLED_SOURCE_ID

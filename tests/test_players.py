@@ -15,7 +15,7 @@ class Recorder:
 
     def predict(self, obs, deterministic=True):
         self.seen.append(np.array(obs))
-        return np.zeros(2, dtype=np.float32), None
+        return np.zeros(3, dtype=np.float32), None
 
 
 def test_policy_player_stacks_frames_like_the_gymnasium_wrapper():
@@ -27,8 +27,8 @@ def test_policy_player_stacks_frames_like_the_gymnasium_wrapper():
     obs, _ = plain.reset(seed=5)
     player.act(obs)
     for _ in range(6):
-        expected.append(stacked.step(np.zeros(2))[0])
-        player.act(plain.step(np.zeros(2))[0])
+        expected.append(stacked.step(np.zeros(3))[0])
+        player.act(plain.step(np.zeros(3))[0])
     for want, got in zip(expected, player.policy.seen):
         np.testing.assert_array_equal(want, got)
 
@@ -72,7 +72,7 @@ def test_saved_models_load_back_as_opponents(tmp_path):
 
     fly = load_opponent(str(fly_run), "fly", cfg)
     assert fly.label == fly_run.name and fly.env_version == ENV_VERSION
-    assert _play(FlyChaseEnv(cfg, fly=fly.player), lambda obs: np.zeros(2)) > 0
+    assert _play(FlyChaseEnv(cfg, fly=fly.player), lambda obs: np.zeros(3)) > 0
 
     aimer = load_opponent(str(aimer_run / "checkpoints" / "step_0000064.zip"), "aimer", cfg)
     assert aimer.label == f"{aimer_run.name}/step_0000064"

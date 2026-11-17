@@ -155,7 +155,7 @@ def test_reset_recording_and_provenance(config):
     def episode():
         env.reset(seed=303)
         while True:
-            _,_,done,truncated,_=env.step([.1,-.2])
+            _,_,done,truncated,_=env.step([.1,-.2,0])
             if done or truncated: return env.last_episode
     a,b=episode(),episode()
     assert a['frames']==b['frames']
@@ -199,11 +199,10 @@ def test_alignment_can_end_in_capture_without_detected_threat(config, track_neur
     env.fly.reset([0,1.5,-1.5],[0,0,-1])
     d=env.fly.pos-env.aimer.pos; d/=np.linalg.norm(d)
     env.aimer.reset(env.aimer.pos,math.atan2(-d[0],-d[2]),math.asin(d[1]))
-    env._capture_timer=0.  # 새 배치 전 reset 판정 시간을 이월하지 않는다.
     track_neural_fly_on_beam(env)
     peak=0.
     while env.t<.3:
-        _,_,terminated,truncated,_=env.step([0,0])
+        _,_,terminated,truncated,_=env.step([0,0,1])
         diag=env.fly.diagnostics(); peak=max(peak,diag['left_input_hz'],diag['right_input_hz'])
         if terminated or truncated: break
     assert env._stimulus.events[0]['onset_ms']==120

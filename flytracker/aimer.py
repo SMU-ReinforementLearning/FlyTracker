@@ -9,7 +9,7 @@ import numpy as np
 
 from .geometry import aim_basis, approach, look_dir, wrap_angle
 
-ACTION_NAMES = ("yaw_rate", "pitch_rate")
+ACTION_NAMES = ("yaw_rate", "pitch_rate", "fire")
 ACTION_DIM = len(ACTION_NAMES)
 
 
@@ -26,9 +26,10 @@ class AimerLimits:
 class Aimer:
     """고정 포대. 자리는 reset 때 정하고 그 뒤로 움직이지 않는다.
 
-    행동은 −1~1 범위의 2차원 벡터다.
+    행동은 −1~1 범위의 3차원 벡터다.
     0 yaw_rate: + 이면 왼쪽(위에서 볼 때 반시계)으로 돈다.
     1 pitch_rate: + 이면 위를 본다.
+    2 fire: 0 보다 크면 레이저를 한 발 쏜다. 발사는 환경이 다룬다(env.FlyChaseEnv). 여기서는 읽지 않는다.
     실제 각속도는 각가속도 제한 안에서 목표값을 따라간다.
     """
 

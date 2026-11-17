@@ -90,6 +90,14 @@
   pointer-events: none;
 }
 
+.beam[data-firing='false'] {
+  --c: rgba(255, 255, 255, 0.25);
+}
+
+.beam[data-missed='true'] {
+  --c: #ff453a;
+}
+
 .beam[data-capture='true'] {
   --c: #30d158;
 }

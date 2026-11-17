@@ -25,7 +25,7 @@ The date in `README.md`, section "조준기의 state와 action", matches the sta
 - [x] No other README text changes. (2026-11-18 00:00)
 
 ## Current State
-Done 2026-11-18. The aimer state paragraph of the README now says 2026-11-15. The aimer reward paragraph's date is a follow-up candidate, not handled here.
+Done 2026-11-18. The aimer state paragraph of the README now says 2026-11-17: while this branch was open, #69 landed on main and made the state 18-dimensional (`shot`), so the date follows #69's merge, not #45's 2026-11-15 as first written. The aimer reward paragraph's date is a follow-up candidate, not handled here.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -63,6 +63,18 @@ Management doc, Master Registry row, `AGENTS.md` pointer line.
 - Status done here and in the Master Registry; `AGENTS.md` pointer line removed.
 #### Verification
 - `git diff --stat`: three files, no README change.
+#### Notes
+
+### Merge origin/main (61d2b6b, #69)
+> why: PR #74 conflicted; #69 rewrote the same README sentence ("18차원") and added a registry row
+#### Scope
+`README.md` (the one sentence), `docs/issues/README.md` (registry rows).
+#### Changes
+- README: main's "18차원" kept; date set to 2026-11-17, the merge date of #69 (61d2b6b), which added the `shot` item. The 2026-11-15 of the earlier commit described the 17-dimension state and no longer applies. The first Done Criteria line names 2026-11-15; the goal behind it (date = when the described state was fixed) is what was met.
+- Registry: both rows kept, #69 then #70.
+#### Verification
+- `git diff origin/main -- README.md`: one line, date only.
+- `git diff fdbb86e origin/main -- flytracker/env.py`: `OBS_FIELDS` gains `shot` (1), `ENV_VERSION` 6.
 #### Notes
 
 ## Management Notes
