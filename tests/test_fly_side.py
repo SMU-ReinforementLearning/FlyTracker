@@ -26,7 +26,7 @@ def test_fly_observation_lags_by_reaction_delay():
     assert env._fly_delay_steps == 3  # 0.06초 / 0.02초
     now, seen = [env._fly_obs_now()], [env.fly_observation()]
     for _ in range(20):
-        env.step(np.array([0.5, 0.2]))
+        env.step(np.array([0.5, 0.2, 0.0]))
         now.append(env._fly_obs_now())
         seen.append(env.fly_observation())
     for k, obs in enumerate(seen):
@@ -57,7 +57,7 @@ def test_learned_fly_does_not_use_threat_rule():
     env.reset(seed=0)
     env.fly.pos = env.aimer.pos + np.array([0.0, 0.2, -0.2])  # 0.35m 안. 규칙 초파리라면 위협으로 느낀다
     for _ in range(10):
-        env.step(np.zeros(2))
+        env.step(np.zeros(3))
         assert not env.fly.alarmed
 
 
@@ -105,7 +105,7 @@ def test_fly_reward_is_aimer_reward_with_sign_flipped():
     assert not info["visible"]
     w = core.config.fly_reward
     assert r == pytest.approx(w.time + w.lost)
-    assert r == pytest.approx(-info["aimer_reward"] - core.config.reward.action_change * np.mean(core._prev_action**2))
+    assert r == pytest.approx(-info["aimer_reward"] - core.config.reward.action_change * np.mean(core._prev_action[:2] ** 2))
 
 
 def test_captured_fly_loses_capture_reward():

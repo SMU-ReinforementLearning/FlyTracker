@@ -26,6 +26,7 @@ function distanceToWall(C, f, [w, h, d]) {
  * yaw 가 없는 기록(환경 버전 3까지)은 r = f × up 으로 만든다.
  * frustum 은 depth 까지 그린다. 움직이는 조준기는 포획 거리와 같아서 끝면이 포획 범위를 보여 준다.
  * 색은 포획 조건 안이면 capture, 보이면 visible, 아니면 idle 이다.
+ * 레이저를 쏠 때만 켜는 기록(ep.firing 이 있다)은 쏘는 동안에만 조준선을 진하게 그리고, 빗나간 발은 misfire 색으로 그린다.
  */
 export function AimerRig({ ep, colors, depth, bodyColor }) {
   const s = useMemo(newSample, [])
@@ -97,9 +98,10 @@ export function AimerRig({ ep, colors, depth, bodyColor }) {
 
     const stimulating = ep.meta.stimulus?.mode === 'beam' && ep.events.some((e) => e.onset_ms <= clock.t*1000 && e.end_ms > clock.t*1000 && e.exposure_ms > 0)
     const color = stimulating ? colors.alarm : s.capture > 0 ? colors.capture : s.visible ? colors.visible : colors.idle
-    parts.bore.material.opacity = stimulating ? .95 : .35
+    const shooting = ep.firing !== null && s.firing
+    parts.bore.material.opacity = stimulating || shooting ? .95 : ep.firing !== null ? .15 : .35
     parts.frustum.material.color.set(color)
-    parts.bore.material.color.set(color)
+    parts.bore.material.color.set(s.missed && !stimulating ? colors.misfire : color)
     parts.body.material.color.set(bodyColor)
   })
 

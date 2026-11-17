@@ -9,8 +9,8 @@ DT = 0.01
 START = np.array([0.0, 1.2, 1.4])
 
 
-def test_action_is_yaw_and_pitch_only():
-    assert ACTION_DIM == 2
+def test_action_is_yaw_pitch_and_fire():
+    assert ACTION_DIM == 3
 
 
 def test_positive_yaw_rate_increases_yaw_within_accel_limit():

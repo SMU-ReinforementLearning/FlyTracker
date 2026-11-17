@@ -86,6 +86,9 @@ def baseline_player(config: EnvConfig) -> PolicyPlayer:
             max_pitch_rate_deg=config.aimer.max_pitch_rate_deg,
             fov_v_deg=config.camera.fov_v_deg,
             aspect=config.camera.aspect,
+            fire_radius=config.capture_radius,
+            fine_error_deg=config.fine_error_deg,
+            room_diagonal=config.room.diagonal,
         )
     )
 

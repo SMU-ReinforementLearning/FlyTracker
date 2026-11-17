@@ -39,6 +39,9 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 | values of one side that do not depend on its kind | 설정 | 조건, 파라미터, 공통 설정 | 초파리 칸과 조준기 칸의 카드 제목 (#62) |
 | reward weights of one side | 보상 | 보상 가중치, 리워드 | 초파리 칸과 조준기 칸의 카드 제목. 조준기 쪽 항목은 벌점, 초파리 쪽 항목은 보상으로 끝난다 (#62) |
 | virtual looming stimulus shown to the neural fly | 자극 | 스티뮬러스, 가상 원반 | 신경 초파리 설정의 줄 이름에 쓴다. 예: 자극 횟수 (#62) |
+| one laser shot (0.15 s) | 발 | 샷, 사격 | 수치 목록의 "쏜 발". 값은 "3발". 환경 버전 6부터의 기록에만 나온다 (#69) |
+| shot during which the beam left the fly | 오발 | 미스, 빗나감 | 상태이자 수치 목록의 줄 이름. 값은 "2발" (#69) |
+| laser on | 쏘는 중 | 발사 중, 켜짐 | 수치 목록 "레이저" 줄의 값. 반대는 꺼짐 (#69) |
 | training seed | 학습 seed | 시드 | 알고리즘 설정의 `seed` |
 | seeds of recorded episodes | 에피소드 seed | 평가 시드 | 설명 파일의 `notes`에 적는다 |
 
@@ -51,6 +54,8 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 | `result: timeout` | 시간 초과 |
 | `visible: 1` / `0` | 보임 / 안 보임 |
 | `captureProgress > 0` | 포획 중 |
+| `firing: true` 이고 `captureProgress = 0` | 오발 |
+| `firing: true` / `false` | 쏘는 중 / 꺼짐 |
 | `alarmed: 1` / `0` | 비상시 / 평시 |
 | tag `baseline` | 기준선 |
 | tag `initial` | 학습 전 |
@@ -66,3 +71,4 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 - 2026-11-16: 추적 보조 추가 (#51)
 - 2026-11-15: issue 화면의 실험, 초파리, 조준기, 조건 용어 11개 추가 (#47)
 - 2026-11-16: issue 화면의 조건 칸을 환경으로 바꾸고 설정, 보상, 자극 추가 (#62)
+- 2026-11-17: 발, 오발, 쏘는 중 추가 (#69)

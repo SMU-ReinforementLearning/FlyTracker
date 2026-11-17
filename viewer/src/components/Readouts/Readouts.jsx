@@ -12,6 +12,8 @@ export function Readouts({ ep, scheme }) {
   const colors = SCENE[scheme]
   const visible = ep.visible[i] === 1
   const capture = ep.capture[i]
+  const firing = ep.firing?.[i] === 1
+  const missed = firing && capture === 0
   const alarmed = ep.alarmed[i] === 1
   const events = ep.events.filter((event) => event.onset_ms <= c.t * 1000)
   const stimulating = events.some((event) => event.end_ms > c.t * 1000 && event.exposure_ms > 0)
@@ -20,7 +22,7 @@ export function Readouts({ ep, scheme }) {
   const flightLabel = ep.meta.flyModel === 'neural' ? '신경 날개 (실험)' : '규칙 기반'
   const escapeLabel = '도피 회로 출력'
 
-  const state = capture > 0 ? ['포획 중', colors.capture] : visible ? ['보임', colors.visible] : ['안 보임', colors.idle]
+  const state = capture > 0 ? ['포획 중', colors.capture] : missed ? ['오발', colors.misfire] : visible ? ['보임', colors.visible] : ['안 보임', colors.idle]
   const rows = ep.meta.mode === 'free-flight' ? [
     ['비행 모델', ep.meta.flyModel === 'neural' ? '신경 기반' : '규칙 기반'],
     ...(ep.meta.flyModel === 'neural' ? [['비행 설정', flightLabel]] : []),
@@ -53,6 +55,9 @@ export function Readouts({ ep, scheme }) {
     ...(ep.beam ? [['빔까지 거리', beamDistance(ep.beam[i])]] : []),
     ['거리', `${ep.distance[i].toFixed(2)}m`],
     ['포획 진행', `${Math.round(capture * 100)}%`],
+    ...(ep.firing ? [['레이저', firing ? '쏘는 중' : '꺼짐'],
+      ['쏜 발', `${ep.shots[i]}발`],
+      ['오발', `${ep.misfires[i]}발`]] : []),
     ['초파리', alarmed ? '비상시' : '평시', alarmed ? colors.alarm : null],
     ...(ep.normalRate ? [['DNg02 출력', `${ep.normalRate[i].toFixed(1)}Hz`],
       [escapeLabel, `${ep.escapeRate[i].toFixed(1)}Hz`],

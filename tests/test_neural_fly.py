@@ -51,7 +51,7 @@ def test_default_rule_matches_prechange_rollout(seed, position, heading):
     rng = np.random.default_rng(987)
     rewards = []
     for _ in range(30):
-        _, reward, *_ = env.step(rng.uniform(-1, 1, 2))
+        _, reward, *_ = env.step(np.append(rng.uniform(-1, 1, 2), 0.0))
         rewards.append(reward)
     np.testing.assert_allclose(env.fly.pos, position, atol=1e-12)
     np.testing.assert_allclose(env.fly.heading, heading, atol=1e-12)
@@ -182,8 +182,8 @@ def test_neural_reset_and_seed_reproduce(local_config):
         assert not env.fly.sim.motor.filtered.any() and env.fly.sim.motor.phase == "normal"
         rows = [obs]
         for _ in range(5):
-            obs, *_ = env.step([.2, -.1]); rows.append(obs)
-            assert OBS_DIM == 17 and obs.shape == (OBS_DIM,) and env.observation_space.contains(obs)
+            obs, *_ = env.step([.2, -.1, 0]); rows.append(obs)
+            assert OBS_DIM == 18 and obs.shape == (OBS_DIM,) and env.observation_space.contains(obs)
         return np.array(rows), env.snapshot(), env.fly.sim.neural.voltage.copy()
     a = rollout(); b = rollout()
     np.testing.assert_array_equal(a[0], b[0]); assert a[1] == b[1]
@@ -216,7 +216,7 @@ def test_recording_preserves_old_fields_and_viewer_loader(local_config):
     recorder = EpisodeRecorder(FlyChaseEnv(cfg))
     recorder.reset(seed=0)
     for _ in range(2):
-        recorder.step([0,0])
+        recorder.step([0,0,0])
     ep = recorder.last_episode
     assert ep["format"] == "flytracker.episode/1"
     assert set(FRAME_KEYS) <= ep["frames"].keys()
@@ -255,7 +255,7 @@ def test_capture_before_charge_does_not_present_future_stimulus(local_config, tr
     env.reset(seed=0)
     track_neural_fly_on_beam(env)
     for _ in range(5):
-        _,_,terminated,_,_ = env.step([0,0])
+        _,_,terminated,_,_ = env.step([0,0,1])
         if terminated:
             break
     assert terminated and env.t <= .05
@@ -263,14 +263,14 @@ def test_capture_before_charge_does_not_present_future_stimulus(local_config, tr
 
 
 def test_capture_at_pulse_onset_has_zero_delivered_exposure(local_config, track_neural_fly_on_beam):
-    # Existing reset vision contributes one capture tick. At 120 ms the gate
+    # A shot fired on the first step lasts capture_hold and ends at 120 ms. At 120 ms the gate
     # schedules onset and capture terminates before a sensory sample at 120 ms.
     env = FlyChaseEnv(EnvConfig(fly_model="neural", neural=local_config,
-                              capture_hold=.13, max_seconds=.3, start_facing_fly=True))
+                              capture_hold=.12, max_seconds=.3, start_facing_fly=True))
     env.reset(seed=0)
     track_neural_fly_on_beam(env)
     for _ in range(10):
-        _,_,terminated,_,_ = env.step([0,0])
+        _,_,terminated,_,_ = env.step([0,0,1])
         if terminated:
             break
     assert terminated and env.t == .12

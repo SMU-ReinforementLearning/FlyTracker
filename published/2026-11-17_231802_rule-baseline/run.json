@@ -1,0 +1,1 @@
+{"id":"2026-11-17_231802_rule-baseline","name":"rule-baseline","createdAt":"2026-11-17T23:18:02","algo":"rule-baseline","actionMode":"continuous","notes":"rule baseline aimer, fly rule, seeds 10000-10002","episodeCount":3,"issue":{"number":69,"title":"조준기에 레이저 발사 행동과 오발 측정 넣기","url":"https://github.com/SMU-ReinforementLearning/FlyTracker/issues/69"},"author":"lhk0721"}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 // 3D 장면 색. 화면 요소 색은 assets/styles/variables.css 의 CSS 변수가 맡는다.
 // 상태 색 세 가지(보임, 포획 중, 회피 중)는 dataviz 검사 스크립트로 두 모드 모두 확인했다.
+// 오발 색(misfire)은 조준선에만 쓰고, 같은 상태를 오른쪽 수치 목록이 글자로 보여 준다.
 // 밝은 모드의 주황과 초록은 바탕 대비 3:1 미만이라, 같은 상태를 오른쪽 수치 목록이 글자로도 보여 준다.
 export const SCENE = {
   light: {
@@ -14,6 +15,7 @@ export const SCENE = {
     idle: '#8e8e93',
     visible: '#0071e3',
     capture: '#1baf7a',
+    misfire: '#d70015',
     alarm: '#eb6834',
   },
   dark: {
@@ -26,6 +28,7 @@ export const SCENE = {
     idle: '#8e8e93',
     visible: '#3987e5',
     capture: '#199e70',
+    misfire: '#ff453a',
     alarm: '#d95926',
   },
 }

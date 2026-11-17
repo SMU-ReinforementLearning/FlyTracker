@@ -28,7 +28,7 @@ def _env_with_fly_at(offset_m: float, distance: float = 2.0, reward: RewardWeigh
 def _step_reward(env: FlyChaseEnv) -> float:
     pos = env.fly.pos.copy()
     env.fly.step = lambda *a, **k: None  # 초파리를 그 자리에 둔다
-    _, reward, _, _, info = env.step(np.zeros(2))
+    _, reward, _, _, info = env.step(np.zeros(3))
     assert info["visible"] and np.allclose(env.fly.pos, pos)
     return reward
 

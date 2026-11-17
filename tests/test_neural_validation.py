@@ -39,7 +39,7 @@ def test_neural_odd_10ms_horizon_does_not_overrun(local_config, duration):
                                                     max_seconds=duration, capture_hold=2.)))
     recorder.reset(seed=0)
     for _ in range(10):
-        _, _, terminated, truncated, _ = recorder.step([0, 0])
+        _, _, terminated, truncated, _ = recorder.step([0, 0, 0])
         if terminated or truncated:
             break
     assert truncated and not terminated
@@ -55,7 +55,7 @@ def test_saved_neural_events_config_and_hashes_are_actual(local_config, tmp_path
     recorder = EpisodeRecorder(FlyChaseEnv(cfg))
     recorder.reset(seed=0)
     for _ in range(20):
-        recorder.step([0, 0])
+        recorder.step([0, 0, 0])
     store = RunStore(tmp_path / "new-run-store")
     run = store.create_run("validation", "fixed-action", "continuous", {"env": cfg.to_dict()})
     relative = run.save_episode(recorder.last_episode, "test")

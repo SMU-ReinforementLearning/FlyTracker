@@ -15,7 +15,7 @@ def test_env_passes_gymnasium_checker():
 def test_discrete_actions_drive_one_axis():
     env = make_env(action_mode="discrete")
     env.reset(seed=0)
-    assert env.action_space.n == 5
+    assert env.action_space.n == 6
     for a in range(env.action_space.n):
         obs, *_ = env.step(a)
         assert env.observation_space.contains(obs)
@@ -28,7 +28,7 @@ def test_same_seed_same_episode():
         rng = np.random.default_rng(0)
         seq = [obs]
         for _ in range(100):
-            obs, *_ = env.step(rng.uniform(-1, 1, 2))
+            obs, *_ = env.step(rng.uniform(-1, 1, 3))
             seq.append(obs)
         return np.array(seq)
 
@@ -40,6 +40,9 @@ def static_fly_config(**kw) -> EnvConfig:
     return replace(EnvConfig(fly=fly), **kw)
 
 
+FIRE = np.array([0.0, 0.0, 1.0])  # 돌리지 않고 쏜다
+
+
 def test_holding_fly_in_center_captures():
     cfg = static_fly_config()
     env = FlyChaseEnv(cfg)
@@ -48,7 +51,7 @@ def test_holding_fly_in_center_captures():
     env._update_vision()
     total, steps, terminated = 0.0, 0, False
     while not terminated and steps < 100:
-        _, r, terminated, truncated, info = env.step(np.zeros(2))
+        _, r, terminated, truncated, info = env.step(FIRE)
         total += r
         steps += 1
     assert terminated and info["captured"]
@@ -62,7 +65,7 @@ def test_time_limit_truncates():
     env.reset(seed=0)
     truncated = False
     for _ in range(5):
-        _, _, terminated, truncated, _ = env.step(np.zeros(2))
+        _, _, terminated, truncated, _ = env.step(np.zeros(3))
     assert truncated and not terminated
 
 
@@ -88,7 +91,7 @@ def test_turret_stays_at_configured_position():
     env.reset(seed=3)
     rng = np.random.default_rng(1)
     for _ in range(50):
-        env.step(rng.uniform(-1, 1, 2))
+        env.step(rng.uniform(-1, 1, 3))
         assert np.array_equal(env.aimer.pos, np.array(cfg.turret_pos))
 
 
@@ -105,7 +108,7 @@ def test_capture_range_none_captures_far_fly():
     env._update_vision()
     terminated, steps = False, 0
     while not terminated and steps < 100:
-        _, _, terminated, _, info = env.step(np.zeros(2))
+        _, _, terminated, _, info = env.step(FIRE)
         steps += 1
     assert info["captured"]
 
@@ -118,7 +121,7 @@ def test_fly_straight_above_turret_is_captured():
     env._update_vision()
     info = {"captured": False}
     for _ in range(150):  # 3초 동안 위로 돌린다
-        obs, _, terminated, _, info = env.step(np.array([0.0, 1.0]))
+        obs, _, terminated, _, info = env.step(np.array([0.0, 1.0, 1.0]))
         if terminated:
             break
     assert info["captured"] is True
@@ -195,9 +198,7 @@ def _held_fly_env(offset_m: float = 0.0, distance: float = 2.0, **kw) -> FlyChas
     env.reset(seed=0)
     side = np.cross(env.aimer.look, np.array([0.0, 1.0, 0.0]))
     env.fly.pos = env.aimer.pos + env.aimer.look * distance + side / np.linalg.norm(side) * offset_m
-    env._capture_timer = 0.0
     env._update_vision()
-    env._capture_timer = 0.0  # 놓은 뒤부터 센다
     return env
 
 
@@ -205,11 +206,37 @@ def test_capture_needs_fifteen_physics_steps_on_the_beam():
     env = _held_fly_env()
     assert env.config.capture_hold == pytest.approx(0.15) and env.config.dt == 0.01
     for _ in range(7):  # 물리 step 14번
-        _, _, terminated, _, info = env.step(np.zeros(2))
+        _, _, terminated, _, info = env.step(FIRE)
         assert not terminated and not info["captured"]
-    _, _, terminated, _, info = env.step(np.zeros(2))  # 15번째에서 잡힌다
+    _, _, terminated, _, info = env.step(FIRE)  # 15번째에서 잡힌다
     assert terminated and info["captured"]
     assert info["t"] == pytest.approx(0.15)
+    assert (info["shots"], info["misfires"]) == (1, 0)
+
+
+def test_no_capture_without_firing():
+    # 빔이 초파리 위에 있어도 쏘지 않으면 잡히지 않는다.
+    env = _held_fly_env()
+    for _ in range(20):
+        obs, _, terminated, _, info = env.step(np.zeros(3))
+        assert not terminated and obs[OBS["shot"]][0] == 0.0
+    assert info["beam_dist"] == pytest.approx(0.0, abs=1e-9)
+    assert (info["shots"], info["misfires"], info["firing"]) == (0, 0, False)
+
+
+def test_shot_cannot_be_stopped_and_observation_counts_it_down():
+    # 한 번 쏘면 0.15초 동안 이어진다. 그동안 관측 shot 이 1 에서 0 으로 줄고, 다시 당긴 방아쇠는 무시된다.
+    env = _held_fly_env(offset_m=0.01)  # 빔에서 1cm 떨어져 있어 맞지 않는다
+    obs, _, _, _, info = env.step(FIRE)
+    assert info["firing"] and (info["shots"], info["misfires"]) == (1, 1)
+    assert obs[OBS["shot"]][0] == pytest.approx(13 / 15)
+    for left in (11, 9, 7, 5, 3, 1):  # 쏘지 않아도, 또 쏘아도 같은 한 발이 이어진다
+        obs, _, _, _, info = env.step(FIRE if left % 4 == 1 else np.zeros(3))
+        assert obs[OBS["shot"]][0] == pytest.approx(left / 15) and info["shots"] == 1
+    obs, _, _, _, info = env.step(np.zeros(3))  # 한 발이 끝난다
+    assert obs[OBS["shot"]][0] == 0.0 and info["firing"]
+    obs, _, _, _, info = env.step(np.zeros(3))
+    assert not info["firing"] and (info["shots"], info["misfires"]) == (1, 1)
 
 
 @pytest.mark.parametrize("offset_mm, captured", [(1.2, True), (1.3, False), (52.0, False)])
@@ -218,27 +245,31 @@ def test_capture_is_decided_by_distance_to_the_beam(offset_mm, captured):
     env = _held_fly_env(offset_m=offset_mm / 1000, distance=1.0)
     info = {}
     for _ in range(20):
-        _, _, terminated, _, info = env.step(np.zeros(2))
+        _, _, terminated, _, info = env.step(FIRE)
         if terminated:
             break
     assert info["captured"] is captured
     assert info["beam_dist"] * 1000 == pytest.approx(offset_mm, abs=1e-6)
+    assert info["misfires"] == (0 if captured else info["shots"])  # 빗나간 자리에서 쏜 발은 모두 오발이다
 
 
-def test_capture_timer_restarts_when_the_fly_leaves_the_beam():
+def test_shot_that_leaves_the_fly_is_a_misfire_and_the_next_shot_can_capture():
     env = _held_fly_env()
     for _ in range(6):
-        env.step(np.zeros(2))
+        env.step(FIRE)
     on_beam = env.fly.pos.copy()
     env.fly.pos = on_beam + np.array([0.0, 0.01, 0.0])  # 빔에서 1cm 벗어난다
-    _, _, terminated, _, _ = env.step(np.zeros(2))
-    assert not terminated and env._capture_timer == 0.0
+    _, _, terminated, _, info = env.step(FIRE)
+    assert not terminated and (info["shots"], info["misfires"]) == (1, 1)
+    assert env.snapshot()["captureProgress"] == 0.0
     env.fly.pos = on_beam
+    _, _, terminated, _, info = env.step(FIRE)  # 빗나간 발의 마지막 물리 step. 다시 맞아도 이 발은 오발이다
+    assert not terminated and info["shots"] == 1
     for _ in range(7):
-        _, _, terminated, _, _ = env.step(np.zeros(2))
-        assert not terminated
-    _, _, terminated, _, info = env.step(np.zeros(2))
-    assert terminated and info["captured"]
+        _, _, terminated, _, info = env.step(FIRE)
+        assert not terminated and info["shots"] == 2
+    _, _, terminated, _, info = env.step(FIRE)
+    assert terminated and info["captured"] and (info["shots"], info["misfires"]) == (2, 1)
 
 
 def test_fly_behind_the_turret_is_not_hit():
@@ -248,5 +279,5 @@ def test_fly_behind_the_turret_is_not_hit():
     env._update_vision()
     assert env._info()["beam_dist"] == pytest.approx(0.5)
     for _ in range(20):
-        _, _, terminated, _, info = env.step(np.zeros(2))
+        _, _, terminated, _, info = env.step(FIRE)
     assert not info["captured"]

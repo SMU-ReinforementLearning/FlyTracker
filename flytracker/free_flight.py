@@ -75,6 +75,7 @@ def record_tracking_observation(config: EnvConfig, seed: int = 0,
             action = np.clip([
                 (feed[0]+8.*wrap_angle(target[0]-env.aimer.yaw))/math.radians(cfg.aimer.max_yaw_rate_deg),
                 (feed[1]+8.*(target[1]-env.aimer.pitch))/math.radians(cfg.aimer.max_pitch_rate_deg),
+                0.,  # 관찰 기록은 쏘지 않는다
             ], -1, 1)
             previous_on = on
         obs, _, terminated, truncated, _ = recorder.step(action)
@@ -110,7 +111,7 @@ def record_free_flight(config: EnvConfig, seed: int = 0) -> dict:
         values = dict(t=time_ms/1000, fly=fly.pos.tolist(), flyHeading=fly.heading.tolist(),
                       aimerC=[0., 0., 0.], aimerLook=[0., 0., -1.], aimerAngles=[0., 0.], visible=False,
                       uv=[0., 0.], angleErrDeg=0., beamDistMm=0., distance=0., alarmed=fly.alarmed,
-                      captureProgress=0., reward=0., flySpeed=float(fly.speed))
+                      captureProgress=0., firing=False, shots=0, misfires=0, reward=0., flySpeed=float(fly.speed))
         for key, value in values.items():
             frames[key].append(_round(value))
         if neural:
