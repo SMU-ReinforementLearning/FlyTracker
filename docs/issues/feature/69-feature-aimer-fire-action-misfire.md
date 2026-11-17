@@ -109,6 +109,31 @@ Env version 6: action, shot rule, counts, observation, baseline trigger, recorde
 - "Always firing" is not the old rule: shots restart every 0.15 s, so a 0.15 s on-target window that straddles two shots does not capture. It costs 0.1 s on average here.
 - Episodes recorded before version 6 have no `firing`, `shots`, `misfires`; readers must treat them as absent.
 
+### chore: 기준선 측정 원자료 올리기 (#69)
+> why: the user asked (2026-11-17) that the results be reproducible and usable for later analysis; the tables above were only printed
+#### Scope
+`docs/issues/feature/69-feature-aimer-fire-action-misfire/data/`: raw rows of both measurements and a README with commands and columns. No code change.
+#### Changes
+- `data/rule-fly/` (seeds 20000-20199, six triggers: 1,200 episode rows, 7,749 shot rows) and `data/neural-fly-nostim/` (seeds 20000-20019, two triggers: 40 episode rows, 670 shot rows). Each has `episodes.csv`, `shots.csv`, `meta.json`.
+- `data/README.md`: the exact command per folder, setup, every column, a loading example, limits.
+#### Verification
+- Both runs were made at commit 55cc905 with a clean tree (`gitCommit`, `gitDirty: false` in each `meta.json`). No local path is in either `meta.json`.
+- The printed tables equal the ones in the previous section, row for row (rule fly: 198/200, 4.894 s, 1.49 shots, 0.50 misfires at 1.25 mm; neural: 20/20, 4.920 s, 1.80, 0.80).
+- From `shots.csv`, default trigger (script: stdlib `csv`, medians):
+
+| Fly | Outcome | Shots | Beam distance at trigger | Fly's angular rate at trigger | Aimer-fly distance |
+|---|---|---|---|---|---|
+| rule | hit | 198 | 0.84 mm | 7.4 deg/s | 1.88 m |
+| rule | misfire | 100 | 0.89 mm | 8.6 deg/s | 1.96 m |
+| neural | hit | 20 | 0.73 mm | 11.5 deg/s | 2.06 m |
+| neural | misfire | 16 | 1.12 mm | 11.0 deg/s | 2.05 m |
+
+  Rule fly: 60 of 100 misfires leave the fly within 40 ms of the trigger, 18 after 100 ms or more. Misfires per episode: 0 in 138, 1 in 41, 2 in 11, 3 in 7, 4 in 2, 8 in 1. From first sight of the fly to capture: median 1.35 s; the fly is first seen at 3.43 s on average.
+#### Notes
+- `est_beam_mm` equals `true_beam_mm` in every row: the observation carries no error yet, so the baseline knows the beam distance exactly at the trigger and still misses one shot in three. What it lacks is not the present position but the next 0.15 s. This is the number to compare against once the detector (#13) adds error.
+- Against the rule fly, hits and misfires look alike at the trigger (0.84 vs 0.89 mm, 7.4 vs 8.6 deg/s), so a tighter radius or a rate threshold on one observation cannot separate them well; this agrees with the weak effect of the trigger radius.
+- The neural rows are 36 shots; the 0.73 vs 1.12 mm gap there is not established.
+
 ## Management Notes
 ### Follow-up Candidates
 - Train an aimer under env version 6 once the detector's error model exists (#13); decide the misfire term of the reward there.
