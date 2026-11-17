@@ -35,6 +35,7 @@ function FollowAimer({ ep, fov = ep.meta.fovV }) {
 /**
  * 조준기 화면의 가운데를 확대한 화면. 빔 지름 2.5mm 와 초파리(몸 길이 약 3mm)를 가려 볼 수 있다.
  * 원은 초파리가 있는 거리에서 빔이 차지하는 범위다. 초파리 중심이 원 안에 있으면 맞은 것이다.
+ * 레이저를 쏠 때만 켜는 기록에서는 쏘지 않는 동안 원을 흐리게 그리고, 빗나간 발은 붉게 그린다.
  * 포획이 레이저 명중인 기록(captureRadius 가 있다)에만 쓴다.
  */
 export function ZoomView({ ep }) {
@@ -49,6 +50,8 @@ export function ZoomView({ ep }) {
     const distance = ep.distance[s.i]
     el.style.height = distance > 0 ? `${(ep.meta.captureRadius / distance / tanHalf) * 100}%` : '0'
     el.dataset.capture = s.capture > 0 ? 'true' : 'false'
+    el.dataset.firing = s.firing ? 'true' : 'false'
+    el.dataset.missed = s.missed ? 'true' : 'false'
   }, [ep, s, tanHalf])
   useAnimationFrame(update)
 

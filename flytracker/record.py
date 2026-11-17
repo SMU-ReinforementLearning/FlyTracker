@@ -35,7 +35,7 @@ EPISODE_FORMAT = "flytracker.episode/1"
 INDEX_FORMAT = "flytracker.runs/1"
 
 # 항목별 배열로 저장한다. 프레임마다 객체를 두는 것보다 파일이 작다.
-FRAME_KEYS = ("t", "fly", "flyHeading", "aimerC", "aimerLook", "aimerAngles", "visible", "uv", "angleErrDeg", "beamDistMm", "distance", "alarmed", "captureProgress", "firing")
+FRAME_KEYS = ("t", "fly", "flyHeading", "aimerC", "aimerLook", "aimerAngles", "visible", "uv", "angleErrDeg", "beamDistMm", "distance", "alarmed", "captureProgress", "firing", "shots", "misfires")
 
 
 def _round(v, nd: int = 4):

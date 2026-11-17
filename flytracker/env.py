@@ -373,6 +373,8 @@ class FlyChaseEnv(gym.Env):
             # 지금 발이 빗나가지 않고 지나온 비율. 빗나간 발과 쏘지 않는 동안은 0, 포획하면 1 이다
             "captureProgress": 1.0 if self.captured else self._shot_progress(),
             "firing": self._firing,
+            "shots": self.shots,  # 지금까지 쏜 발 수와 그 가운데 오발 수
+            "misfires": self.misfires,
         }
 
     # 내부 계산

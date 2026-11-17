@@ -291,7 +291,7 @@ uv run python scripts/record_baseline.py --episodes 200 --seed 10000 --no-save
 | 오발 | 에피소드마다 평균 0.55발 |
 | 오발 없이 잡은 에피소드 | 200개 중 134개 |
 
-포획까지 걸린 시간은 대부분 초파리를 찾는 데 쓴다. 초파리가 화면에 들어온 뒤에는 각속도를 맞춰 빔을 붙이고, 빔이 1.25mm 안에 들어왔다고 보이면 쏜다. 쏜 발 수와 오발 수는 아래 명령으로 잰다. 쏘는 기준 거리를 바꿔 가며 잰 값은 [#69 관리 문서](docs/issues/feature/69-feature-aimer-fire-action-misfire.md)에 있다.
+포획까지 걸린 시간은 대부분 초파리를 찾는 데 쓴다. 초파리가 화면에 들어온 뒤에는 각속도를 맞춰 빔을 붙이고, 빔이 1.25mm 안에 들어왔다고 보이면 쏜다. 쏜 발 수와 오발 수는 아래 명령으로 잰다. 쏘는 기준 거리를 바꿔 가며 잰 값은 [#69 관리 문서](docs/issues/feature/69-feature-aimer-fire-action-misfire.md)에 있고, 에피소드별, 발별 원자료와 다시 재는 명령은 [data 폴더](docs/issues/feature/69-feature-aimer-fire-action-misfire/data/README.md)에 있다.
 
 ```sh
 uv run python docs/issues/feature/69-feature-aimer-fire-action-misfire/measure_fire.py --seed 10000
@@ -402,6 +402,7 @@ runs/
 | `alarmed` | 규칙 초파리는 비상시인지, 초파리 agent는 피한 직후 빨라진 동안인지 |
 | `captureProgress` | 포획 조건을 채운 정도(0~1). 환경 버전 6부터는 쏘고 있는 한 발이 빗나가지 않고 지나온 비율이다. 쏘지 않는 동안과 빗나간 발에서는 0이다 |
 | `firing` | 그 step 동안 레이저가 나갔는지. 환경 버전 6부터 있다 |
+| `shots`, `misfires` | 그 프레임까지 쏜 발 수와 오발 수. 환경 버전 6부터 있다 |
 | `reward` | 그 step에서 받은 보상. 초파리 쪽을 학습한 실행이면 초파리의 R이다 |
 
 </details>

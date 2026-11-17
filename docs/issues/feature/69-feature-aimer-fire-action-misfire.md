@@ -134,6 +134,34 @@ Env version 6: action, shot rule, counts, observation, baseline trigger, recorde
 - Against the rule fly, hits and misfires look alike at the trigger (0.84 vs 0.89 mm, 7.4 vs 8.6 deg/s), so a tighter radius or a rate threshold on one observation cannot separate them well; this agrees with the weak effect of the trigger radius.
 - The neural rows are 36 shots; the 0.73 vs 1.12 mm gap there is not established.
 
+### feat: viewer에 레이저 발사와 오발 보여 주기 (#69)
+> why: recorded episodes carried `firing` but the viewer drew the aim line as if the laser were always on, and a misfire could not be seen
+#### Scope
+Viewer (aim line, zoom circle, readouts, issue-page history), two more frame keys, glossary. No change to env behaviour.
+#### Changes
+- `env.py` snapshot and `record.py` `FRAME_KEYS`: cumulative `shots` and `misfires` per frame, so the viewer and later analysis do not have to reconstruct them from `firing` (back-to-back shots have no falling edge). `free_flight.py` writes zeros. README `frames` table gains the row and a link to `data/README.md`.
+- `viewer/src/data/episode.js`: `firing`, `shots`, `misfires` (null for records before version 6); a sample has `firing` (true for old records: the laser was always on) and `missed` (firing and `captureProgress` 0).
+- `AimerRig.jsx`: in version 6 records the aim line is faint (opacity 0.15) while not firing and solid (0.95) while firing; a missed shot is drawn in the new `misfire` colour (`theme.js`). Old records are drawn as before (0.35).
+- `FirstPersonView.jsx` / `.module.css`: the zoom view's beam circle is dim while not firing, red on a missed shot, green on a clean one.
+- `Readouts.jsx`: state `오발` while a missed shot is still running; rows `레이저` (`쏘는 중` / `꺼짐`), `쏜 발`, `오발`, only for records that have `firing`.
+- `history.js`: issue 69 (env 6), an `envVersion` line and a `env.capture_hold` line (value unchanged, meaning now "length of one shot").
+- `ui-text.glossary.md`: 발, 오발, 쏘는 중.
+#### Verification
+- `uv run pytest -q`: 205 passed. `npm run build` in `viewer`: built.
+- ui-evidence on the built site (`vite preview`, port 4969), tree: uncommitted on 9fe7215, Chrome 157, 1600x900, serve check `document.title === 'FlyTracker'`. Ready = playback ended, then N `ArrowLeft` key events to reach the frame. Probe = the readout rows and the zoom circle's `data-firing/data-missed`.
+
+| state | run, episode, frame | overflow | readouts | zoom circle |
+| --- | --- | --- | --- | --- |
+| missed shot | `2026-11-17_231813_neural-nostim-baseline` ep 3, 214/255 | none | 상태 오발, 포획 진행 0%, 레이저 쏘는 중, 쏜 발 1발, 오발 1발 | true/true |
+| clean shot | `2026-11-17_231802_rule-baseline` ep 1, 255/259 | none | 상태 포획 중, 포획 진행 53%, 레이저 쏘는 중, 쏜 발 1발, 오발 0발 | true/false |
+| not firing | same episode, 241/259 | none | 상태 보임, 레이저 꺼짐, 쏜 발 0발, 오발 0발 | false/false |
+| record before version 6 | `2026-11-17_201228_neural-nostim-baseline` ep 1, 201/265 | none | no 레이저 / 쏜 발 / 오발 rows | true/false |
+
+  Console: favicon 404 and `THREE.Clock` deprecation warnings only (both present on main). Captures are in the session scratchpad, not committed. Looked at: missed shot (red solid aim line from the aimer through the fly's position, red zoom circle, red dot next to 오발) and not firing (aim line barely visible, dim zoom circle).
+- Not verified: phone width (no layout change; three readout rows added to an existing list), light colour scheme (the capture ran in dark), the clean-shot PNG was checked by probe only.
+#### Notes
+- The first two capture attempts failed in the helper script (playback auto-starts, so stepping forward from frame 0 did not land on the frame; then a regex lost its backslashes). Not a viewer fault.
+
 ## Management Notes
 ### Follow-up Candidates
 - Train an aimer under env version 6 once the detector's error model exists (#13); decide the misfire term of the reward there.
