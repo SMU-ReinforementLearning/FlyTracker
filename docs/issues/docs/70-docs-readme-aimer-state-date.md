@@ -20,12 +20,12 @@ The date in `README.md`, section "조준기의 state와 action", matches the sta
 - Any code or viewer change.
 
 ## Done Criteria
-- [ ] The date in the aimer state paragraph is the date the 17-dimension state was fixed (#45, 2026-11-15).
-- [ ] The fly state paragraph is checked against `FLY_OBS_FIELDS` history and left alone if its date is still right.
-- [ ] No other README text changes.
+- [x] The date in the aimer state paragraph is the date the 17-dimension state was fixed (#45, 2026-11-15). (2026-11-18 00:00)
+- [x] The fly state paragraph is checked against `FLY_OBS_FIELDS` history and left alone if its date is still right. (2026-11-18 00:00)
+- [x] No other README text changes. (2026-11-18 00:00)
 
 ## Current State
-README date edited in the worktree, not yet committed. Waiting for the user's approval at the review gate (seed commit, then the README commit).
+README date corrected and committed. Not pushed; no PR yet. Before the PR, remove this branch's pointer line from `AGENTS.md` as the last commit.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -41,6 +41,19 @@ Management doc, Master Registry row, `AGENTS.md` pointer line.
 #### Verification
 - `issue-start.mjs` summary: issue #70, branch from `origin/main` @ fdbb86e.
 #### Notes
+
+### docs: README의 조준기 state 기준 날짜 고치기 (#70)
+> why: the paragraph says "17차원" but dated the choice of items to 2026-11-12, when the state had 13 dimensions
+#### Scope
+`README.md`, aimer state paragraph, one date.
+#### Changes
+- "어떤 항목을 넣을지는 2026-11-12 기준으로 정한 가정" → "2026-11-15 기준". 2026-11-15 is the merge date of #45 (d38e931), which added `target_rate` and `uv_fine`.
+#### Verification
+- `git diff --stat -- README.md`: 1 file changed, 1 insertion, 1 deletion.
+- `git log -L` on `OBS_FIELDS` history (`-G'target_rate|uv_fine'`): only d38e931, 2026-11-15.
+- Fly state paragraph left alone: `git log -L` on `FLY_OBS_FIELDS` shows 64c60ff (#34, 2026-11-12) and 7a81d0a (#42), and the #42 diff changes one comment, no item.
+#### Notes
+- The aimer reward paragraph's date was not touched (out of scope, listed under Follow-up Candidates).
 
 ## Management Notes
 ### Follow-up Candidates
