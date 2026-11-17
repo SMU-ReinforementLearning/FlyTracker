@@ -62,7 +62,6 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `73-docs-sac-concepts-qna` — `docs/issues/docs/73-docs-sac-concepts-qna.md` — SAC 개념을 쉬운 문답으로 정리하기
 
 ## Environment (repo slot)
 

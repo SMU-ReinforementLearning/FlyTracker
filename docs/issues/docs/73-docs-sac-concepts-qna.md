@@ -4,7 +4,7 @@
 - Issue: #73
 - Branch: `73-docs-sac-concepts-qna`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 A formula-free question-and-answer explainer of the SAC networks used for the aimer, written from the questions the user asked while studying it on 2026-11-17. It is the easy companion to the formula-level `docs/issues/feature/35-feature-sac-aimer-training/sac.md` and links to it.
@@ -31,7 +31,7 @@ A formula-free question-and-answer explainer of the SAC networks used for the ai
 - [x] User approved the text. (2026-11-18, "머지까지 해")
 
 ## Current State
-Document written and reviewed, not committed. Waiting on the user's approval at the review gate. After approval: seed commit, then the docs commit; before the PR, remove the AGENTS.md pointer as the last commit.
+Document committed and approved by the user. Nothing is left on this issue; the one open item is under Follow-up Candidates.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -65,6 +65,16 @@ Branch cut from `origin/main` @ 61d2b6b. Priority Low: a study aid, nothing wait
 - Cold reader, pass 2 (fresh subagent): 8 stuck points, 4 naming wobbles, 4 mismatches, its summary matched the intended one. Fixed with 20 replacements. Not changed: `log std` appears in the layout table before its section (a pointer follows the table); "행동을 뽑는다" is kept as the name of the whole computation. No third pass was run.
 #### Notes
 The README's aimer state section lists 18 items (env version 6); the document says so and says which 17 it means.
+
+### chore: #73 마무리 (#73)
+> why: last commit before the PR
+#### Scope
+Status and pointer only.
+#### Changes
+- Status done here and in the Master Registry; AGENTS.md pointer removed.
+#### Verification
+None needed.
+#### Notes
 
 ## Management Notes
 ### Follow-up Candidates
