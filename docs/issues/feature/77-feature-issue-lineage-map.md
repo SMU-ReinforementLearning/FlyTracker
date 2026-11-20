@@ -4,7 +4,7 @@
 - Issue: #77
 - Branch: `77-feature-issue-lineage-map`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 The viewer opens on a lineage map: issues laid out as nodes in three lanes (fly, aimer, environment), ordered by time, joined by lines to the issues they build on. Before, the only level above an issue page was the sidebar's flat list of issues, where the user's and the teammate's work were interleaved and the order of development could not be read. The sidebar also changes: inside an opened issue, runs are grouped by variation, each headed by label/value lines saying what differs, instead of being told apart by run name only.
