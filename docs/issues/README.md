@@ -40,3 +40,4 @@ One row per management document, added in the same commit that creates the doc.
 | #70 | docs/issues/docs/70-docs-readme-aimer-state-date.md | done | README의 조준기 state 기준 날짜 고치기 |
 | #73 | docs/issues/docs/73-docs-sac-concepts-qna.md | done | SAC 개념을 쉬운 문답으로 정리하기 |
 | #72 | docs/issues/feature/72-feature-aimer-v1-sac-rule-trigger.md | done | SAC 조준기를 환경 버전 6에 세우고 조준기 v1로 정하기 |
+| #77 | docs/issues/feature/77-feature-issue-lineage-map.md | in progress | viewer 첫 화면에 issue 계보 넣고 사이드바 실행을 조건으로 묶기 |

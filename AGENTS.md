@@ -62,6 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
+- `77-feature-issue-lineage-map` — `docs/issues/feature/77-feature-issue-lineage-map.md` — viewer 첫 화면에 issue 계보 넣고 사이드바 실행을 조건으로 묶기
 
 ## Environment (repo slot)
 
@@ -79,7 +80,7 @@
 ## Domain Rules (repo slot)
 
 <!-- Repo-specific rules. Kit updates never touch this section. -->
-- (none)
+- An issue that changes the environment, the fly or the aimer adds its row to BOTH `viewer/src/data/history.js` (`ISSUES`) and `viewer/src/data/lineage.js` (`NODES`) in the same PR. The viewer's lineage map is hand-written; tests only catch a missing node for issues with published runs, so code-only issues depend on this rule. Field meanings: README, viewer section.
 
 ## Repo Tools (repo slot)
 

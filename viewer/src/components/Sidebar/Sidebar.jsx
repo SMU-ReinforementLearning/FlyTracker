@@ -1,6 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { variationsOf } from '../../data/experiment.js'
 import { algoLabel, percent, shortDate } from '../../data/labels.js'
-import { lastCheckpoint, matchesQuery, NO_ISSUE, rateOf, steppedCheckpoints } from '../../data/runs.js'
+import { issueName } from '../../data/lineage.js'
+import { byCreatedAt, lastCheckpoint, matchesQuery, NO_ISSUE, rateOf, steppedCheckpoints } from '../../data/runs.js'
+import { useConfigs, useIssueInfo } from '../../data/useIssueData.js'
 import { ListRow, RowList } from '../ListRow/ListRow.jsx'
 import styles from './Sidebar.module.css'
 
@@ -35,14 +38,15 @@ function Chevron() {
   )
 }
 
-function RunRow({ run, selected, onSelect }) {
+/** label 은 variation 안에서 실행을 가르는 이름(학습 seed)이다. 없으면 실행 이름을 적는다. */
+function RunRow({ run, label, selected, onSelect }) {
   const last = lastCheckpoint(run)
   const rate = rateOf(last)
   const meta = [algoLabel(run.algo), run.author].filter(Boolean).join(' · ')
   return (
-    <ListRow current={selected} onClick={() => onSelect(run.id)} className={styles.row}>
+    <ListRow current={selected} onClick={() => onSelect(run.id)} className={styles.row} title={label ? run.name : undefined}>
       <span className={styles.line}>
-        <span className={styles.title}>{run.name}</span>
+        <span className={styles.title}>{label ?? run.name}</span>
         <span className={`${styles.aside} ${styles.rate}`}>
           {!['free-flight', 'tracking-observation'].includes(run.algo) && <Sparkline run={run} />}
           {!['free-flight', 'tracking-observation'].includes(run.algo) && rate !== null && <span aria-label={`포획률 ${percent(rate)}`}>{percent(rate)}</span>}
@@ -56,7 +60,66 @@ function RunRow({ run, selected, onSelect }) {
   )
 }
 
-export const groupTitle = (group) => (group.key === NO_ISSUE ? 'issue 없음' : group.issue.title)
+/** 묶음의 이름. issue 제목이 아니라 그 issue 에서 바뀐 것을 적은 짧은 이름이다(lineage.js). */
+export const groupTitle = (group) => (group.key === NO_ISSUE ? 'issue 없음' : issueName(group.issue))
+
+/**
+ * 펼친 issue 의 실행 목록. 설정이 다른 실행끼리 variation 으로 나누고, variation 마다 무엇이 다른지를 이름과 값 줄로 적는다.
+ * 그 아래의 실행은 학습 seed 만 다르므로 학습 seed 로 부른다. 설정을 다 읽기 전이거나 variation 이 하나뿐이면 실행 이름 그대로 늘어놓는다.
+ * group.runs 는 검색으로 걸러진 것일 수 있다. variation 은 걸러진 실행만으로 나눈다.
+ */
+function Runs({ group, runId, onSelectRun }) {
+  const runs = useMemo(() => [...group.runs].sort(byCreatedAt), [group.runs])
+  const configs = useConfigs(runs)
+  const info = useIssueInfo(group.key)
+  const blocks = useMemo(() => {
+    if (!configs || info === undefined) return null
+    const { items } = variationsOf(runs, configs, info)
+    if (items.length === 0) return null
+    const seedOf = new Map(runs.map((r, i) => [r.id, configs[i]?.algo?.seed ?? null]))
+    const byId = new Map(runs.map((r) => [r.id, r]))
+    const placed = new Set(items.flatMap((v) => v.runIds))
+    const rest = runs.filter((r) => !placed.has(r.id)) // 설정을 못 읽은 실행
+    return [
+      ...items.map((v) => {
+        const list = v.runIds.map((id) => byId.get(id))
+        const seeds = list.map((r) => seedOf.get(r.id))
+        const named = list.length > 1 && seeds.every((x) => x !== null) && new Set(seeds).size === list.length
+        return { key: v.key, parts: v.parts, runs: list.map((run, i) => ({ run, label: named ? `학습 seed ${seeds[i]}` : null })) }
+      }),
+      ...(rest.length ? [{ key: 'rest', parts: [], runs: rest.map((run) => ({ run, label: null })) }] : []),
+    ]
+  }, [runs, configs, info])
+
+  if (!blocks) {
+    return (
+      <RowList>
+        {group.runs.map((run) => (
+          <RunRow key={run.id} run={run} selected={run.id === runId} onSelect={onSelectRun} />
+        ))}
+      </RowList>
+    )
+  }
+  return blocks.map((b) => (
+    <div key={b.key} className={styles.variation}>
+      {b.parts.length > 0 && (
+        <dl className={styles.parts}>
+          {b.parts.map((part) => (
+            <div key={part.label} className={styles.part}>
+              <dt>{part.label}</dt>
+              <dd>{part.value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      <RowList>
+        {b.runs.map(({ run, label }) => (
+          <RunRow key={run.id} run={run} label={label} selected={run.id === runId} onSelect={onSelectRun} />
+        ))}
+      </RowList>
+    </div>
+  ))
+}
 
 function Group({ group, open, onToggle, runId, issueKey, onSelectRun, onOpenIssue }) {
   const title = groupTitle(group)
@@ -66,26 +129,25 @@ function Group({ group, open, onToggle, runId, issueKey, onSelectRun, onOpenIssu
         <button type="button" className={styles.disclosure} aria-expanded={open} aria-label={`${title} ${open ? '접기' : '펼치기'}`} onClick={onToggle}>
           <Chevron />
         </button>
-        <button type="button" className={styles.groupName} aria-current={issueKey === group.key} title={title} onClick={() => onOpenIssue(group.key)}>
+        <button type="button" className={styles.groupName} aria-current={issueKey === group.key} title={group.key === NO_ISSUE ? undefined : group.issue.title} onClick={() => onOpenIssue(group.key)}>
           {group.key !== NO_ISSUE && <span className={styles.groupNum}>#{group.issue.number}</span>}
           <span className={styles.groupText}>{title}</span>
         </button>
       </div>
-      {open && (
-        <RowList>
-          {group.runs.map((run) => (
-            <RunRow key={run.id} run={run} selected={run.id === runId} onSelect={onSelectRun} />
-          ))}
-        </RowList>
-      )}
+      {open && <Runs group={group} runId={runId} onSelectRun={onSelectRun} />}
     </section>
   )
 }
 
-export function Sidebar({ groups, error, runId, issueKey, onSelectRun, onOpenIssue }) {
+export function Sidebar({ groups, error, runId, issueKey, home, onSelectRun, onOpenIssue, onOpenLineage }) {
   const [query, setQuery] = useState('')
   // 묶음은 처음에 모두 접혀 있다. issue 이름을 누르면 그 묶음이 펼쳐진다.
   const [opened, setOpened] = useState(() => new Set())
+
+  // 계보의 노드나 주소로 issue 화면에 들어오면 그 묶음을 펼친다
+  useEffect(() => {
+    if (issueKey != null) setOpened((prev) => (prev.has(issueKey) ? prev : new Set(prev).add(issueKey)))
+  }, [issueKey])
 
   const toggle = (key) =>
     setOpened((prev) => {
@@ -100,6 +162,12 @@ export function Sidebar({ groups, error, runId, issueKey, onSelectRun, onOpenIss
     onOpenIssue(key)
   }
 
+  // 검색으로 거른 묶음. 다시 그릴 때마다 새 목록을 만들면 펼친 묶음이 설정을 다시 읽으므로 기억해 둔다.
+  const shown = useMemo(
+    () => (groups ?? []).map((g) => ({ ...g, runs: g.runs.filter((r) => matchesQuery(r, query)) })).filter((g) => g.runs.length > 0),
+    [groups, query],
+  )
+
   let body
   if (error) {
     body = <p className={styles.note}>runs 폴더를 읽지 못했어요. 저장소의 viewer 폴더에서 npm run dev로 실행했는지 확인해 주세요.</p>
@@ -113,9 +181,6 @@ export function Sidebar({ groups, error, runId, issueKey, onSelectRun, onOpenIss
     )
   } else {
     const searching = query.trim() !== ''
-    const shown = groups
-      .map((g) => ({ ...g, runs: g.runs.filter((r) => matchesQuery(r, query)) }))
-      .filter((g) => g.runs.length > 0)
     body =
       shown.length === 0 ? (
         <p className={styles.note}>맞는 실행이 없어요. 검색어를 바꿔 주세요.</p>
@@ -137,6 +202,9 @@ export function Sidebar({ groups, error, runId, issueKey, onSelectRun, onOpenIss
 
   return (
     <nav className={styles.sidebar} aria-label="실행">
+      <button type="button" className={styles.home} aria-current={home} onClick={onOpenLineage}>
+        계보
+      </button>
       <input className={styles.search} type="search" placeholder="실행 검색" aria-label="실행 검색" value={query} onChange={(e) => setQuery(e.target.value)} />
       {body}
     </nav>

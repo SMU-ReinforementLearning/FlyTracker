@@ -357,8 +357,9 @@ function shownValues(exp) {
 
 /**
  * issue 안의 variation. 학습 seed 만 다른 실행끼리 묶는다.
- * 돌려주는 것: { label, items: [{ key, label, runIds }] }. label 은 variation 끼리 다른 항목의 이름이고,
+ * 돌려주는 것: { label, items: [{ key, label, parts, runIds }] }. label 은 variation 끼리 다른 항목의 이름이고,
  * 항목 label 은 그 값이다(예: '함께 보는 최근 관측' 과 '1개', '4개'). variation 이 하나뿐이면 items 는 빈 목록이다.
+ * parts 는 같은 것을 이름과 값으로 나눈 목록이다([{ label, value }]). 사이드바가 variation 마다 무엇이 다른지 줄로 보여 주는 데 쓴다.
  */
 export function variationsOf(runs, configs, info) {
   const groups = new Map()
@@ -384,13 +385,18 @@ export function variationsOf(runs, configs, info) {
     const same = list.map((_, j) => j).filter((j) => nameOf(j, differing) === nameOf(i, differing))
     if (!titles.length || same.length < 2) return []
     const k = keys.find((key) => !titles.includes(key) && new Set(same.map((j) => shown[j].get(key) ?? '없음')).size > 1)
-    return k ? [`${k.split('|')[1]} ${shown[i].get(k) ?? '없음'}`] : []
+    return k ? [k] : []
   }
-  const items = list.map((g, i) => ({
-    key: g.runs[0].id,
-    label: differing.length ? [nameOf(i, differing), ...extraOf(i)].join(', ') : `설정 ${i + 1}`,
-    runIds: g.runs.map((r) => r.id),
-  }))
+  const partOf = (i, k) => ({ label: k.split('|')[1], value: shown[i].get(k) ?? '없음' })
+  const items = list.map((g, i) => {
+    const extra = extraOf(i)
+    return {
+      key: g.runs[0].id,
+      label: differing.length ? [nameOf(i, differing), ...extra.map((k) => `${partOf(i, k).label} ${partOf(i, k).value}`)].join(', ') : `설정 ${i + 1}`,
+      parts: [...differing, ...extra].map((k) => partOf(i, k)),
+      runIds: g.runs.map((r) => r.id),
+    }
+  })
   items.sort((a, b) => a.label.localeCompare(b.label, 'ko', { numeric: true }))
   return { label: differing.length ? differing.map((k) => k.split('|')[1]).join(', ') : '설정', items }
 }

@@ -29,6 +29,30 @@
   color: var(--color-text-secondary);
 }
 
+/* 계보로 가는 줄. 검색 위에 둔다 */
+
+.home {
+  display: block;
+  width: 100%;
+  margin: 0 0 1rem;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  font-weight: var(--font-weight-semibold);
+  text-align: left;
+  cursor: default;
+}
+
+.home:hover {
+  background: var(--color-fill);
+}
+
+.home[aria-current='true'] {
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+}
+
 /* issue 묶음 */
 
 .group + .group {
@@ -97,6 +121,42 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* variation: 무엇이 다른지 적은 줄과 그 설정으로 돌린 실행들 */
+
+.variation + .variation {
+  margin-top: 1rem;
+}
+
+.parts {
+  padding-left: 0;
+}
+
+.parts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0;
+  padding: 0.3rem 1rem 0.4rem 2.6rem;
+  font-size: var(--font-size-xs);
+}
+
+.part {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.part dt {
+  flex: none;
+  color: var(--color-text-tertiary);
+}
+
+.part dd {
+  margin: 0;
+  min-width: 0;
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
 }
 
 /* 실행 줄. 줄 모양은 ListRow 가 맡고, 여기서는 들여쓰기와 줄 안의 배치만 정한다. */

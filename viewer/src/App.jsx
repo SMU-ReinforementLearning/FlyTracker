@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { IconButton } from './components/IconButton/IconButton.jsx'
 import { IssuePage } from './components/IssuePage/IssuePage.jsx'
 import { LineChart } from './components/LineChart/LineChart.jsx'
+import { Lineage } from './components/Lineage/Lineage.jsx'
 import { Outcome } from './components/Outcome/Outcome.jsx'
 import { Readouts } from './components/Readouts/Readouts.jsx'
 import { RunPanel } from './components/RunPanel/RunPanel.jsx'
@@ -79,10 +80,10 @@ export default function App() {
     )
   }, [reloadKey])
 
-  // URL 이 가리키는 것. 모르는 issue 나 실행이면 가장 최근 실행을 연다.
+  // URL 이 가리키는 것. issue 도 실행도 가리키지 않거나 모르는 것을 가리키면 계보를 연다.
   const groups = useMemo(() => (runs ? groupByIssue(runs) : null), [runs])
   const group = groups?.find((g) => g.key === route.issue) ?? null
-  const run = group ? null : (runs?.find((r) => r.id === route.run) ?? runs?.[0] ?? null)
+  const run = group ? null : (runs?.find((r) => r.id === route.run) ?? null)
   const runId = run?.id ?? null
 
   useEffect(() => {
@@ -151,11 +152,14 @@ export default function App() {
   const selectRun = (id) => navigate({ run: id })
   const selectEpisode = (r, k, replace) => navigate({ run: runId, tag: grid[r].tag, ep: k + 1 }, replace)
   const openIssue = (key) => navigate({ issue: key })
+  const openLineage = () => navigate({})
+  // 실행 목록을 읽기 전에는 주소가 아무것도 가리키지 않을 때만 계보다. 실행을 가리키는 주소로 들어왔으면 그 실행을 기다린다.
+  const home = !group && !run && (runs != null || (!route.run && !route.issue))
 
-  const title = group ? groupTitle(group) : run ? run.name : 'FlyTracker'
+  const title = group ? groupTitle(group) : run ? run.name : '계보'
   return (
     <div className={styles.app}>
-      <Sidebar groups={groups} error={runsError} runId={runId} issueKey={group?.key ?? null} onSelectRun={selectRun} onOpenIssue={openIssue} />
+      <Sidebar groups={groups} error={runsError} runId={runId} issueKey={group?.key ?? null} home={home} onSelectRun={selectRun} onOpenIssue={openIssue} onOpenLineage={openLineage} />
       <main className={styles.main}>
         <header className={styles.toolbar}>
           <div className={styles.toolbarLead}>
@@ -185,6 +189,8 @@ export default function App() {
         </header>
         {group ? (
           <IssuePage key={group.key} group={group} groups={groups} onOpenIssue={openIssue} />
+        ) : home ? (
+          <Lineage groups={groups} onOpenIssue={openIssue} />
         ) : (
           <div className={styles.workspace}>
             {run && sel && <RunPanel key={run.id} run={run} grid={grid} sel={sel} onSelect={selectEpisode} />}
