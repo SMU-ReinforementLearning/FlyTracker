@@ -1,5 +1,6 @@
 // 실행 목록(index.json)과 에피소드 목록(episodes.json)을 화면이 쓰는 모양으로 바꾼다.
 import { algoLabel } from './labels.js'
+import { issueName } from './lineage.js'
 
 export const NO_ISSUE = 'none'
 
@@ -36,7 +37,7 @@ export const byCreatedAt = (a, b) => String(a.createdAt).localeCompare(String(b.
 export function matchesQuery(run, query) {
   const q = query.trim().toLowerCase()
   if (!q) return true
-  const fields = [run.name, run.author, run.algo, algoLabel(run.algo), run.issue?.title, run.issue ? `#${run.issue.number}` : '']
+  const fields = [run.name, run.author, run.algo, algoLabel(run.algo), run.issue?.title, run.issue ? issueName(run.issue) : '', run.issue ? `#${run.issue.number}` : '']
   return fields.some((f) => f && String(f).toLowerCase().includes(q))
 }
 

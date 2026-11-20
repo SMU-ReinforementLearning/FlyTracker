@@ -1,0 +1,187 @@
+/* 계보: 영역별 세로줄, issue 노드, 이어받은 issue 를 잇는 선 */
+
+.page {
+  flex: 1;
+  min-height: 0;
+  padding: var(--space-6) var(--space-4);
+  background: var(--color-bg-stage);
+  overflow-y: auto;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+/* 노드 안의 글을 얼마나 보일지 이 폭을 보고 정한다 */
+.frame {
+  max-width: 112rem;
+  margin: 0 auto;
+  container: lineage / inline-size;
+}
+
+.map {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 3.2rem; /* 영역이 다른 issue 를 잇는 선이 이 틈으로 내려간다 */
+}
+
+.lane {
+  border-radius: var(--radius-lg);
+  background: var(--color-fill);
+}
+
+.laneName {
+  grid-row: 1;
+  margin: 0;
+  padding: 1.6rem 1.8rem 0.6rem;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-title);
+}
+
+.edges {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.edge {
+  fill: none;
+  stroke: var(--color-text-tertiary);
+  stroke-width: 1.5;
+}
+
+.edgeOn {
+  stroke: var(--color-accent);
+  stroke-width: 2;
+}
+
+/* 화살촉. 선과 같은 색으로 칠한다 */
+
+.arrow {
+  fill: var(--color-text-tertiary);
+}
+
+.arrowOn {
+  fill: var(--color-accent);
+}
+
+/* 노드 */
+
+.node {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-self: start;
+  margin: 1.1rem 1.8rem;
+  padding: 1.2rem 1.4rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-window);
+  box-shadow: var(--shadow-card);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: default;
+  transition: opacity 0.12s;
+}
+
+.node:hover,
+.node:focus-visible {
+  border-color: var(--color-accent);
+}
+
+/* 실행이 올라오지 않은 issue. issue 화면이 없어서 GitHub 로 나간다 */
+.ghost {
+  border: 1px dashed var(--color-text-tertiary);
+  background: none;
+  box-shadow: none;
+  color: var(--color-text-secondary);
+  opacity: 0.75;
+}
+
+.dim {
+  opacity: 0.4;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.num {
+  font-weight: var(--font-weight-semibold);
+}
+
+.badge {
+  padding: 0.1rem 0.6rem;
+  border-radius: 1rem;
+  background: var(--color-fill-strong);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-2xs);
+  white-space: nowrap;
+}
+
+.external {
+  flex: none;
+  margin-left: auto;
+}
+
+.name {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-title);
+}
+
+.result {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  line-height: 1.5;
+}
+
+.ghost .result {
+  color: inherit;
+}
+
+.meta {
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-2xs);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 좁으면 결과 글을 빼고 이름만 남긴다. 세 영역은 그대로 나란히 둔다 */
+@container lineage (max-width: 620px) {
+  .map {
+    column-gap: 1.4rem;
+  }
+  .laneName {
+    padding: 1rem 0.8rem 0.4rem;
+    font-size: var(--font-size-sm);
+  }
+  .node {
+    margin: 0.8rem 0.7rem;
+    padding: 0.8rem;
+  }
+  .name {
+    font-size: var(--font-size-xs);
+  }
+  .result {
+    display: none;
+  }
+  .head {
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+}
+
+@media (max-width: 760px) {
+  .page {
+    padding: var(--space-4) var(--space-2);
+    overflow-y: visible;
+  }
+}

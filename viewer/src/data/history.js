@@ -12,6 +12,7 @@ const ISSUES = {
   4: { title: '초파리 행동을 평시와 비상시로 나누기', author: 'lhk0721', merged: '2026-11-09', env: 1 },
   7: { title: '조준기를 위치가 고정된 포대로 바꾸기', author: 'lhk0721', merged: '2026-11-09', env: 1 },
   9: { title: '초파리 비행을 문헌값에 맞추고 조준기 탐색 넣기', author: 'lhk0721', merged: '2026-11-09', env: 1 },
+  22: { title: '학습 결과를 저장소에 올려 Cloudflare viewer에서 재생하기', author: 'lhk0721', merged: '2026-11-11', env: 1 },
   31: { title: '초파리 신경회로 연결 모델 추가', author: 'heohs', merged: '2026-11-15', env: 1 },
   34: { title: '조준기와 초파리를 번갈아 학습하는 환경 만들기', author: 'lhk0721', merged: '2026-11-12', env: 2 },
   35: { title: 'SAC로 조준기 학습하기', author: 'lhk0721', merged: '2026-11-13', env: 2 },
@@ -20,6 +21,8 @@ const ISSUES = {
   45: { title: '레이저 포획 조건에서 통하는 조준기 기준선 만들기', author: 'lhk0721', merged: '2026-11-15', env: 4 },
   49: { title: '레이저 명중에 맞춰 조준기 보상 바꾸기', author: 'lhk0721', merged: '2026-11-15', env: 5 },
   51: { title: '레이저 명중 조건에서 SAC로 조준기 다시 학습하기', author: 'lhk0721', merged: '2026-11-16', env: 5 },
+  61: { title: '신경망 초파리와 SAC 조준기 대결 에피소드 올리기', author: 'lhk0721', merged: '2026-11-17', env: 5 },
+  64: { title: '신경 비행 코드와 자료를 저장소에 포함', author: 'heohs', merged: '2026-11-16', env: 1 },
   69: { title: '조준기에 레이저 발사 행동과 오발 측정 넣기', author: 'lhk0721', merged: '2026-11-17', env: 6 },
   72: { title: 'SAC 조준기를 환경 버전 6에 세우고 조준기 v1로 정하기', author: 'lhk0721', merged: '2026-11-18', env: 6 },
 }
@@ -151,6 +154,12 @@ const HISTORY = {
 const dateLabel = (iso) => {
   const [y, m, d] = iso.split('-').map(Number)
   return `${y}년 ${m}월 ${d}일`
+}
+
+/** issue 하나의 제목, PR 을 올린 사람, merge 날짜(ISO), 환경 버전, GitHub 주소. 표에 없으면 null. 계보 화면이 쓴다(lineage.js). */
+export function issueOf(number) {
+  const meta = ISSUES[number]
+  return meta ? { number, ...meta, url: `${REPO}/issues/${number}` } : null
 }
 
 /**

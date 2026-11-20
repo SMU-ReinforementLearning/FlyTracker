@@ -1,8 +1,9 @@
-import { useEffect, useId, useMemo, useState } from 'react'
-import { fetchConfig, fetchIssueInfo } from '../../data/api.js'
+import { useId, useMemo, useState } from 'react'
 import { compareExperiments, experimentOf, variationsOf } from '../../data/experiment.js'
 import { changeOf } from '../../data/history.js'
+import { issueName } from '../../data/lineage.js'
 import { byCreatedAt, compareGroup, lastCheckpoint, NO_ISSUE, steppedCheckpoints } from '../../data/runs.js'
+import { NO_RUNS, useConfigs, useIssueInfo } from '../../data/useIssueData.js'
 import { CurveChart } from '../CurveChart/CurveChart.jsx'
 import { METRICS, MetricSwitch } from '../RunPanel/RunPanel.jsx'
 import { Segmented } from '../Segmented/Segmented.jsx'
@@ -10,42 +11,7 @@ import { Swatch } from '../Swatch/Swatch.jsx'
 import styles from './IssuePage.module.css'
 
 const SERIES_COLORS = 8 // assets/styles/variables.css 의 --color-series-1 … --color-series-8
-const NO_RUNS = []
 const ALL = 'all'
-
-/** runs 와 같은 순서의 config.json. 못 읽은 실행은 null, 다 읽기 전에는 null 을 돌려준다. */
-function useConfigs(runs) {
-  const [state, setState] = useState(null) // { runs, configs }
-  useEffect(() => {
-    let alive = true
-    Promise.all(runs.map((r) => fetchConfig(r.id).catch(() => null))).then((configs) => {
-      if (alive) setState({ runs, configs })
-    })
-    return () => {
-      alive = false
-    }
-  }, [runs])
-  if (runs.length === 0) return NO_RUNS
-  return state?.runs === runs ? state.configs : null
-}
-
-/** issue 설명 파일. 읽는 중에는 undefined, 없으면 null. key 가 null 이거나 issue 없음 묶음이면 늘 null. */
-function useIssueInfo(key) {
-  const none = key == null || key === NO_ISSUE
-  const [state, setState] = useState(null) // { key, info }
-  useEffect(() => {
-    if (none) return
-    let alive = true
-    fetchIssueInfo(key).then((info) => {
-      if (alive) setState({ key, info })
-    })
-    return () => {
-      alive = false
-    }
-  }, [key, none])
-  if (none) return null
-  return state?.key === key ? state.info : undefined
-}
 
 const paragraphs = (value) => (Array.isArray(value) ? value : value ? [value] : []).filter(Boolean)
 
@@ -68,10 +34,10 @@ function Source({ label, change }) {
   const { issue } = change
   return (
     <>
-      <a className={styles.source} href={issue.url} target="_blank" rel="noreferrer" aria-label={`${label}, #${issue.number} ${issue.title}`} aria-describedby={id} />
+      <a className={styles.source} href={issue.url} target="_blank" rel="noreferrer" aria-label={`${label}, #${issue.number} ${issueName(issue)}`} aria-describedby={id} />
       <span id={id} role="tooltip" className={styles.pop}>
         <strong className={styles.popTitle}>
-          #{issue.number} {issue.title}
+          #{issue.number} {issueName(issue)}
         </strong>
         <span className={styles.popMeta}>
           {issue.author} · {issue.merged}
@@ -177,7 +143,7 @@ function Purpose({ issueKey, info, target, onOpenIssue }) {
             <dd>
               {target ? (
                 <button type="button" className={styles.issueLink} onClick={() => onOpenIssue(target.key)}>
-                  #{target.issue.number} {target.issue.title}
+                  #{target.issue.number} {issueName(target.issue)}
                 </button>
               ) : (
                 `#${info.compare}에는 올라온 실행이 없다`

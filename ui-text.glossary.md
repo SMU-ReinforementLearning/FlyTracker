@@ -46,6 +46,8 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 | the baseline's firing rule | 쏘는 기준 | 발사 조건, 트리거 반경 | 기준선 카드의 줄. 값은 "빔까지 1.25mm 안" (#72) |
 | length of one shot | 한 발 길이 | 발사 시간, 포획 유지 시간 | 조준기 설정의 줄. 환경 버전 6부터의 실행에 나오고, 그 전 실행에는 환경 칸에 "포획 유지 시간"으로 나온다 (#72) |
 | aim stimulus on or off | 자극 켬, 자극 끔 | 자극 있음, 자극 없음 | 신경 초파리 설정의 "자극" 줄의 값이고 variation 이름에 붙는다 (#72) |
+| map of issues by area and by what each one builds on | 계보 | 트리, 로드맵, 타임라인 | 첫 화면의 제목이자 사이드바 맨 위 줄 (#77) |
+| another area an issue also changed | 조준기도 바꿈 | 조준기 포함, + 조준기 | 계보 노드의 아랫줄. 영역 이름 뒤에 "도 바꿈" (#77) |
 | training seed | 학습 seed | 시드 | 알고리즘 설정의 `seed` |
 | seeds of recorded episodes | 에피소드 seed | 평가 시드 | 설명 파일의 `notes`에 적는다 |
 
@@ -77,3 +79,4 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 - 2026-11-16: issue 화면의 조건 칸을 환경으로 바꾸고 설정, 보상, 자극 추가 (#62)
 - 2026-11-17: 발, 오발, 쏘는 중 추가 (#69)
 - 2026-11-18: 쏘는 방식, 쏘는 기준, 한 발 길이 추가 (#72)
+- 2026-11-19: 계보 추가 (#77)

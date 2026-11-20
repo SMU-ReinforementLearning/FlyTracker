@@ -79,7 +79,7 @@
 ## Domain Rules (repo slot)
 
 <!-- Repo-specific rules. Kit updates never touch this section. -->
-- (none)
+- An issue that changes the environment, the fly or the aimer adds its row to BOTH `viewer/src/data/history.js` (`ISSUES`) and `viewer/src/data/lineage.js` (`NODES`) in the same PR. The viewer's lineage map is hand-written; tests only catch a missing node for issues with published runs, so code-only issues depend on this rule. Field meanings: README, viewer section.
 
 ## Repo Tools (repo slot)
 
