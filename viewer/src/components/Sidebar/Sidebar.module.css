@@ -1,4 +1,4 @@
-/* 사이드바: 검색, issue 묶음, 실행 줄 */
+/* 사이드바: 검색, 영역 구역, issue 묶음, 실행 줄 */
 
 .sidebar {
   background: var(--color-bg-sidebar);
@@ -51,6 +51,19 @@
 .home[aria-current='true'] {
   background: var(--color-accent);
   color: var(--color-text-on-accent);
+}
+
+/* 영역 구역: 계보의 세로줄과 같은 이름(초파리, 조준기, 환경) 아래에 그 영역의 issue 묶음을 둔다 */
+
+.lane + .lane {
+  margin-top: 1.8rem;
+}
+
+.laneName {
+  margin: 0;
+  padding: 0.4rem 0.6rem 0.6rem;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 /* issue 묶음 */

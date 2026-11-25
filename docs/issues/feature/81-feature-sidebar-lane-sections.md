@@ -34,7 +34,7 @@ The viewer sidebar lists its issue groups under three area headings (fly, aimer,
 - [x] User approved the sidebar. (2026-11-25 20:40)
 
 ## Current State
-Implemented and verified; waiting for the user's review of the sidebar (dev server of this worktree: `npx vite --port 5181` in `viewer/`). Nothing committed yet. Before the PR, remove this branch's pointer line from `AGENTS.md` as the last commit.
+Implemented, verified and approved for merge by the user ("머지해", 2026-11-25). Nothing is left open on this branch.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->

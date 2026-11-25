@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { variationsOf } from '../../data/experiment.js'
 import { algoLabel, percent, shortDate } from '../../data/labels.js'
 import { issueName } from '../../data/lineage.js'
-import { byCreatedAt, lastCheckpoint, matchesQuery, NO_ISSUE, rateOf, steppedCheckpoints } from '../../data/runs.js'
+import { byCreatedAt, lastCheckpoint, matchesQuery, NO_ISSUE, rateOf, sectionsByLane, steppedCheckpoints } from '../../data/runs.js'
 import { useConfigs, useIssueInfo } from '../../data/useIssueData.js'
 import { ListRow, RowList } from '../ListRow/ListRow.jsx'
 import styles from './Sidebar.module.css'
@@ -185,17 +185,22 @@ export function Sidebar({ groups, error, runId, issueKey, home, onSelectRun, onO
       shown.length === 0 ? (
         <p className={styles.note}>맞는 실행이 없어요. 검색어를 바꿔 주세요.</p>
       ) : (
-        shown.map((g) => (
-          <Group
-            key={g.key}
-            group={g}
-            open={searching || opened.has(g.key)}
-            onToggle={() => toggle(g.key)}
-            runId={runId}
-            issueKey={issueKey}
-            onSelectRun={onSelectRun}
-            onOpenIssue={openIssue}
-          />
+        sectionsByLane(shown).map((s) => (
+          <section key={s.key} className={styles.lane} aria-label={s.name ?? undefined}>
+            {s.name && <h2 className={styles.laneName}>{s.name}</h2>}
+            {s.groups.map((g) => (
+              <Group
+                key={g.key}
+                group={g}
+                open={searching || opened.has(g.key)}
+                onToggle={() => toggle(g.key)}
+                runId={runId}
+                issueKey={issueKey}
+                onSelectRun={onSelectRun}
+                onOpenIssue={openIssue}
+              />
+            ))}
+          </section>
         ))
       )
   }

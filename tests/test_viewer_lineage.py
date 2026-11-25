@@ -72,3 +72,36 @@ def test_a_line_between_lanes_does_not_cross_a_node(lineage):
         lo, hi = sorted((p["lane"], c["lane"]))
         crossed += [e for lane in range(lo + 1, hi) if (lane, p["row"]) in taken]
     assert crossed == []
+
+
+SECTIONS_CODE = """
+import {{ LANES, lineageOf }} from "{lineage}";
+import {{ sectionsByLane }} from "{runs}";
+const {{ nodes }} = lineageOf();
+// 묶음은 번호가 큰 것부터 준다. 계보에 없는 issue 하나와 issue 가 없는 묶음 하나를 섞는다.
+const groups = [
+  {{ key: "9999", issue: {{ number: 9999, title: "계보에 없는 issue" }}, runs: [] }},
+  ...nodes.map((n) => ({{ key: String(n.number), issue: {{ number: n.number, title: n.title }}, runs: [] }})).sort((a, b) => b.issue.number - a.issue.number),
+  {{ key: "none", issue: null, runs: [] }},
+];
+const sections = sectionsByLane(groups).map((s) => ({{ key: s.key, name: s.name, keys: s.groups.map((g) => g.key) }}));
+console.log(JSON.stringify({{ sections, lanes: LANES, nodes, only: sectionsByLane(groups.slice(-1)).map((s) => s.key) }}));
+"""
+
+
+def test_sidebar_sections_follow_the_lanes():
+    """사이드바는 issue 묶음을 계보의 영역대로 나눈다. 묶음은 하나도 빠지거나 두 번 나오지 않고, 영역을 모르는 묶음은 이름 없는 마지막 구역에 모인다."""
+    if not shutil.which("node"):
+        pytest.skip("node 가 없다")
+    data = ROOT / "viewer/src/data"
+    code = SECTIONS_CODE.format(lineage=(data / "lineage.js").as_uri(), runs=(data / "runs.js").as_uri())
+    done = subprocess.run(["node", "--input-type=module", "-e", code], text=True, encoding="utf-8", check=True, capture_output=True)
+    out = json.loads(done.stdout)
+    sections, lanes, nodes = out["sections"], out["lanes"], out["nodes"]
+
+    assert [(s["key"], s["name"]) for s in sections] == [(lane["key"], lane["name"]) for lane in lanes] + [("none", None)]
+    for i, section in enumerate(sections[:-1]):
+        expected = sorted((n["number"] for n in nodes if n["lane"] == i), reverse=True)
+        assert [int(k) for k in section["keys"]] == expected
+    assert sections[-1]["keys"] == ["9999", "none"]
+    assert out["only"] == ["none"]  # 묶음이 없는 구역은 나오지 않는다
