@@ -76,6 +76,19 @@ Management doc, registry row, `AGENTS.md` pointer.
 - The existing `action_change` penalty is computed on the rate command the environment receives, so under acceleration actions it already penalises acceleration; no new term was added for it.
 - README, the viewer card row for the control and the `history.js` / `lineage.js` rows are left for after the results (Scope 7).
 
+### docs: 각가속도 조준기의 판정 기준을 학습 전에 적기 (#88)
+> why: the comparison rules have to exist before any candidate is measured
+#### Scope
+`docs/issues/feature/88-feature-aimer-accel-action-sac-fire/gate.md`, `gate/baseline.csv`, `gate/truth.csv`.
+#### Changes
+- Gate: five candidates (`rate-rule`, `accel-rule`, `accel-pen-rule`, `accel-fire-m03`, `accel-fire-m10`), 3 training seeds, 1,000,000 steps, time to capture on seeds 20000-20199 against v0, paired bootstrap P >= 0.90, exclusions for capture rate below 0.97, a training seed below 0.50 and misfires above twice v0's, no selection among candidates.
+- Baseline and truth are the bytes of #72's files (sha256 `70a62ab3...`, `0f577c4c...`).
+#### Verification
+- `sha256sum` of both files matches `gate.md`. No training run of this issue had started when this was committed; the instance (vast.ai 62522764, AMD EPYC 7B13, 32 effective cores, about 0.20 USD per hour) was booting and had received nothing.
+#### Notes
+- The thresholds and exclusions repeat #51 and #72; the two misfire weights were agreed with the user as two conditions.
+- Evaluation will run on the local machine, where the baseline file was produced, not on the instance.
+
 ## Management Notes
 ### Follow-up Candidates
 ### References
