@@ -62,6 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
+- `82-docs-aimer-history` — `docs/issues/docs/82-docs-aimer-history.md` — 조준기 변천사 문서로 정리하기
 
 ## Environment (repo slot)
 
