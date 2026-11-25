@@ -41,4 +41,4 @@ One row per management document, added in the same commit that creates the doc.
 | #73 | docs/issues/docs/73-docs-sac-concepts-qna.md | done | SAC 개념을 쉬운 문답으로 정리하기 |
 | #72 | docs/issues/feature/72-feature-aimer-v1-sac-rule-trigger.md | done | SAC 조준기를 환경 버전 6에 세우고 조준기 v1로 정하기 |
 | #77 | docs/issues/feature/77-feature-issue-lineage-map.md | done | viewer 첫 화면에 issue 계보 넣고 사이드바 실행을 조건으로 묶기 |
-| #81 | docs/issues/feature/81-feature-sidebar-lane-sections.md | in progress | 사이드바의 issue 묶음을 초파리, 조준기, 환경으로 나누기 |
+| #81 | docs/issues/feature/81-feature-sidebar-lane-sections.md | done | 사이드바의 issue 묶음을 초파리, 조준기, 환경으로 나누기 |

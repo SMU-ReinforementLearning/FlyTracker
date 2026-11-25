@@ -4,7 +4,7 @@
 - Issue: #81
 - Branch: `81-feature-sidebar-lane-sections`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 The viewer sidebar lists its issue groups under three area headings (fly, aimer, environment), the same areas the lineage map uses as lanes. Before, the sidebar was one flat list ordered by the latest run, so the area an issue belongs to could be read on the map but not in the sidebar next to it.
@@ -75,6 +75,16 @@ Lane sections in the sidebar, their test, README and glossary.
   Captures are not committed (`.ui-evidence/` is gitignored). The 1600px capture of `/?issue=69` shows 초파리 (#31), 조준기 (#72, #61, #51, #49, #45, #35, #22), 환경 (#69 opened with its three variations, #42). Ten groups, the same ten issues that have published runs.
 #### Notes
 Search checked in the browser after the first review summary: typing `#69` into the search box leaves the single heading 환경 (ui-evidence probe at 1600x900). The user approved with "머지해" (2026-11-25).
+
+### chore: #81 포인터를 지우고 완료로 표시하기 (#81)
+> why: a protected base branch cannot take the pointer removal after the merge
+#### Scope
+`AGENTS.md` pointer line, registry status, this document's status.
+#### Changes
+- `AGENTS.md`: removed the `81-feature-sidebar-lane-sections` line. `docs/issues/README.md`: row set to done.
+#### Verification
+None needed; no code changed.
+#### Notes
 
 ## Management Notes
 ### Follow-up Candidates
