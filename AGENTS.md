@@ -62,6 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
+- `80-feature-lineage-version-change-visibility` — `docs/issues/feature/80-feature-lineage-version-change-visibility.md` — 계보에서 버전과 변경점이 한눈에 보이게 하기
 
 ## Environment (repo slot)
 
