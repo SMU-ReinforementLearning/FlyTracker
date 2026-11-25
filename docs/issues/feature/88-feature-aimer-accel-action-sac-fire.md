@@ -39,7 +39,16 @@ Train SAC aimers that steer alone with angular-acceleration actions instead of a
 - [ ] PR merged; `AGENTS.md` pointer removed in the branch's last commit.
 
 ## Current State
-2026-11-25 22:20. Code and gate written; training about to start on vast.ai. See the resume note below once the instance is up.
+2026-11-25 22:15 KST. Code and gate committed (570cc24, 7ce5511, 7a8ec50; not pushed). Training is running on vast.ai.
+
+Resume note:
+- Running: vast.ai instance 62522764 (AMD EPYC 7B13, 32 effective cores, about 0.20 USD per hour), `root@217.171.200.22` port 59123 (also in `runs/_ops/ssh_target.txt`). 15 `train.py` processes started 2026-11-25 13:10:47 UTC under `/root/ft`, detached with nohup; they do not depend on this machine. Expected end: about 6 hours later (#51: 49 steps/s per run), around 04:00-05:00 KST on 2026-11-26.
+- Markers on the instance, `/root/ft/state/`: `TRAINING_STARTED`, `TRAINING_ENDED`, then `RESULTS_READY` or `FAILED`. Logs: `/root/ft/logs/<name>-s<k>.log`. One look: `bash runs/_ops/progress.sh`.
+- Next steps, in order: (1) `bash runs/_ops/fetch.sh` downloads `runs-g88.tgz`, checks the sha256 manifest, extracts to `runs/g88/`, requires 15 `model.zip`, and only then destroys the instance; (2) evaluate each model locally with #72's `measure_aimers.py <run> --out <dir>` on seeds 20000-20199, pool per condition with `mean`; (3) bootstrap as written in `gate.md`, append the verdicts; (4) repeat #85's diagnosis on the new models; (5) the rest of Scope 7.
+- If a run failed (`FAILED` says `ONLY_<n>_MODELS`): the archives are still packed; download by hand, re-run the missing seed as the gate says, do not substitute a checkpoint.
+- The instance bills until it is destroyed: `vastai destroy instance 62522764 -y`. Nothing destroys it automatically if `fetch.sh` is never run.
+- Certain fallback: the three commits above; nothing else on this branch is uncommitted except this note. The helper scripts are in `runs/_ops/` (gitignored): `remote_train.sh`, `remote_up.sh`, `wait_ready.sh`, `fetch.sh`, `progress.sh`.
+- Trap: this session could not `EnterWorktree` into `FlyTracker-88`; it works there by absolute path, and compound shell commands that mention git are refused, so multi-step work goes into script files.
 
 Standing permissions from the user (2026-11-25, before going to sleep): commit on this branch without the review gate when the tests pass; no push, PR or merge; rent one vast.ai instance within 10 USD in total and destroy it after the results are downloaded and verified.
 
@@ -88,6 +97,19 @@ Management doc, registry row, `AGENTS.md` pointer.
 #### Notes
 - The thresholds and exclusions repeat #51 and #72; the two misfire weights were agreed with the user as two conditions.
 - Evaluation will run on the local machine, where the baseline file was produced, not on the instance.
+
+### docs: 각가속도 조준기 실험 조건을 한국어로 정리하기 (#88)
+> why: the user asked for the conditions table to be documented so it can be used in a presentation (2026-11-25)
+#### Scope
+`docs/issues/feature/88-feature-aimer-accel-action-sac-fire/conditions.md`, this doc (resume note in Current State).
+#### Changes
+- `conditions.md` (Korean): background, the five conditions, what each column means (rate vs acceleration actions, who fires, the reward table with the changed item per condition), which comparison answers which question, common settings, the judging rule in plain words, v0 and v1 reference numbers. Results section empty.
+- Current State: resume note for the running instance (id, ssh target, markers, next steps, how to destroy it).
+#### Verification
+- Every value was read from `gate.md`, `RewardWeights` or `remote_train.sh`. `ko-writing` `check.py`: no banned pattern, endings consistent.
+- Training was confirmed running before this commit: 15 `train.py` processes, `TRAINING_STARTED` 2026-11-25 13:10:47 UTC, remote setup log `47 passed`.
+#### Notes
+- No cold-reader pass. No code changed since the last full test run (231 passed).
 
 ## Management Notes
 ### Follow-up Candidates
