@@ -5,7 +5,7 @@
 - Branch: `82-docs-aimer-history`
 - Umbrella: (none)
 - Related: #1, #7, #9, #34, #35, #42, #45, #49, #51, #69, #72 (the aimer changes this document retells; nothing in them is changed)
-- Status: in progress
+- Status: done
 
 ## Summary
 Writes one Korean document that tells how the aimer changed from issue #1 to #72: action, observation, reward, capture condition, baseline and training results, each with the reason for the change and the numbers measured at the time. The user asked for it on 2026-11-25 after a Q&A about the aimer's history ("나중에 발표에 쓸만한 내용들이네. 앞선 변천사부터 싹 문서화해"), as material for the team's presentation.
@@ -32,10 +32,10 @@ Writes one Korean document that tells how the aimer changed from issue #1 to #72
 - [x] ko-writing `check.py` with the glossary and ledger: no banned pattern, endings consistent; remaining warnings judged one by one. (2026-11-25)
 - [x] Cold-reader review by a fresh subagent that read only the document; every returned item fixed or answered. (2026-11-25, two passes; no third pass after the second round of fixes)
 - [x] Relative links in the document resolve. (2026-11-25)
-- [ ] PR merged; `AGENTS.md` pointer removed in the branch's last commit.
+- [x] PR merged; `AGENTS.md` pointer removed in the branch's last commit. (2026-11-25, ticked in the pointer-removal commit that the PR squash-merges)
 
 ## Current State
-2026-11-25. Document, glossary and fact ledger written and reviewed by cold readers. The user approved at the review gate with "머지해" (commit, push, PR and squash merge for this branch). Registration commit and docs commit made; the pointer removal is the last commit before the PR.
+2026-11-25. Document, glossary and fact ledger written and reviewed by cold readers. The user approved at the review gate with "머지해" (commit, push, PR and squash merge for this branch). Registration commit and docs commit made, branch rebased onto `origin/main` @ ad6e9c6, pointer removed. Nothing is left to do on this branch after the PR merges. Figures for the presentation are a follow-up candidate.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
@@ -79,6 +79,18 @@ Management doc, registry row, `AGENTS.md` pointer.
 - Not fixed, with reasons: the first SAC section states its result before the version 2 change that preceded it (conclusion first); the tracking assist is defined one sentence after the four candidates are first mentioned.
 - Stated as unknown in the document because no record explains them: why the old spin search never saw the fly; why the correction hurts with the angle penalty; the differences between stimulus on and off.
 - The reason for capping the penalty at 1 m is not recorded anywhere; the document says 1 m and 0.1 are starting values. An earlier chat answer gave a reason for the cap that was the agent's own reading, and it is not in the document.
+
+### chore: 조준기 변천사 문서의 pointer 지우고 마치기 (#82)
+> why: the base branch takes changes only through PRs, so the pointer has to leave in the branch's last commit
+#### Scope
+`AGENTS.md`, `docs/issues/README.md`, this doc.
+#### Changes
+- `AGENTS.md`: this branch's line removed from Recent Active Context.
+- Registry row and this doc's status set to done.
+#### Verification
+- Rebased onto `origin/main` @ ad6e9c6 before this commit; one conflict in the registry (rows #80, #81 added on main), resolved by keeping all three rows.
+#### Notes
+- The user approved commit, push, PR and squash merge with "머지해" on 2026-11-25.
 
 ## Management Notes
 ### Follow-up Candidates
