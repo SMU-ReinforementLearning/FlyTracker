@@ -62,6 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
+- `81-feature-sidebar-lane-sections` — `docs/issues/feature/81-feature-sidebar-lane-sections.md` — 사이드바의 issue 묶음을 초파리, 조준기, 환경으로 나누기
 
 ## Environment (repo slot)
 
