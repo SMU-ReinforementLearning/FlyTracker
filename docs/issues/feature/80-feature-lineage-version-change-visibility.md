@@ -4,7 +4,7 @@
 - Issue: #80
 - Branch: `80-feature-lineage-version-change-visibility`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 Make the lineage map show, per lane, which version each issue raised and what value changed. The #77 map drew every node the same size, showed the environment version as a small grey badge next to the issue number, had no aimer version at all, and buried the change inside the result sentence. The user asked (2026-11-25) for versions and changes to stand out, and approved the recommended plan.
@@ -76,6 +76,17 @@ The whole change in one commit: lineage data fields, the Lineage component and i
 - The deployed site was captured too (see Follow-up Candidates): `/` opens the lineage at 1600x900 and 390x844.
 #### Notes
 - The first capture run passed `--path /` through Git Bash, which rewrote it to `/C:/Program Files/Git/`; the app showed the lineage for the unknown path, so the pictures are of the right screen. Later runs used `--url`.
+
+### chore: #80 마무리 (#80)
+> why: last commit before the PR
+#### Scope
+Status done, AGENTS.md pointer removed, registry row set to done.
+#### Changes
+- This document: Status. `docs/issues/README.md`: #80 row → done. `AGENTS.md`: pointer line removed.
+#### Verification
+None needed.
+#### Notes
+The user said "머지해" on 2026-11-25; taken as approval to commit, push, open the PR and squash-merge this branch.
 
 ## Management Notes
 ### Follow-up Candidates
