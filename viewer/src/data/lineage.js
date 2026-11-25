@@ -159,6 +159,9 @@ const NODES = {
 /** issue 를 화면에서 부르는 이름. 계보에 없는 issue 는 GitHub 의 issue 제목으로 부른다. issue 는 { number, title } 이다. */
 export const issueName = (issue) => NODES[issue.number]?.name ?? issue.title
 
+/** issue 가 주로 바꾼 영역의 key. 계보에 없는 issue 는 null. */
+export const laneOf = (number) => NODES[number]?.lane ?? null
+
 const laneName = (key) => LANES.find((l) => l.key === key)?.name ?? key
 
 /** '2026-11-15' 를 '11월 15일' 로. */

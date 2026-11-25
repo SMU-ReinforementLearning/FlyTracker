@@ -1,6 +1,6 @@
 // 실행 목록(index.json)과 에피소드 목록(episodes.json)을 화면이 쓰는 모양으로 바꾼다.
 import { algoLabel } from './labels.js'
-import { issueName } from './lineage.js'
+import { issueName, LANES, laneOf } from './lineage.js'
 
 export const NO_ISSUE = 'none'
 
@@ -24,6 +24,20 @@ export function groupByIssue(runs) {
   }
   const list = [...groups.values()]
   return [...list.filter((g) => g.key !== NO_ISSUE), ...list.filter((g) => g.key === NO_ISSUE)]
+}
+
+/**
+ * issue 묶음을 계보의 영역(초파리, 조준기, 환경)별 구역으로 나눈다. 구역은 계보의 세로줄과 같은 순서이고, 구역 안의 순서는 groups 그대로다.
+ * 영역은 그 issue 가 주로 바꾼 것 하나다. 다른 영역도 함께 바꾼 issue 도 한 구역에만 나온다.
+ * issue 가 없는 묶음과 계보에 없는 issue 는 이름 없는 마지막 구역에 둔다. 묶음이 없는 구역은 돌려주지 않는다.
+ * 돌려주는 것: [{ key, name, groups }]. 이름 없는 구역은 key 가 NO_ISSUE 이고 name 이 null 이다.
+ */
+export function sectionsByLane(groups) {
+  const laneKey = (g) => (g.key === NO_ISSUE ? null : laneOf(g.issue.number))
+  const sections = LANES.map((lane) => ({ key: lane.key, name: lane.name, groups: groups.filter((g) => laneKey(g) === lane.key) }))
+  const known = new Set(LANES.map((lane) => lane.key))
+  sections.push({ key: NO_ISSUE, name: null, groups: groups.filter((g) => !known.has(laneKey(g))) })
+  return sections.filter((s) => s.groups.length > 0)
 }
 
 /** 설명 파일의 compare 가 가리키는 issue 묶음. 적지 않았거나 그 issue 에 올라온 실행이 없으면 null. */
