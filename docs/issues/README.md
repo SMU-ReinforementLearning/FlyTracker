@@ -32,6 +32,7 @@ One row per management document, added in the same commit that creates the doc.
 | #51 | docs/issues/feature/51-feature-sac-laser-training.md | done | 레이저 명중 조건에서 SAC로 조준기 다시 학습하기 |
 | #54 | docs/issues/fix/54-fix-run-created-at-kst.md | done | #51 실행의 만든 시각을 한국 시각으로 고치기 |
 | #57 | docs/issues/docs/57-docs-readme-neural-fly-sources.md | done | README에 신경 초파리 출처 적기 |
+| #59 | docs/issues/feature/59-feature-neural-fly-learning.md | in progress | 실측 보정과 신경 초파리 순차 학습 및 viewer 재생 기록 |
 | #61 | docs/issues/chore/61-chore-neural-fly-sac-episodes.md | done | 신경망 초파리와 SAC 조준기 대결 에피소드 올리기 |
 | #62 | docs/issues/feature/62-feature-issue-page-owner-split-provenance.md | done | issue 화면을 초파리, 조준기, 환경으로 나누고 항목마다 바꾼 issue 보여 주기 |
 | #64 | docs/issues/feature/64-feature-bundled-neural-flight.md | in progress | 신경 비행 코드와 자료를 저장소에 포함 |

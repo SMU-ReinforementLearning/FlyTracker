@@ -17,9 +17,10 @@ from types import ModuleType, SimpleNamespace
 
 import numpy as np
 
+from .flight_profiles import PROFILE_ID, ORIGINAL_PROFILE_ID, profile_parameters, profile_provenance
 from .geometry import unit
 from .world import Room
-from .neuromechanics import NeuromechanicalSimulation
+from .neuromechanics import MechanicsParameters, NeuromechanicalSimulation
 from .flight_network import expand_flight_network
 
 
@@ -88,8 +89,22 @@ class NeuralConfig:
     wall_margin: float = 0.02
     lesion: str = "none"
     dynamics: str = "neuromechanical"
+    profile_id: str | None = PROFILE_ID
+    physics_overrides: dict[str, float] | None = None
 
     def __post_init__(self):
+        defaults = profile_parameters(self.profile_id)
+        if self.physics_overrides is None:
+            object.__setattr__(self, "physics_overrides", defaults)
+        allowed = {"drag_coefficient", "stroke_plane_forward_rad", "saccade_rotation_gain_rad", "background_drive_hz"}
+        if not isinstance(self.physics_overrides, dict) or set(self.physics_overrides) - allowed:
+            raise ValueError("Unsupported mechanics override")
+        if any(isinstance(v, bool) or not isinstance(v, (float, int)) or not math.isfinite(v) or v <= 0 for v in self.physics_overrides.values()):
+            raise ValueError("Mechanics overrides must be positive finite numbers")
+        if self.profile_id is not None and self.physics_overrides != defaults:
+            raise ValueError("Named profile parameters must match; use profile_id=None for custom overrides")
+        if self.profile_id is not None and (not isinstance(self.profile_id, str) or not self.profile_id.strip()):
+            raise ValueError("profile_id must be a nonempty string")
         if self.dynamics != "neuromechanical":
             raise ValueError("신경 비행은 neuromechanical 동역학만 지원합니다.")
         if self.lesion not in ("none", "LPLC2", "DNp06", "DNg02", "disconnected", "DNp03", "SGU", "escape"):
@@ -112,6 +127,9 @@ class NeuralConfig:
     def from_dict(cls, values):
         # 현재 보존한 기록의 사용하지 않던 설정만 읽는다. 다른 운동 모델은 허용하지 않는다.
         values = dict(values)
+        if "profile_id" not in values:
+            values["profile_id"] = None
+            values.setdefault("physics_overrides", {})
         legacy_fields = {"motion_profile", "wall_lookahead", "wall_accel", "wall_turn_rate"}
         if legacy_fields.intersection(values) and values.get("dynamics") != "neuromechanical":
             raise ValueError("이전 운동 모델 설정을 현재 모델로 자동 변환하지 않습니다.")
@@ -191,7 +209,8 @@ class NeuralFly:
         selected = groups.get(self.p.lesion,(self.p.lesion,))
         muted = sorted({i for group in selected for i in b.circuit.group(group)}) if self.p.lesion not in ('none','disconnected') else ()
         self.sim = NeuromechanicalSimulation(b, seed=self.seed, silenced=muted,
-                                             disconnected=self.p.lesion == "disconnected")
+                                             disconnected=self.p.lesion == "disconnected",
+                                             physics=MechanicsParameters(**self.p.physics_overrides))
         if self.sim.dt_s != self.dt_s or self.sim.neural.params.dt_ms != 0.1:
             raise ValueError("신체 5ms, 신경 0.1ms 간격이 필요합니다.")
         q = heading_quaternion(to_source(heading))
@@ -204,6 +223,7 @@ class NeuralFly:
         self.boundary_corrections = 0
         self.force_saturated_steps = 0
         self.speed_warning_steps = 0
+        self.angular_warning_steps = 0
         self.phase_events = []
         self._phase = "normal"
         self._disc_event = None
@@ -293,6 +313,7 @@ class NeuralFly:
             self._correct_room(room)
             self.force_saturated_steps += record["force_saturated"]
             self.speed_warning_steps += record["speed_warning"]
+            self.angular_warning_steps += record["angular_warning"]
             phase = self.sim.motor.phase
             if phase != self._phase:
                 self.phase_events.append({"time_ms": self.sim.clock.tick, "phase": phase})
@@ -314,7 +335,8 @@ class NeuralFly:
                 "angular_velocity": self.angular_velocity.tolist(),
                 "boundary_corrections": self.boundary_corrections,
                 "force_saturated_steps": self.force_saturated_steps,
-                "speed_warning_steps": self.speed_warning_steps}
+                "speed_warning_steps": self.speed_warning_steps,
+                "angular_warning_steps": self.angular_warning_steps}
         result.update(dynamics="neuromechanical",
                       wing={key: record.get(key) for key in ("stroke_amplitude_rad", "wing_lift_left_n",
                             "wing_lift_right_n", "wing_force_body", "wing_torque_body", "muscle_reflex_torque",
@@ -334,6 +356,7 @@ class NeuralFly:
                 "source_kind": "bundled" if self.backend.root == BUNDLED_SOURCE_ROOT else "external",
                 "settings": self.p.to_dict(), "coupling": asdict(self.sim.params),
                 "physics": asdict(self.sim.physics), "lif": asdict(self.sim.neural.params),
+                "flight_profile": profile_provenance(self.p.profile_id, asdict(self.sim.physics)),
                 "seed": self.seed,
                 "rights": ("사용자 작성 코드, 외부 MIT 고지 및 FlyWire v783 비영리 자료 조건: "
                            "flytracker/neural_assets/NOTICE.md. 외부 override의 권리는 별도 확인"),
@@ -358,11 +381,12 @@ class NeuralFly:
                     "contact": "Inelastic normal velocity impulse; no pose reset",
                     "sources": ["10.1016/j.cub.2022.01.008","10.1126/sciadv.abo7461","10.1016/j.cub.2010.07.025","10.1098/rstb.2015.0388","10.1016/j.cub.2023.12.047","10.1016/j.cub.2025.11.035","10.1242/jeb.038778"]},
                 "biological_validation": {
-                    "status": "not_calibrated",
+                    "status": "not_biologically_validated",
+                    "trajectory_coefficient_calibration": "experimental" if self.p.profile_id == PROFILE_ID else "original or custom",
                     "speed_mapping": "날개 힘과 항력의 적분 결과. Hz→날개 변환은 실측 보정 전",
                     "missing_mechanisms": ["검증된 발화→근육 변환", "재구성된 VNC 시냅스", "날갯짓 주기 내 비정상 공력", "동일 조건 행동 검증"],
                     "flight_speed_reference_mps": None,
                 },
                 "integration_sha256": {name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
-                                       for name in ("neural_fly.py", "stimulus.py", "neuromechanics.py", "flight_network.py")},
+                                       for name in ("neural_fly.py", "stimulus.py", "neuromechanics.py", "flight_network.py", "flight_profiles.py")},
                 "boundary": "시각 확장 입력과 비탄성 접촉. 위치/법선 속도만 보정, 자세/신경/근육 상태 보존"}

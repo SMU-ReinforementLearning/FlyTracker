@@ -1,0 +1,1 @@
+{"id":"2026-11-25_132716_issue59-boundary-final","name":"학습 가중치 후보 자유비행 경계 검사","createdAt":"2026-11-25T13:27:16","algo":"free-flight","actionMode":"continuous","notes":"무자극·무발사, seed 60001","episodeCount":1,"issue":{"number":59,"title":"신경회로 초파리 학습","url":"https://github.com/SMU-ReinforementLearning/FlyTracker/issues/59"},"author":"heohs"}

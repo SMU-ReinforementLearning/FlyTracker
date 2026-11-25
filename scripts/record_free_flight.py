@@ -8,6 +8,7 @@ import sys
 from uuid import uuid4
 
 from flytracker import EnvConfig, NeuralConfig, RunStore, StimulusConfig
+from flytracker.flight_profiles import PROFILE_ID, ORIGINAL_PROFILE_ID
 from flytracker.free_flight import record_free_flight, record_tracking_observation
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -18,6 +19,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--fly-model", choices=("rule", "neural"), default="neural")
     parser.add_argument("--neural-source", default=None)
+    parser.add_argument("--neural-profile",choices=(PROFILE_ID, ORIGINAL_PROFILE_ID),default=PROFILE_ID)
     parser.add_argument("--neural-data", default=None)
     parser.add_argument("--seconds", type=float, default=30.)
     parser.add_argument("--seed", type=int, default=0)
@@ -36,7 +38,7 @@ def main():
     if args.episodes <= 0:
         parser.error("episodes must be positive")
     cfg = EnvConfig(fly_model=args.fly_model, max_seconds=args.seconds,
-                    neural=NeuralConfig(source_root=args.neural_source, data_dir=args.neural_data, lesion=args.lesion),
+                    neural=NeuralConfig(source_root=args.neural_source, data_dir=args.neural_data, lesion=args.lesion, profile_id=args.neural_profile),
                     turret_pos=tuple(args.turret_pos),
                     stimulus=StimulusConfig(enabled=not (args.no_aim or args.no_stimulus),
                                             max_events=args.stimulus_max_events))

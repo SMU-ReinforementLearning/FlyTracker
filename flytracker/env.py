@@ -142,6 +142,8 @@ class EnvConfig:
                 kwargs[f.name] = tuple(d[f.name])  # JSON 에서는 list 로 돌아온다
             else:
                 kwargs[f.name] = d[f.name]
+        if d.get("fly_model") == "neural" and "neural" not in d:
+            kwargs["neural"] = NeuralConfig.from_dict({})
         return cls(**kwargs)
 
 

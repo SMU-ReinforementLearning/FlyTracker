@@ -162,7 +162,8 @@ def test_reset_recording_and_provenance(config):
     p=a['meta']['neural']
     assert p['backend']=='local_flysim_neuromechanical'
     assert p['neuromechanics']['network']['neurons']>273
-    assert p['biological_validation']['status']=='not_calibrated'
+    assert p['biological_validation']['status']=='not_biologically_validated'
+    assert p['flight_profile']['preregistered_gate_passed'] is False
     assert 'raw_connectivity' in p['sha256']
     assert a['frames']['neuralDiagnostics'][-1]['wing']['wing_force_body'] is not None
     assert a['frames']['neuralDiagnostics'][-1]['speed_command_mps'] is None

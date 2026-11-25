@@ -6,9 +6,9 @@ player 는 reset() 과 act(관측) -> 행동 을 가진 객체다. 조준기 자
 
 모델은 실행 폴더(runs/<실행 id>, 그 안의 model.zip 을 쓴다)나 checkpoint 파일(runs/<실행 id>/checkpoints/<tag>.zip)로
 가리킨다. 실행 폴더의 config.json 에서 환경 버전, 알고리즘, frame stack, 어느 쪽 모델인지를 읽는다.
-환경 버전이 지금과 다르면 불러오지 않는다. 예외가 하나 있다. 환경 버전 5의 조준기 모델은 관측에 shot 이 없고
-행동에 fire 가 없다는 것만 다르므로, 관측에서 shot 을 빼서 주고 쏠지는 기준선의 규칙(RuleAimer.wants_fire)으로 정해서 쓴다.
-이렇게 불러온 모델은 조준만 학습한 것이고 쏘는 것은 배우지 않았다. Opponent.fire 가 "rule" 이다.
+환경 버전이 지금과 다르면 불러오지 않는다. 환경 버전 5의 조준기는 예외로 현재 관측에서 shot 을 빼고 추론한다.
+현재 버전 조준기의 설정에서 fireMode 가 rule 이면 shot 을 포함한 현재 관측을 그대로 쓴다.
+두 버전 모두 추론한 yaw, pitch 에 기준선의 발사 규칙을 붙이며 Opponent.fire 는 "rule" 이다.
 """
 
 from __future__ import annotations
@@ -47,15 +47,16 @@ class PolicyPlayer:
     """
 
     def __init__(self, policy, frame_stack: int = 1, discrete: bool = False, assist: float = 0.0, tracker: RuleAimer | None = None,
-                 rule_fire: bool = False):
+                 rule_fire: bool = False, strip_shot: bool = True):
         """assist 가 0 보다 크면 학습 때처럼 정책의 행동에 tracker 의 추적을 더한다 (wrappers.TrackingAssist).
 
-        rule_fire 가 True 면 정책은 발사 행동이 없던 때(환경 버전 5)의 조준기 모델이다. 관측에서 shot 을 빼서 주고,
-        정책이 낸 yaw, pitch 두 값에 tracker 의 쏘는 규칙으로 정한 fire 를 붙인다. 연속 행동 모델에만 쓴다.
+        rule_fire 가 True 면 정책이 낸 yaw, pitch 두 값에 tracker 의 규칙으로 정한 fire 를 붙인다.
+        strip_shot 은 환경 버전 5의 모델에서 관측 호환을 위해 shot 을 제거한다.
         """
         if rule_fire and (discrete or tracker is None):
             raise ValueError("rule_fire needs a continuous-action policy and a tracker")
         self.rule_fire = rule_fire
+        self.strip_shot = strip_shot
         self.policy = policy
         self.frame_stack = frame_stack
         self.discrete = discrete
@@ -70,7 +71,7 @@ class PolicyPlayer:
 
     def act(self, obs) -> np.ndarray:
         x = np.asarray(obs, dtype=np.float32)
-        if self.rule_fire:
+        if self.rule_fire and self.strip_shot:
             x = np.delete(x, np.arange(len(x))[OBS["shot"]])
         if self.frame_stack > 1:
             if self._stack is None:
@@ -125,10 +126,11 @@ def load_opponent(spec: str, side: str, config: EnvConfig) -> Opponent:
     model_path, run_dir = _resolve(spec)
     run_cfg = json.loads((run_dir / "config.json").read_text(encoding="utf-8"))
     version = run_cfg.get("envVersion", 1)
-    rule_fire = side == "aimer" and version in RULE_FIRE_VERSIONS
-    if version != ENV_VERSION and not rule_fire:
-        raise ValueError(f"{spec}: 환경 버전 {version}에서 학습한 모델이라, 지금 환경(버전 {ENV_VERSION})과 견줄 수 없다")
     algo = run_cfg.get("algo", {})
+    legacy_fire = side == "aimer" and version in RULE_FIRE_VERSIONS
+    rule_fire = legacy_fire or (side == "aimer" and version == ENV_VERSION and algo.get("fireMode") == "rule")
+    if version != ENV_VERSION and not legacy_fire:
+        raise ValueError(f"{spec}: 환경 버전 {version}에서 학습한 모델이라, 지금 환경(버전 {ENV_VERSION})과 견줄 수 없다")
     run_side = algo.get("side", "aimer")
     if run_side != side:
         raise ValueError(f"{spec}: {run_side} 쪽 모델이라 {side} 자리에 넣을 수 없다")
@@ -151,6 +153,7 @@ def load_opponent(spec: str, side: str, config: EnvConfig) -> Opponent:
         assist=assist,
         tracker=baseline_player(config).policy if assist > 0 or rule_fire else None,
         rule_fire=rule_fire,
+        strip_shot=legacy_fire,
     )
     label = run_dir.name if model_path.name == "model.zip" else f"{run_dir.name}/{model_path.stem}"
     if rule_fire:

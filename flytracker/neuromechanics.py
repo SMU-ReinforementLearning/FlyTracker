@@ -370,6 +370,7 @@ class NeuromechanicalSimulation:
         self.last_record = dict(time_s=self.clock.time_s,sensory_time_s=self.clock.time_s-self.dt_s,
                                 speed_mps=float(np.linalg.norm(array(self.body.velocity))),
                                 force_saturated=int(applied_saturation),speed_warning=int(np.linalg.norm(array(self.body.velocity))>p.speed_warning_mps),
+                                angular_warning=int(np.linalg.norm(array(self.body.angular_rate))>p.angular_warning_rad_s),
                                 physical_acceleration=((array(self.body.velocity)-old_velocity)/self.dt_s).tolist(),
                                 **sensory,**motor)
         return self.last_record
