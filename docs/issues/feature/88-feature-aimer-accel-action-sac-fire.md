@@ -29,25 +29,26 @@ Train SAC aimers that steer alone with angular-acceleration actions instead of a
 - The neural fly; detection noise (#13); replacing v1 (a separate gate against v1).
 
 ## Done Criteria
-- [ ] Wrappers, misfire weight, loader and training options implemented and tested; the default environment is unchanged (baseline file reproduced byte for byte).
-- [ ] Gate document complete above "Verdict" and committed before the first training run starts.
-- [ ] 15 runs reach 1,000,000 steps; results downloaded and verified; instance destroyed.
-- [ ] Each candidate evaluated on seeds 20000-20199; bootstrap output and verdicts written into `gate.md`.
-- [ ] #85's diagnosis repeated on the new models (distance, scatter, captures in training).
+- [x] Wrappers, misfire weight, loader and training options implemented and tested; the default environment is unchanged (baseline file reproduced byte for byte).
+- [x] Gate document complete above "Verdict" and committed before the first training run starts.
+- [x] 15 runs reach 1,000,000 steps; results downloaded and verified; instance destroyed.
+- [x] Each candidate evaluated on seeds 20000-20199; bootstrap output and verdicts written into `gate.md`.
+- [x] #85's diagnosis repeated on the new models (distance, scatter, captures in training).
 - [ ] Runs published under issue #88; README, `history.js`, `lineage.js` and the viewer card updated.
 - [ ] `uv run pytest -q` and the viewer build pass.
 - [ ] PR merged; `AGENTS.md` pointer removed in the branch's last commit.
 
 ## Current State
-2026-11-25 22:15 KST. Code and gate committed (570cc24, 7ce5511, 7a8ec50; not pushed). Training is running on vast.ai.
+2026-11-26 03:30 KST. Training finished, results downloaded and verified, instance destroyed (nothing is running or billing). Verdicts are in `gate.md`: one of five adopted (`accel-pen-rule`: 2.611 s, 589/600, 0.47 misfires per episode; v0 4.894 s). `accel-rule` passes on time but is rejected by the capture exclusion (0.965 < 0.97); `rate-rule` and both fire-learning conditions are rejected. Korean results: `conditions.md`, section "결과". Nothing pushed.
 
-Resume note:
-- Running: vast.ai instance 62522764 (AMD EPYC 7B13, 32 effective cores, about 0.20 USD per hour), `root@217.171.200.22` port 59123 (also in `runs/_ops/ssh_target.txt`). 15 `train.py` processes started 2026-11-25 13:10:47 UTC under `/root/ft`, detached with nohup; they do not depend on this machine. Expected end: about 6 hours later (#51: 49 steps/s per run), around 04:00-05:00 KST on 2026-11-26.
-- Markers on the instance, `/root/ft/state/`: `TRAINING_STARTED`, `TRAINING_ENDED`, then `RESULTS_READY` or `FAILED`. Logs: `/root/ft/logs/<name>-s<k>.log`. One look: `bash runs/_ops/progress.sh`.
-- Next steps, in order: (1) `bash runs/_ops/fetch.sh` downloads `runs-g88.tgz`, checks the sha256 manifest, extracts to `runs/g88/`, requires 15 `model.zip`, and only then destroys the instance; (2) evaluate each model locally with #72's `measure_aimers.py <run> --out <dir>` on seeds 20000-20199, pool per condition with `mean`; (3) bootstrap as written in `gate.md`, append the verdicts; (4) repeat #85's diagnosis on the new models; (5) the rest of Scope 7.
-- If a run failed (`FAILED` says `ONLY_<n>_MODELS`): the archives are still packed; download by hand, re-run the missing seed as the gate says, do not substitute a checkpoint.
-- The instance bills until it is destroyed: `vastai destroy instance 62522764 -y`. Nothing destroys it automatically if `fetch.sh` is never run.
-- Certain fallback: the three commits above; nothing else on this branch is uncommitted except this note. The helper scripts are in `runs/_ops/` (gitignored): `remote_train.sh`, `remote_up.sh`, `wait_ready.sh`, `fetch.sh`, `progress.sh`.
+Left, waiting for the user (screen text and a decision are involved):
+- Scope 7 remainder: published runs (`published/issues/88.json`), README training options, viewer rows (`history.js`, `lineage.js`, the control row on the card).
+- Whether to gate `accel-pen-rule` against v1 (descriptively 0.41 s faster, P = 1.000; not a pre-registered comparison).
+- The staged fire-learning step. Proposal in Management Notes below.
+
+Where things are:
+- Models: `runs/g88/<condition>-s<k>/<run>/` (gitignored, only on this machine; archive `runs/_download/runs-g88.tgz`, 869 MB, sha256 in `runs/_download/manifest.sha256`). Diagnosis traces: `runs/d88/*.npz`.
+- Helper scripts (gitignored): `runs/_ops/` (`fetch.sh`, `eval_all.sh`, `diag_all.sh`, `diag_fire.sh`).
 - Trap: this session could not `EnterWorktree` into `FlyTracker-88`; it works there by absolute path, and compound shell commands that mention git are refused, so multi-step work goes into script files.
 
 Standing permissions from the user (2026-11-25, before going to sleep): commit on this branch without the review gate when the tests pass; no push, PR or merge; rent one vast.ai instance within 10 USD in total and destroy it after the results are downloaded and verified.
@@ -111,6 +112,33 @@ Management doc, registry row, `AGENTS.md` pointer.
 #### Notes
 - No cold-reader pass. No code changed since the last full test run (231 passed).
 
+### docs: 각가속도 조준기 15개의 판정과 진단 결과 적기 (#88)
+> why: training finished on 2026-11-26; the gate's verdicts and the repeated #85 diagnosis have to be on record with the files they came from
+#### Scope
+`gate.md` (Verdict), `gate/` (pooled files, `v1.csv`, `bootstrap-output.md`), `data/` (per-model measurements, diagnosis tables, `README.md`), `conditions.md` (Korean results), `run_gate.py`, `measure_tracking.py`, `analyze.py`, `response_curve.py`, `training_logs.py`, `fire_head.py`, `fire_stochastic.py`, this doc.
+#### Changes
+- Verdicts: `accel-pen-rule` adopt (time 2.611 s vs 4.894 s, P = 1.000; capture 589/600; per-seed P 1.000 each; misfires 0.472). `accel-rule` reject by the capture exclusion (579/600 = 0.965) although time P = 1.000. `rate-rule` reject (12/600). `accel-fire-m03`, `accel-fire-m10` reject (0/600, about 0.01 shots per episode).
+- Diagnosis (fire held off): median beam distance on tracking steps 0.40-0.56 mm for the rule-fire acceleration models against 2.82-3.12 mm for `rate-rule`; error-direction flips 11-24 % against 86-89 %; step-to-step yaw command change 2.9-4.0 °/s against 46.6-52.4; no command beyond the turret's acceleration limit against 86-94 %. Training episode length fell from 500 to 129-182 steps for the two rule-fire acceleration conditions and stayed at 500 for the rest.
+- Fire-learning models aim (0.63-1.05 mm; 182-200 of 200 would have been caught had something fired) but the fire action's mean is about -0.5 at every beam distance with sd 0.12-0.15, so even sampled actions fire on 0.1 % of steps or fewer.
+- The four diagnosis scripts are #85's (that branch is not merged), copied with the model names changed; `measure_tracking.py` additionally converts acceleration actions and records the fire action's mean.
+#### Verification
+- Download: `sha256sum -c manifest.sha256` OK for `runs-g88.tgz` and `state-logs.tgz`; 15 `model.zip`; `vastai show instances` lists none after the destroy (2026-11-26 02:49 KST).
+- All 200 ids per model (`measure_aimers.py` printed n=200 for each). `run_gate.py` wrote `gate/bootstrap-output.md` with the sha256 of every input; baseline `70a62ab3...`, truth `0f577c4c...` as frozen.
+- `rate-rule` reproduces #85's picture of #51's `sac-beam` (3 mm, flips near 0.87), which checks the copied diagnosis against a known case.
+- `uv run pytest -q`: 231 passed (no library code changed in this commit). `ko-writing` `check.py` on `conditions.md`: no banned pattern, endings consistent.
+#### Notes
+- First diagnosis pass failed on the six fire-learning models (three-value action written into a two-value field); fixed and re-run for those six only.
+- The explanation of why fire learning collapsed (early shots all penalised before the aim existed) is an inference; shots during training were not logged.
+- No cold-reader pass on `conditions.md`. Viewer, README and published runs are left for the user's review because they add screen text.
+- Cost: instance ran 2026-11-25 13:00 UTC to 17:49 UTC at about 0.20 USD per hour, about 1 USD, within the 10 USD cap (figure from the hourly rate, not from the invoice).
+
 ## Management Notes
+### Proposal: staged fire learning (not started; the user decides)
+- Start from an `accel-pen-rule` model with the steering frozen (or a low learning rate) and learn only the fire decision; the aim then already holds the beam inside the radius, so a shot can succeed from the first episode.
+- Do not start the fire output from scratch: begin from the rule's behaviour (imitate `wants_fire` first, or let the rule fire with some probability during early training), because the collapse seen here happens when every early shot is a miss.
+- Give the fire decision what the rule lacks: recent aim error (frame stack or the error's rate), so it can predict whether the next 0.15 s will hold. #85: a shot on entering the radius hits 59 %, after dwelling 0.16 s 89 %.
+- Gate it against `accel-pen-rule` with rule fire on time and misfires, written before training.
 ### Follow-up Candidates
+- Gate `accel-pen-rule` against v1.
+- A second `action_change` weight (only 1.0 was tried) belongs to a new gate.
 ### References

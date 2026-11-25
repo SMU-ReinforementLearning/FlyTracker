@@ -108,4 +108,54 @@ Whatever the verdicts, the result decides the design of the staged step (fire le
 
 ## Verdict
 
-(not measured yet)
+Measured 2026-11-26 on the local Windows machine. All 15 runs reached 1,000,000 steps on the instance (vast.ai 62522764, started 2026-11-25 13:10:47 UTC, results packed 17:30 UTC); the archive's sha256 matched after download and the instance was destroyed 2026-11-26 02:49 KST. Each final `model.zip` was measured with #72's `measure_aimers.py` on seeds 20000-20199; all 200 ids present for every model. Bootstraps: `run_gate.py`; the complete unedited output with the sha256 of every input is `gate/bootstrap-output.md`. The rows below are copied from it.
+
+Columns: target | A (baseline) | B (candidate) | Δ | bootstrap mean Δ | 95% CI | P(B better). For `capture` the value is the miss rate.
+
+### Gated: time against the baseline (v0), pooled over 3 training seeds
+
+| candidate | row from the tool | gate |
+| --- | --- | --- |
+| `rate-rule` | time \| 4.8943 \| 9.9675 \| +5.0732 \| +5.0723 \| [+4.8696, +5.2718] \| 0.000 | FAIL |
+| `accel-rule` | time \| 4.8943 \| 3.0215 \| -1.8728 \| -1.8714 \| [-2.1370, -1.5912] \| 1.000 | PASS |
+| `accel-pen-rule` | time \| 4.8943 \| 2.6114 \| -2.2829 \| -2.2825 \| [-2.5372, -2.0240] \| 1.000 | PASS |
+| `accel-fire-m03` | time \| 4.8943 \| 10.0000 \| +5.1057 \| +5.1050 \| [+4.9094, +5.2978] \| 0.000 | FAIL |
+| `accel-fire-m10` | time \| 4.8943 \| 10.0000 \| +5.1057 \| +5.1050 \| [+4.9094, +5.2978] \| 0.000 | FAIL |
+
+### Exclusions
+
+| candidate | capture (pooled; 0.97 needed) | per training seed P(faster), s0 / s1 / s2 (0.50 needed) | misfires per episode (pooled; above 1.00 → undecided) |
+| --- | --- | --- | --- |
+| `rate-rule` | 0.0200 (12/600) | 0.000 / 0.000 / 0.000 | 19.578 |
+| `accel-rule` | 0.9650 (579/600) — **fires** | 1.000 / 1.000 / 1.000 | 0.687 |
+| `accel-pen-rule` | 0.9817 (589/600) | 1.000 / 1.000 / 1.000 | 0.472 |
+| `accel-fire-m03` | 0.0000 (0/600) | 0.000 / 0.000 / 0.000 | 0.007 |
+| `accel-fire-m10` | 0.0000 (0/600) | 0.000 / 0.000 / 0.000 | 0.007 |
+
+Per model (capture of 200, mean time, misfires per episode): `accel-rule` s0 194, 3.030 s, 0.640; s1 191, 3.047 s, 0.700; s2 194, 2.987 s, 0.720. `accel-pen-rule` s0 193, 2.851 s, 0.320; s1 198, 2.574 s, 0.650; s2 198, 2.409 s, 0.445. `rate-rule` s0 6, s1 3, s2 3. The fire-learning models captured nothing and fired about 0.01 shots per episode.
+
+### Decisions
+
+One of the five candidates passed.
+
+- `rate-rule` — **reject** (gate fails). The rule fires about 19.6 times per episode and nearly every shot leaves the fly: the same near miss as #51's `sac-beam`, now visible as misfires.
+- `accel-rule` — **reject**. Time passes with P = 1.000, but the pre-declared capture exclusion fires: 0.9650 is below 0.97 (579/600; the baseline 198/200). The time result is real and is reported; the rule written before measuring decides.
+- `accel-pen-rule` — **adopt**: a working policy-alone aimer. P = 1.000 on time (2.611 s against 4.894 s), capture 0.9817, every training seed P = 1.000, misfires 0.472 per episode (baseline 0.500). One of its three models (s0) is at 193/200 on its own; the exclusion is written on the mean over the three models, which is above 0.97.
+- `accel-fire-m03`, `accel-fire-m10` — **reject** (gate fails). The policies learned not to fire at all; both misfire weights give the same result, so the weight is not what decided it.
+
+Not a decision of this gate (Selection rule): whether `accel-pen-rule` replaces v1. Descriptive rows, B against A:
+
+| comparison | row from the tool |
+| --- | --- |
+| `accel-rule` (B) vs `rate-rule` (A) | time \| 9.9675 \| 3.0215 \| -6.9460 \| -6.9438 \| [-7.1655, -6.7047] \| 1.000 |
+| `accel-pen-rule` (B) vs `accel-rule` (A) | time \| 3.0215 \| 2.6114 \| -0.4101 \| -0.4111 \| [-0.5877, -0.2446] \| 1.000 |
+| `accel-pen-rule` (B) vs `accel-rule` (A) | capture \| 0.0350 \| 0.0183 \| -0.0167 \| -0.0168 \| [-0.0333, -0.0017] \| 0.984 |
+| `accel-pen-rule` (B) vs `accel-rule` (A) | misfires \| 0.6867 \| 0.4717 \| -0.2150 \| -0.2150 \| [-0.3383, -0.0983] \| 1.000 |
+| `accel-rule` (B) vs v1 (A) | time \| 3.0256 \| 3.0215 \| -0.0042 \| -0.0030 \| [-0.1977, +0.1973] \| 0.514 |
+| `accel-pen-rule` (B) vs v1 (A) | time \| 3.0256 \| 2.6114 \| -0.4142 \| -0.4141 \| [-0.5755, -0.2573] \| 1.000 |
+| `accel-pen-rule` (B) vs v1 (A) | capture \| 0.0267 \| 0.0183 \| -0.0083 \| -0.0083 \| [-0.0250, +0.0067] \| 0.869 |
+| `accel-pen-rule` (B) vs v1 (A) | misfires \| 0.6000 \| 0.4717 \| -0.1283 \| -0.1287 \| [-0.2533, +0.0000] \| 0.975 |
+
+The comparison with v1 was not pre-registered as a gate and the `action_change=1.0` value was the only one tried, so these rows are a reason to write a gate against v1, not a replacement of v1.
+
+Consequences: acceleration control is what made a policy-alone aim work (same reward, same fire rule, rate 12/600 against acceleration 579/600). Learning to fire from scratch together with the aim fails by never firing; the staged step (fire learning on top of a working aim) starts from `accel-pen-rule`. Deployed gate: none.
