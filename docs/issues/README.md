@@ -44,3 +44,4 @@ One row per management document, added in the same commit that creates the doc.
 | #80 | docs/issues/feature/80-feature-lineage-version-change-visibility.md | done | 계보에서 버전과 변경점이 한눈에 보이게 하기 |
 | #81 | docs/issues/feature/81-feature-sidebar-lane-sections.md | done | 사이드바의 issue 묶음을 초파리, 조준기, 환경으로 나누기 |
 | #82 | docs/issues/docs/82-docs-aimer-history.md | done | 조준기 변천사 문서로 정리하기 |
+| #88 | docs/issues/feature/88-feature-aimer-accel-action-sac-fire.md | in progress | 조준기 행동을 각가속도로 바꾸고 SAC로 조준과 발사 학습하기 |
