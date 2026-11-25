@@ -24,6 +24,7 @@ from stable_baselines3.common.monitor import Monitor
 from flytracker import EpisodeRecorder, RunStore, load_opponent, make_env, make_fly_env
 from flytracker.players import RULE_SPECS, SIDES, algo_classes
 from flytracker.record import Run
+from flytracker.wrappers import CONTROLS, FIRES
 
 ALGOS = algo_classes()
 
@@ -89,6 +90,19 @@ def main() -> None:
         help="0 보다 크면 조준기 정책의 행동에 기준선의 추적을 더한다. 보이는 동안 환경에 들어가는 행동은 "
         "추적 행동 + 이 값 × 정책 행동이다. 조준기 쪽 연속 행동에서만 쓴다",
     )
+    p.add_argument(
+        "--control",
+        choices=CONTROLS,
+        default="rate",
+        help="조준기 정책의 돌리는 행동이 뜻하는 것. rate 는 각속도, accel 은 각가속도(행동 0 이면 지금 속도로 계속 돈다). "
+        "조준기 쪽 연속 행동에서만 쓴다",
+    )
+    p.add_argument(
+        "--fire",
+        choices=FIRES,
+        default="policy",
+        help="쏠지를 누가 정하나. policy 는 정책, rule 은 기준선의 규칙(정책은 돌리는 두 값만 낸다). 조준기 쪽 연속 행동에서만 쓴다",
+    )
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--eval-seed", type=int, default=10_000)
     p.add_argument("--device", default="cpu", help="작은 MLP 는 대개 CPU 가 빠르다")
@@ -103,6 +117,8 @@ def main() -> None:
     action_mode = "discrete" if args.algo == "dqn" else "continuous"
     if args.assist > 0 and (args.side != "aimer" or action_mode != "continuous"):
         p.error("--assist 는 조준기 쪽 연속 행동에서만 쓴다")
+    if (args.control != "rate" or args.fire != "policy") and (args.side != "aimer" or action_mode != "continuous"):
+        p.error("--control accel 과 --fire rule 은 조준기 쪽 연속 행동에서만 쓴다")
     other = "fly" if args.side == "aimer" else "aimer"
     spec = args.opponent or RULE_SPECS[other]
     # 학습 환경과 평가 환경이 상대의 상태(frame stack, 기준선의 탐색 상태)를 나누지 않게 따로 불러온다
@@ -111,7 +127,8 @@ def main() -> None:
 
     def build_env(opponent) -> gym.Env:
         if args.side == "aimer":
-            return make_env(cfg, action_mode, args.frame_stack, fly=opponent.player, assist=args.assist)
+            return make_env(cfg, action_mode, args.frame_stack, fly=opponent.player, assist=args.assist,
+                            control=args.control, fire=args.fire)
         return make_fly_env(cfg, aimer=opponent.player, frame_stack=args.frame_stack)
 
     name = args.name or (args.algo if args.side == "aimer" else f"fly-{args.algo}")
@@ -121,6 +138,8 @@ def main() -> None:
         "seed": args.seed,
         "frameStack": args.frame_stack,
         "assist": args.assist,
+        "control": args.control,
+        "fire": args.fire,
         "side": args.side,
         "opponent": train_opponent.label,
     }

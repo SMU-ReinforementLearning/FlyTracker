@@ -57,6 +57,8 @@ class RewardWeights:
     lost: float = 0.15  # 안 보일 때 고정 벌점
     action_change: float = 0.01  # 이전 행동과의 차이 제곱 평균
     capture: float = 10.0  # 포획 보상
+    # 오발 한 번마다 벌점. 기본은 0 이라 오발에 값이 없다(#69: 먼저 재고 정한다). 발사를 학습시킬 때 켠다(#88).
+    misfire: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -267,6 +269,7 @@ class FlyChaseEnv(gym.Env):
         self.captured = False
         self.shots = 0  # 쏜 발 수
         self.misfires = 0  # 그 가운데 한 번이라도 빗나간 발 수
+        self._misfires_before = 0  # 직전 step 을 시작할 때의 오발 수. 그 step 에 난 오발을 보상에서 센다
         self._shot_steps = max(1, math.ceil(cfg.capture_hold / cfg.dt - 1e-9))  # 한 발이 이어지는 물리 step 수
         self._shot_left = 0  # 지금 발의 남은 물리 step. 0 이면 쏘고 있지 않다
         self._shot_clean = True  # 지금 발이 아직 한 번도 빗나가지 않았다
@@ -289,6 +292,7 @@ class FlyChaseEnv(gym.Env):
         a = np.clip(np.asarray(action, dtype=float).reshape(ACTION_DIM), -1.0, 1.0)
         if self.fly_player is not None:  # 학습한 초파리는 늦게 받은 관측으로 이번 step 의 회피를 정한다
             self.apply_fly_action(self.fly_player.act(self.fly_observation()))
+        self._misfires_before = self.misfires
         if cfg.capture_enabled and a[2] > 0.0 and self._shot_left == 0:  # 쏘는 중에 또 당긴 방아쇠는 무시한다
             self._shot_left, self._shot_clean = self._shot_steps, True
             self.shots += 1
@@ -462,6 +466,7 @@ class FlyChaseEnv(gym.Env):
             r -= w.lost
         turn = slice(0, 2)  # 돌리는 두 값만 본다. 쏘는 값은 방아쇠라서 바뀌는 것이 정상이다
         r -= w.action_change * float(np.mean((a[turn] - self._prev_action[turn]) ** 2))
+        r -= w.misfire * (self.misfires - self._misfires_before)
         if self.captured:
             r += w.capture
         return float(r)

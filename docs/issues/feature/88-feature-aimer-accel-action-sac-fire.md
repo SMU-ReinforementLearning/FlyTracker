@@ -58,6 +58,24 @@ Management doc, registry row, `AGENTS.md` pointer.
 - Priority High was chosen by the agent: the user runs the training the same night.
 - #85's branch is not merged; this branch does not contain its result note.
 
+### feat: 각가속도 행동, 규칙 발사, 오발 벌점을 학습 옵션으로 넣기 (#88)
+> why: #85 showed the rate command is too coarse a scale for the last 0.04 degrees; the conditions of the gate need these three switches
+#### Scope
+`flytracker/wrappers.py`, `env.py`, `players.py`, `scripts/train.py`, `tests/test_control.py`. `ENV_VERSION` stays 6.
+#### Changes
+- `wrappers.AccelControl` / `accel_to_rate` / `accel_gain`: the policy's two steering values are angular accelerations; commanded rate = observed rate + action x 14.4 deg/s per step (yaw 0.08, pitch 0.12 in action units), clipped. Action 0 keeps the current rate.
+- `wrappers.RuleFire`: the policy outputs yaw and pitch, does not observe `shot`, and `RuleAimer.wants_fire` fires. `make_env(control=, fire=)`; both refuse discrete actions.
+- `RewardWeights.misfire` (default 0): subtracted once in the step a shot first leaves the fly.
+- `PolicyPlayer(accel_gain=)`; `load_opponent` reads `algo.control` and `algo.fire` from `config.json`, so a model plays as it was trained. `train.py --control`, `--fire` write them.
+#### Verification
+- `uv run pytest -q`: 231 passed (11 new in `tests/test_control.py`: gain values, zero acceleration keeps the rate, clipping, full acceleration reaches 0.08 per step, the rule-fire wrapper fires exactly when the baseline rule says, a `PolicyPlayer` reproduces the wrappers' rewards, turret angles and shots for three combinations, discrete refused, the misfire penalty charged once per misfire, default weight 0).
+- Smoke: `train.py --steps 3000` for `--control accel --fire rule`, `--control accel --reward misfire=0.3` and `--fire rule` each trains, saves and loads through #72's `measure_aimers.py` (0/3 on seeds 20000-20002, untrained; labels end in `+rule-fire` where the rule fires).
+- Default environment unchanged: `measure_aimers.py baseline` on this branch gives sha256 `70a62ab3...`, the frozen file of #72.
+#### Notes
+- Wrappers instead of an environment change: the baseline, v1 and the teammate's fly training keep working, and no env version bump is needed. The cost: a model's control lives in its run's `config.json`.
+- The existing `action_change` penalty is computed on the rate command the environment receives, so under acceleration actions it already penalises acceleration; no new term was added for it.
+- README, the viewer card row for the control and the `history.js` / `lineage.js` rows are left for after the results (Scope 7).
+
 ## Management Notes
 ### Follow-up Candidates
 ### References

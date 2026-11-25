@@ -24,7 +24,7 @@ import numpy as np
 from .baseline import RuleAimer
 from .aimer import ACTION_DIM
 from .env import ENV_VERSION, OBS, EnvConfig
-from .wrappers import DISCRETE_ACTIONS
+from .wrappers import CONTROLS, DISCRETE_ACTIONS, FIRES, accel_gain, accel_to_rate
 
 SIDES = ("aimer", "fly")
 RULE_SPECS = {"aimer": "baseline", "fly": "rule"}
@@ -47,12 +47,18 @@ class PolicyPlayer:
     """
 
     def __init__(self, policy, frame_stack: int = 1, discrete: bool = False, assist: float = 0.0, tracker: RuleAimer | None = None,
-                 rule_fire: bool = False):
+                 rule_fire: bool = False, accel_gain: np.ndarray | None = None):
         """assist 가 0 보다 크면 학습 때처럼 정책의 행동에 tracker 의 추적을 더한다 (wrappers.TrackingAssist).
 
         rule_fire 가 True 면 정책은 발사 행동이 없던 때(환경 버전 5)의 조준기 모델이다. 관측에서 shot 을 빼서 주고,
         정책이 낸 yaw, pitch 두 값에 tracker 의 쏘는 규칙으로 정한 fire 를 붙인다. 연속 행동 모델에만 쓴다.
+        쏘는 것을 규칙에 맡겨 학습한 모델(실행의 algo.fire 가 "rule")도 같은 모양이다 (wrappers.RuleFire).
+
+        accel_gain 을 주면 정책의 돌리는 행동은 각가속도다. 학습 때처럼 각속도 행동으로 바꿔서 쓴다 (wrappers.AccelControl).
         """
+        if accel_gain is not None and discrete:
+            raise ValueError("accel control needs a continuous-action policy")
+        self.accel_gain = accel_gain
         if rule_fire and (discrete or tracker is None):
             raise ValueError("rule_fire needs a continuous-action policy and a tracker")
         self.rule_fire = rule_fire
@@ -83,6 +89,8 @@ class PolicyPlayer:
             return DISCRETE_ACTIONS[int(action)][1].copy()
         if self.rule_fire:
             action = np.append(np.asarray(action, dtype=float), np.zeros(ACTION_DIM - len(action)))
+        if self.accel_gain is not None:
+            action = accel_to_rate(obs, action, self.accel_gain)
         a = self.tracker.assisted(obs, action, self.assist) if self.assist > 0 else np.asarray(action, dtype=float)
         if self.rule_fire:
             a[2] = 1.0 if self.tracker.wants_fire(obs) else -1.0
@@ -125,10 +133,14 @@ def load_opponent(spec: str, side: str, config: EnvConfig) -> Opponent:
     model_path, run_dir = _resolve(spec)
     run_cfg = json.loads((run_dir / "config.json").read_text(encoding="utf-8"))
     version = run_cfg.get("envVersion", 1)
-    rule_fire = side == "aimer" and version in RULE_FIRE_VERSIONS
-    if version != ENV_VERSION and not rule_fire:
-        raise ValueError(f"{spec}: 환경 버전 {version}에서 학습한 모델이라, 지금 환경(버전 {ENV_VERSION})과 견줄 수 없다")
     algo = run_cfg.get("algo", {})
+    control, fire = algo.get("control", "rate"), algo.get("fire", "policy")
+    if control not in CONTROLS or fire not in FIRES:
+        raise ValueError(f"{spec}: 알 수 없는 행동 방식이다 (control {control!r}, fire {fire!r})")
+    old_rule_fire = side == "aimer" and version in RULE_FIRE_VERSIONS  # 발사 행동이 없던 때의 모델
+    rule_fire = old_rule_fire or (side == "aimer" and fire == "rule")
+    if version != ENV_VERSION and not old_rule_fire:
+        raise ValueError(f"{spec}: 환경 버전 {version}에서 학습한 모델이라, 지금 환경(버전 {ENV_VERSION})과 견줄 수 없다")
     run_side = algo.get("side", "aimer")
     if run_side != side:
         raise ValueError(f"{spec}: {run_side} 쪽 모델이라 {side} 자리에 넣을 수 없다")
@@ -151,6 +163,7 @@ def load_opponent(spec: str, side: str, config: EnvConfig) -> Opponent:
         assist=assist,
         tracker=baseline_player(config).policy if assist > 0 or rule_fire else None,
         rule_fire=rule_fire,
+        accel_gain=accel_gain(config) if control == "accel" else None,
     )
     label = run_dir.name if model_path.name == "model.zip" else f"{run_dir.name}/{model_path.stem}"
     if rule_fire:
