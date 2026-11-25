@@ -23,6 +23,14 @@ export const LANES = [
 // change 는 바뀐 값 하나다. { what: 무엇이, from: 전(없으면 뺀다), to: 후 }. 값이 바뀌지 않은 issue 에는 적지 않는다.
 // metric 은 그 issue 에서 잰 수치다. result 에 있는 숫자만 옮긴다. 포획 5/200 은 에피소드 200개 가운데 5개를 포획했다는 뜻이다.
 const NODES = {
+  59: {
+    lane: 'fly',
+    also: ['aimer'],
+    parents: [31, 64, 72],
+    name: '실측 보정과 신경 학습',
+    result: '실측 자료로 비행계수를 보정하고, 학습용 조준기를 고정해 신경회로를 학습했다. 배율 후보는 바닥 보정이 늘어 채택하지 않았다.',
+  },
+
   1: {
     lane: 'environment',
     parents: [],
@@ -166,6 +174,7 @@ const laneName = (key) => LANES.find((l) => l.key === key)?.name ?? key
 
 /** '2026-11-15' 를 '11월 15일' 로. */
 const dayLabel = (iso) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso
   const [, m, d] = iso.split('-').map(Number)
   return `${m}월 ${d}일`
 }

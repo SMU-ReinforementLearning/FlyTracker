@@ -10,6 +10,7 @@ from flytracker import EnvConfig, EpisodeRecorder
 from flytracker.env import RewardWeights
 from flytracker.camera import CameraIntrinsics
 from flytracker.neural_fly import NeuralConfig
+from flytracker.flight_profiles import PROFILE_ID, ORIGINAL_PROFILE_ID
 from flytracker.stimulus import StimulusConfig
 
 # Windows 콘솔이 cp949 여도 한국어 출력이 깨지지 않게 한다. argparse 오류는 stderr 로 나간다
@@ -22,6 +23,7 @@ def add_env_args(p: argparse.ArgumentParser) -> None:
     g = p.add_argument_group("환경")
     g.add_argument("--fly-model", choices=("rule", "neural"), default="rule")
     g.add_argument("--neural-source", default=None, help="선택적 외부 flysim 경로. 지정한 Python 코드를 실행합니다. 없으면 환경 변수 또는 패키지 동봉 자료를 사용합니다.")
+    g.add_argument("--neural-profile", choices=(PROFILE_ID, ORIGINAL_PROFILE_ID), default=PROFILE_ID, help="신경 비행 계수. 기본은 실험용 공개 실측 보정 후보이며 original은 이전 계수입니다.")
     g.add_argument("--neural-data", default=None, help="neurons.csv와 edges.csv가 있는 로컬 폴더")
     g.add_argument("--no-stimulus", action="store_true", help="신경 비행의 가상 자극 끄기")
     for name in ("align_deg", "charge_ms", "discharge_ms", "pulse_ms", "cooldown_ms", "max_events",
@@ -76,7 +78,7 @@ def config_from_args(args: argparse.Namespace) -> EnvConfig:
         max_seconds=args.max_seconds,
         start_facing_fly=args.start_facing_fly,
         fly_model=args.fly_model,
-        neural=NeuralConfig(source_root=args.neural_source, data_dir=args.neural_data),
+        neural=NeuralConfig(source_root=args.neural_source, data_dir=args.neural_data, profile_id=getattr(args,"neural_profile",PROFILE_ID)),
         stimulus=StimulusConfig(enabled=not args.no_stimulus, **{
             name: getattr(args, "stimulus_" + name) for name in (
                 "align_deg", "charge_ms", "discharge_ms", "pulse_ms", "cooldown_ms", "max_events",

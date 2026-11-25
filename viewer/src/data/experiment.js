@@ -198,7 +198,10 @@ function flySettingsOf(configs, sides) {
   const flight = envOf('rule', 'learned').map((e) => e?.fly ?? null)
   const rule = envOf('rule').map((e) => e?.fly ?? null)
   const learned = envOf('learned')
-  const stim = envOf('neural').map((e) => (e?.stimulus?.enabled ? e.stimulus : null))
+  const neural = envOf('neural')
+  const stim = neural.map((e) => (e?.stimulus?.enabled ? e.stimulus : null))
+  const profiles = { original: '기존 계수', 'zenodo29193-candidate13-experimental': '실측 보정 후보' }
+  const weights = { original: '원래 가중치', baseline: '원래 가중치', final: '학습 가중치 후보' }
   return [
     makeRow('비행 속도', 'env.fly.speed', flight.map((f) => (f && has(f.speed_short) && has(f.speed_long) ? item(`평균 ${fmtNum(f.speed_short)}~${fmtNum(f.speed_long)}m/s`) : null))),
     makeRow('급선회 각도', 'env.fly.saccade_mean_deg', flight.map((f) => (f && has(f.saccade_mean_deg) ? qty(f.saccade_mean_deg, '°', '평균 ') : null))),
@@ -208,7 +211,15 @@ function flySettingsOf(configs, sides) {
     makeRow('반응 지연', 'env.fly.evade_reaction', rule.map((f) => (f && has(f.evade_reaction) ? ms(f.evade_reaction) : null))),
     makeRow('피할 때 속도', 'env.fly.evade_speed_gain', flight.map((f) => (f && has(f.evade_speed_gain) ? qty(f.evade_speed_gain, '배', '최대 ') : null))),
     makeRow('관측 지연', 'env.fly_reaction_delay', learned.map((e) => (e && has(e.fly_reaction_delay) ? ms(e.fly_reaction_delay) : null))),
-    makeRow('자극', 'env.stimulus.enabled', envOf('neural').map((e) => (e?.stimulus && has(e.stimulus.enabled) ? item(e.stimulus.enabled ? '켬' : '끔') : null))),
+    makeRow('비행계수', 'env.neural.profile_id', neural.map((e) => {
+      const label = profiles[e?.neural?.profile_id]
+      return label ? item(label) : null
+    })),
+    makeRow('신경 가중치', 'evaluation.flyWeights', configs.map((c, i) => {
+      const label = neural[i] && weights[c.evaluation?.flyWeights]
+      return label ? item(label) : null
+    })),
+    makeRow('자극', 'env.stimulus.enabled', neural.map((e) => (e?.stimulus && has(e.stimulus.enabled) ? item(e.stimulus.enabled ? '켬' : '끔') : null))),
     makeRow('자극을 주는 조준 오차', 'env.stimulus.align_deg', stim.map((t) => (t && has(t.align_deg) ? within(qty(t.align_deg, '°')) : null))),
     makeRow('자극 전 조준 시간', 'env.stimulus.charge_ms', stim.map((t) => (t && has(t.charge_ms) ? qty(t.charge_ms, 'ms') : null))),
     makeRow('자극 길이', 'env.stimulus.pulse_ms', stim.map((t) => (t && has(t.pulse_ms) ? qty(t.pulse_ms, 'ms') : null))),

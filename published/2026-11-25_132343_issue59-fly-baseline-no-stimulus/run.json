@@ -1,0 +1,1 @@
+{"id":"2026-11-25_132343_issue59-fly-baseline-no-stimulus","name":"고정 조준기 상대 원래 가중치 (가상 자극 끔)","createdAt":"2026-11-25T13:23:43","algo":"sac","actionMode":"continuous","notes":"평가 seed 40000~40002","episodeCount":3,"issue":{"number":59,"title":"신경회로 초파리 학습","url":"https://github.com/SMU-ReinforementLearning/FlyTracker/issues/59"},"author":"heohs"}

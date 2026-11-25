@@ -186,7 +186,7 @@ def run(source,out):
     if allowed not in out.parents or source==out or source in out.parents:
         raise ValueError('출력은 원본 밖 Issue #31의 새 하위 폴더여야 합니다.')
     before=source_inventory(source)
-    config=NeuralConfig(source_root=str(source),boundary_enabled=False)
+    config=NeuralConfig(profile_id="original",source_root=str(source),boundary_enabled=False)
     probe=make(config,SEEDS[0])
     out.mkdir()
     stop=Event(); heartbeat=[time.monotonic()]
