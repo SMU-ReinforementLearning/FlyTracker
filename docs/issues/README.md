@@ -43,3 +43,4 @@ One row per management document, added in the same commit that creates the doc.
 | #77 | docs/issues/feature/77-feature-issue-lineage-map.md | done | viewer 첫 화면에 issue 계보 넣고 사이드바 실행을 조건으로 묶기 |
 | #80 | docs/issues/feature/80-feature-lineage-version-change-visibility.md | done | 계보에서 버전과 변경점이 한눈에 보이게 하기 |
 | #81 | docs/issues/feature/81-feature-sidebar-lane-sections.md | done | 사이드바의 issue 묶음을 초파리, 조준기, 환경으로 나누기 |
+| #82 | docs/issues/docs/82-docs-aimer-history.md | done | 조준기 변천사 문서로 정리하기 |
