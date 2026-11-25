@@ -35,7 +35,7 @@ Writes one Korean document that tells how the aimer changed from issue #1 to #72
 - [ ] PR merged; `AGENTS.md` pointer removed in the branch's last commit.
 
 ## Current State
-2026-11-25. Document, glossary and fact ledger written and reviewed twice by cold readers; nothing committed yet. Waiting for the user's review (Pre-Commit Review Gate) of the seeded files and the document. After approval: the registration commit, then the docs commit below, then the pointer removal as the last commit.
+2026-11-25. Document, glossary and fact ledger written and reviewed by cold readers. The user approved at the review gate with "머지해" (commit, push, PR and squash merge for this branch). Registration commit and docs commit made; the pointer removal is the last commit before the PR.
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
