@@ -48,6 +48,8 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 | aim stimulus on or off | 자극 켬, 자극 끔 | 자극 있음, 자극 없음 | 신경 초파리 설정의 "자극" 줄의 값이고 variation 이름에 붙는다 (#72) |
 | map of issues by area and by what each one builds on | 계보 | 트리, 로드맵, 타임라인 | 첫 화면의 제목이자 사이드바 맨 위 줄 (#77) |
 | another area an issue also changed | 조준기도 바꿈 | 조준기 포함, + 조준기 | 계보 노드의 아랫줄. 영역 이름 뒤에 "도 바꿈" (#77) |
+| version an issue raised, shown on a lineage node | 환경 버전 3, 조준기 v1, 규칙 초파리 | 환경 v3, env 3, 조준기 버전 1 | 계보 노드 맨 위의 표시. 환경은 "환경 버전 N", 조준기는 "조준기 vN", 초파리는 종류 이름이다. 영역 이름 옆의 지금 상태는 "버전 6", "v1", "규칙, 신경"으로 줄인다 (#80) |
+| episodes captured out of episodes run, on a lineage node | 포획 5/200 | 5/200 포획, 포획률 2.5% | 계보 노드의 수치 줄에만 쓴다. 문장에서는 "200개 가운데 5개" (#80) |
 | training seed | 학습 seed | 시드 | 알고리즘 설정의 `seed` |
 | seeds of recorded episodes | 에피소드 seed | 평가 시드 | 설명 파일의 `notes`에 적는다 |
 
@@ -80,3 +82,4 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 - 2026-11-17: 발, 오발, 쏘는 중 추가 (#69)
 - 2026-11-18: 쏘는 방식, 쏘는 기준, 한 발 길이 추가 (#72)
 - 2026-11-19: 계보 추가 (#77)
+- 2026-11-25: 계보 노드의 버전 표시와 수치 표기 추가 (#80)

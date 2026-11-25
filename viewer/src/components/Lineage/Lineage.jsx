@@ -59,10 +59,11 @@ function ExternalIcon() {
 
 /**
  * 계보. issue 를 영역(초파리, 조준기, 환경)별 세로줄에 시간 순서로 놓고, 이어받은 issue 와 선으로 잇는다.
+ * 버전을 올린 issue 는 크게 그리고 맨 위에 버전을 적는다. 노드에는 바뀐 값(전 → 후)과 잰 수치가 나오고, 결과 문장은 마우스를 올리면 나온다.
  * 실행이 올라온 issue 는 누르면 issue 화면이 열린다. 실행이 없는 issue 는 흐리게 그리고, 누르면 GitHub 의 issue 가 새 창으로 열린다.
  */
 export function Lineage({ groups, onOpenIssue }) {
-  const { nodes, edges, rows } = useMemo(lineageOf, [])
+  const { nodes, edges, rows, marks, current } = useMemo(lineageOf, [])
   const withRuns = useMemo(() => new Set((groups ?? []).map((g) => g.key)), [groups])
   const [active, setActive] = useState(null)
   const [geom, setGeom] = useState(null) // { width, height, nodes: Map(number → 상자), lanes: [{ left, right }] }
@@ -113,8 +114,10 @@ export function Lineage({ groups, onOpenIssue }) {
             <div key={lane.key} className={styles.lane} style={{ gridColumn: i + 1, gridRow: `1 / span ${rows + 1}` }} ref={(el) => (laneRefs.current[i] = el)} />
           ))}
           {LANES.map((lane, i) => (
-            <h2 key={lane.key} className={styles.laneName} style={{ gridColumn: i + 1 }}>
+            <h2 key={lane.key} className={styles.laneName} data-lane={lane.key} style={{ gridColumn: i + 1 }}>
+              <span className={styles.dot} />
               {lane.name}
+              {current[i] && <span className={styles.current}>{current[i]}</span>}
             </h2>
           ))}
           {geom && (
@@ -136,9 +139,24 @@ export function Lineage({ groups, onOpenIssue }) {
               })}
             </svg>
           )}
+          {/* 다른 영역의 노드가 올린 버전. 제 영역의 줄 위에 놓여서 영역만 내려 읽어도 버전이 이어진다. */}
+          {marks.map((m) => (
+            <span
+              key={`${m.number}-${m.lane}`}
+              className={related && !related.has(m.number) ? `${styles.mark} ${styles.dim}` : styles.mark}
+              data-lane={LANES[m.lane].key}
+              style={{ gridColumn: m.lane + 1, gridRow: m.row + 2 }}
+              onMouseEnter={() => setActive(m.number)}
+              onMouseLeave={() => setActive(null)}
+            >
+              <span className={styles.dot} />
+              {m.text}
+              <span className={styles.markFrom}>#{m.number}</span>
+            </span>
+          ))}
           {nodes.map((n) => {
             const open = withRuns.has(String(n.number))
-            const cls = [styles.node, !open && styles.ghost, related && !related.has(n.number) && styles.dim].filter(Boolean).join(' ')
+            const cls = [styles.node, n.major ? styles.major : styles.minor, !open && styles.ghost, related && !related.has(n.number) && styles.dim, n.row >= rows - 2 && styles.up].filter(Boolean).join(' ')
             const meta = [n.author, n.date, n.also.length ? `${n.also.join(', ')}도 바꿈` : null].filter(Boolean).join(' · ')
             const shared = {
               className: cls,
@@ -156,13 +174,26 @@ export function Lineage({ groups, onOpenIssue }) {
             const body = (
               <>
                 <span className={styles.head}>
+                  {n.badges.map((b) => (
+                    <span key={b.lane} className={styles.badge} data-lane={b.lane}>
+                      <span className={styles.dot} />
+                      {b.text}
+                    </span>
+                  ))}
                   <span className={styles.num}>#{n.number}</span>
-                  {n.envVersion != null && <span className={styles.badge}>환경 버전 {n.envVersion}</span>}
                   {!open && <ExternalIcon />}
                 </span>
                 <span className={styles.name}>{n.name}</span>
-                <span className={styles.result}>{n.result}</span>
+                {n.change && (
+                  <span className={styles.change}>
+                    <span className={styles.what}>{n.change.what}</span>
+                    {n.change.from && <span className={styles.from}>{n.change.from} →</span>}
+                    <span className={styles.to}>{n.change.to}</span>
+                  </span>
+                )}
+                {n.metric && <span className={styles.metric}>{n.metric}</span>}
                 <span className={styles.meta}>{meta}</span>
+                <span className={styles.result}>{n.result}</span>
               </>
             )
             return open ? (

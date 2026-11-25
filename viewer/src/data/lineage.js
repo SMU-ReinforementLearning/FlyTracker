@@ -15,7 +15,13 @@ export const LANES = [
 // 계보의 노드, 사이드바의 묶음, issue 화면의 제목이 모두 이 이름을 쓴다. GitHub 의 issue 제목은 마우스를 올리면 나온다.
 // 설명 파일의 phase(실험 단계)와는 다른 것이다. phase 는 실험 계획에서의 자리이고 name 은 바뀐 내용이다.
 // result 는 그 issue 에서 달라진 것이나 잰 결과 한두 문장이다. 한다체로 쓴다.
+// 그 문장은 노드에 마우스를 올리면 나온다. 노드에 늘 보이는 것은 아래 버전, change, metric 이다.
 // envVersion 은 그 issue 가 환경 버전을 올렸을 때만 적는다.
+// aimerVersion 은 그 issue 에서 조준기 버전이 정해졌을 때만 적는다. v0 은 기준선이고, 지금의 기준선 동작이 나온 #45 에 적는다.
+// fly 는 그 issue 에서 초파리 종류가 계보에 처음 나올 때만 적는다. 값은 용어집의 표기다(규칙 초파리, 신경 초파리).
+// 셋 가운데 하나라도 있는 노드는 크게 그린다.
+// change 는 바뀐 값 하나다. { what: 무엇이, from: 전(없으면 뺀다), to: 후 }. 값이 바뀌지 않은 issue 에는 적지 않는다.
+// metric 은 그 issue 에서 잰 수치다. result 에 있는 숫자만 옮긴다. 포획 5/200 은 에피소드 200개 가운데 5개를 포획했다는 뜻이다.
 const NODES = {
   1: {
     lane: 'environment',
@@ -29,12 +35,15 @@ const NODES = {
     parents: [1],
     name: '다가올 때만 회피',
     result: '조준 방향에 반응하던 것을 빼고, 다가오는 것만 피하게 했다.',
+    fly: '규칙 초파리',
+    change: { what: '회피', from: '조준 방향에도 반응', to: '다가올 때만 반응' },
   },
   7: {
     lane: 'aimer',
     parents: [1],
     name: '위치 고정, 방향만 회전',
     result: '조준기가 자리를 옮기지 못하고 방향만 돌리게 했다.',
+    change: { what: '조준기 자리', from: '날아다님', to: '고정' },
   },
   9: {
     lane: 'fly',
@@ -42,6 +51,7 @@ const NODES = {
     parents: [4],
     name: '문헌값 속도와 급선회',
     result: '속도와 급선회를 실제 초파리 측정값에 맞췄다. 기준선에는 놓친 초파리를 찾는 동작을 넣었다.',
+    change: { what: '비행', to: '직선 285~356mm/s, 급선회 93°' },
   },
   22: {
     lane: 'aimer',
@@ -56,18 +66,21 @@ const NODES = {
     name: '초파리 학습 자리 추가',
     result: '학습한 초파리가 들어갈 자리를 만들고, 위아래 조준 한계를 89°로 늘렸다.',
     envVersion: 2,
+    change: { what: '위아래 조준 한계', from: '80°', to: '89°' },
   },
   35: {
     lane: 'aimer',
     parents: [22, 34],
     name: 'SAC 조준기 첫 학습',
     result: 'SAC로 학습한 조준기가 기준선보다 두 배쯤 빨리 포획했다. 평균 2.18초와 2.12초이고 기준선은 4.10초다.',
+    metric: '평균 2.18초, 2.12초 · 기준선 4.10초',
   },
   31: {
     lane: 'fly',
     parents: [],
     name: '신경 초파리 추가',
     result: '신경 회로가 날개 힘을 내는 초파리를 더하고, 관찰 기록 셋을 올렸다.',
+    fly: '신경 초파리',
   },
   42: {
     lane: 'environment',
@@ -75,12 +88,15 @@ const NODES = {
     name: '포획을 레이저 명중으로',
     result: '포획을 빔까지 1.25mm 안에 0.15초로 바꿨다. 기준선은 200개 가운데 5개만 포획했다.',
     envVersion: 3,
+    change: { what: '포획 조건', from: '조준 오차 3° 안 0.2초', to: '빔까지 1.25mm 안 0.15초' },
+    metric: '기준선 포획 5/200',
   },
   44: {
     lane: 'aimer',
     parents: [35, 42],
     name: '레이저 포획에서 SAC 실패',
     result: '환경 버전 2에서 학습한 모델은 8개 가운데 하나도 포획하지 못했다. 실행은 #42에 함께 있다.',
+    metric: '포획 0/8',
   },
   45: {
     lane: 'aimer',
@@ -88,6 +104,9 @@ const NODES = {
     name: '기준선을 각속도 추적으로',
     result: '초파리 방향의 각속도에 맞춰 돌게 했다. 200개를 모두 포획했고 평균 4.95초다.',
     envVersion: 4,
+    aimerVersion: 'v0',
+    change: { what: '기준선 회전', from: '조준 오차만큼', to: '초파리 각속도를 더해' },
+    metric: '포획 200/200 · 평균 4.95초',
   },
   49: {
     lane: 'aimer',
@@ -95,12 +114,14 @@ const NODES = {
     name: '벌점을 빔까지 거리로',
     result: '초파리가 보일 때 받는 벌점을 조준 오차에서 빔까지 거리로 바꿨다. 이 보상으로 학습한 조준기는 아직 없었다.',
     envVersion: 5,
+    change: { what: '보일 때 벌점', from: '조준 오차', to: '빔까지 거리' },
   },
   51: {
     lane: 'aimer',
     parents: [49],
     name: '추적 보조로 SAC 재학습',
     result: '빔까지 거리 벌점에 추적 보조를 붙인 조건만 기준선보다 빨랐다. 평균 2.94초이고 기준선은 4.86초다.',
+    metric: '평균 2.94초 · 기준선 4.86초',
   },
   64: {
     lane: 'fly',
@@ -113,6 +134,7 @@ const NODES = {
     parents: [51, 64],
     name: '신경 초파리와 SAC 대결',
     result: '에피소드 24개 가운데 23개를 포획했다. seed가 3개뿐이라 견줄 근거는 되지 않는다.',
+    metric: '포획 23/24',
   },
   69: {
     lane: 'environment',
@@ -121,12 +143,16 @@ const NODES = {
     name: '레이저 한 발씩 쏘기',
     result: '쏠 때만 레이저를 켜고 오발을 센다. 기준선은 200개 가운데 198개를 잡았고, 에피소드마다 0.50발이 오발이다.',
     envVersion: 6,
+    change: { what: '레이저', from: '늘 켜짐', to: '쏠 때만 켜짐' },
+    metric: '기준선 포획 198/200 · 오발 0.50발',
   },
   72: {
     lane: 'aimer',
     parents: [61, 69],
     name: '조준은 SAC, 쏘기는 규칙',
     result: 'SAC 모델이 조준하고 기준선의 규칙이 쏘는 조준기를 v1로 정했다. 평균 3.03초이고 기준선은 4.89초다.',
+    aimerVersion: 'v1',
+    metric: '평균 3.03초 · 기준선 4.89초',
   },
 }
 
@@ -141,10 +167,24 @@ const dayLabel = (iso) => {
   return `${m}월 ${d}일`
 }
 
+/** 노드에 붙는 버전 표시. 그 노드의 영역 것이 맨 앞에 온다. */
+function badgesOf(node) {
+  const badges = [
+    node.fly && { lane: 'fly', text: node.fly },
+    node.aimerVersion && { lane: 'aimer', text: `조준기 ${node.aimerVersion}` },
+    node.envVersion != null && { lane: 'environment', text: `환경 버전 ${node.envVersion}` },
+  ].filter(Boolean)
+  return badges.sort((a, b) => (b.lane === node.lane) - (a.lane === node.lane))
+}
+
 /**
  * 계보에 그릴 노드와 선.
- * 노드: { number, lane(0부터), row(0부터), name, result, title, author, date, url, envVersion, also: [영역 이름], parents }.
+ * 노드: { number, lane(0부터), row(0부터), name, result, title, author, date, url, envVersion, also: [영역 이름], parents,
+ *         badges: [{ lane(영역 key), text }], major(버전 표시가 있다), change: { what, from, to } | null, metric | null }.
  * 선: { from, to } (issue 번호). 표에 없는 issue 를 가리키는 parents 는 버린다.
+ * marks: 다른 영역의 노드가 올린 버전을 제 영역의 줄에 놓는 표식. { lane(0부터), row, text, number(올린 issue) }.
+ *        #45 는 조준기 영역이지만 환경 버전 4 를 올렸으므로, 환경 영역의 같은 줄에 "환경 버전 4" 가 놓인다. 영역만 내려 읽어도 버전이 이어진다.
+ * current: 영역마다 지금 상태. LANES 와 같은 순서다. 환경은 가장 높은 환경 버전, 조준기는 마지막 조준기 버전, 초파리는 종류들이다.
  *
  * 줄은 위에서 아래로 시간 순서다. 늦게 merge 된 issue 는 먼저 merge 된 issue 보다 위에 오지 않고,
  * 이어받은 issue 와 같은 영역의 앞 issue 보다는 늘 아래에 온다. 그래서 선은 아래로만 간다.
@@ -187,10 +227,27 @@ export function lineageOf() {
       date: dayLabel(meta.merged),
       url: meta.url,
       envVersion: node.envVersion ?? null,
+      badges: badgesOf(node),
+      major: badgesOf(node).length > 0,
+      change: node.change ?? null,
+      metric: node.metric ?? null,
       also: (node.also ?? []).map(laneName),
       parents: node.parents.filter((p) => known.has(p)),
     }))
     .sort((a, b) => a.row - b.row || a.lane - b.lane)
   const edges = nodes.flatMap((n) => n.parents.map((p) => ({ from: p, to: n.number })))
-  return { nodes, edges, rows: floor + 1 }
+  const marks = nodes.flatMap((n) =>
+    n.badges
+      .filter((b) => b.lane !== LANES[n.lane].key)
+      .map((b) => ({ lane: LANES.findIndex((l) => l.key === b.lane), row: n.row, text: b.text, number: n.number })),
+  )
+  const versions = nodes.map((n) => n.envVersion).filter((v) => v != null)
+  const aimers = nodes.map((n) => NODES[n.number].aimerVersion).filter(Boolean)
+  const kinds = nodes.map((n) => NODES[n.number].fly).filter(Boolean).map((k) => k.replace(' 초파리', ''))
+  const current = LANES.map((l) => {
+    if (l.key === 'environment') return versions.length ? `버전 ${Math.max(...versions)}` : null
+    if (l.key === 'aimer') return aimers.at(-1) ?? null
+    return kinds.length ? kinds.join(', ') : null
+  })
+  return { nodes, edges, rows: floor + 1, marks, current }
 }
