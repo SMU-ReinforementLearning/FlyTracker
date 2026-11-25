@@ -6,7 +6,7 @@
 - Branch: `59-feature-neural-fly-learning`
 - Umbrella: [#58](https://github.com/SMU-ReinforementLearning/FlyTracker/issues/58)
 - Base: `upstream/main@ad6e9c6e3d0e6ea661ef7e04c7f98947d015de2e`
-- Status: 실측 보정과 순차 학습 및 재생 기록을 PR 검토 대상으로 정리했다.
+- Status: done
 - 상세 문서: [이번 비행 이론 점검](59-feature-neural-fly-learning/flight-theory-audit.md), [사전 계획](59-feature-neural-fly-learning/flight-theory-audit-plan.md), [용어](59-feature-neural-fly-learning/flight-theory-audit-terms.md), [사실 대장](59-feature-neural-fly-learning/flight-theory-audit-facts.md).
 - 학습 재개: [2026-11-23 조건과 결과](59-feature-neural-fly-learning/vast-calibrated-training-20261123.md).
 - 이전 근거: [실측 보정](59-feature-neural-fly-learning/normal-flight-calibration-gate.md), [분포 진단](59-feature-neural-fly-learning/normal-flight-diagnosis.md), [순차 학습 계획](59-feature-neural-fly-learning/calibrated-learning-gate.md).
@@ -115,3 +115,9 @@ uv run python scripts/audit_neural_flight.py --output runs/new-flight-audit --se
 | Chrome 158 · 390×844 | 요약과 진단 에피소드 재생 확인. 실행 선택 줄을 가로로 밀면 마지막 선택지까지 표시 |
 
 전체 회귀 XML과 화면 검증 원본은 로컬 `runs/issue59-pr-ad6e9c6-*` 및 `runs/issue59-pr-mobile-scroll/`에 있다.
+
+### docs: 신경 학습 병합 표기 정리 (#59)
+
+PR #86의 코드와 재생 기록 검토를 마쳐 관리 문서와 이슈 색인을 완료로 표시하고, viewer에는 병합일을 기록한다. 최신 main의 조준기 변천사 문서를 포함한 병합을 시뮬레이션해 충돌이 없는지 확인했다.
+
+표기 수정 후 viewer와 기록 관련 테스트 45개가 통과했다. 운영용 viewer 빌드에서 실행 12개와 에피소드 32개의 로드를 확인했다.

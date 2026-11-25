@@ -8,7 +8,7 @@ const REPO = 'https://github.com/SMU-ReinforementLearning/FlyTracker'
 // env 는 그 issue 의 변경이 들어 있는 가장 낮은 환경 버전이다. 환경 버전이 그보다 낮은 실행에는 그 변경이 없다.
 // #31 은 환경 버전 2 때 merge 됐지만 공개된 신경 초파리 실행에 환경 버전이 적혀 있지 않아(1 로 센다) 1 로 둔다.
 const ISSUES = {
-  59: { title: '실측 비행계수 보정과 신경 초파리 순차 학습', author: 'heohs', merged: '미병합', env: 6 },
+  59: { title: '실측 비행계수 보정과 신경 초파리 순차 학습', author: 'heohs', merged: '2026-11-25', env: 6 },
 
   1: { title: '강화학습 환경과 에피소드 viewer 뼈대', author: 'lhk0721', merged: '2026-11-04', env: 1 },
   4: { title: '초파리 행동을 평시와 비상시로 나누기', author: 'lhk0721', merged: '2026-11-09', env: 1 },
