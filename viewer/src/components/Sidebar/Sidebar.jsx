@@ -40,8 +40,8 @@ function Chevron() {
 
 /**
  * 실행 줄. 실행을 가르는 짧은 이름만 적는다. 초파리와 조준기가 무엇인지는 issue 화면의 표에서 같은 글자의 줄을 본다.
- * 조합이 둘 이상인 묶음이면 그 조합을 부르는 글자(A, B, C)가 앞에 오고, 조합 안에 학습 seed 만 다른 실행이 여럿이면 학습 seed 가 뒤따른다.
- * 조합이 하나뿐인 묶음은 학습 seed 만, 그것도 없으면 실행 이름을 적는다. combo 가 없으면(설정을 읽기 전이거나 못 읽은 실행) 실행 이름이다.
+ * 조합이 둘 이상인 묶음이면 그 조합을 부르는 글자(A, B, C)가 앞에 온다. 그 뒤는 표의 실행 칸에 나오는 이름이다.
+ * 조합 안에 학습 seed 만 다른 실행이 여럿이면 학습 seed, 아니면 실행 이름이다. combo 가 없으면(설정을 읽기 전이거나 못 읽은 실행) 실행 이름이다.
  * 초파리, 조준기, 환경, 실행 이름, 올린 사람, 만든 때는 마우스를 올리면 나온다.
  */
 function RunRow({ run, combo, seed, lettered, selected, onSelect }) {
@@ -49,7 +49,7 @@ function RunRow({ run, combo, seed, lettered, selected, onSelect }) {
   const rate = rateOf(last)
   const observing = ['free-flight', 'tracking-observation'].includes(run.algo)
   const letter = lettered && combo ? combo.letter : null
-  const name = seedLabel(seed) ?? (letter ? null : run.name)
+  const name = seedLabel(seed) ?? run.name // issue 화면의 표에서 실행 칸의 버튼에 적는 이름과 같다
   const hint = [combo && `${cellText(combo.fly)} / ${cellText(combo.aimer)} / 환경 ${cellText(combo.environment)}`, run.name, run.author, shortDate(run.createdAt)].filter(Boolean).join('\n')
   return (
     <ListRow current={selected} onClick={() => onSelect(run.id)} className={styles.row} title={hint}>

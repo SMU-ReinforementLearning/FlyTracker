@@ -97,6 +97,7 @@ Console: only the favicon 404 and THREE.Clock deprecation warnings, both present
 - NOT looked at in a browser: the dev server was stopped by the harness for low memory and was not restarted. The PNGs in `captures/` show the first state (title "조합", no letters, two-line sidebar rows, aimer-first order).
 #### Notes
 - Follow-up: retake the captures.
+- Later the same day (user request): a lettered row whose combination has one run shows the run name after the letter, the same name the table's 실행 column uses, instead of the letter alone. Committed as `fix: 사이드바에서 글자만 나오던 실행 줄에 실행 이름 붙이기 (#92)`; viewer tests 44 passed, build passed.
 
 ### chore: #92 포인터를 지우고 완료로 표시하기 (#92)
 > why: last commit before the PR; a protected branch cannot take the pointer removal after the merge
