@@ -41,6 +41,8 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 | virtual looming stimulus shown to the neural fly | 자극 | 스티뮬러스, 가상 원반 | 신경 초파리 설정의 줄 이름에 쓴다. 예: 자극 횟수 (#62) |
 | one laser shot (0.15 s) | 발 | 샷, 사격 | 수치 목록의 "쏜 발". 값은 "3발". 환경 버전 6부터의 기록에만 나온다 (#69) |
 | shot during which the beam left the fly | 오발 | 미스, 빗나감 | 상태이자 수치 목록의 줄 이름. 값은 "2발" (#69) |
+| misfire during which the beam touched the fly at least once | 스친 발 | 스침, 그레이즈, 빗맞은 발 | 문서와 issue 화면의 글에 쓴다. 화면의 수치 목록에는 아직 없다. 환경 버전 7부터 (#91) |
+| misfire during which the beam never touched the fly | 벽에 맞은 발 | 벽 오발, 헛발, 월샷 | 문서와 issue 화면의 글에 쓴다. 화면의 수치 목록에는 아직 없다. 환경 버전 7부터 (#91) |
 | shot in progress with the beam on the fly | 맞는 중 | 포획 중, 조사 중 | 상태. 레이저를 쏠 때만 켜는 기록(환경 버전 6부터)에서 "포획 중" 대신 쓴다. 발이 끝나기 전이라 아직 오발이 될 수 있다 (#95) |
 | shot that stayed on the fly to its end | 명중 | 히트, 킬, 사살 | 상태(마지막 프레임)이자 재생 막대의 발 표시 이름. 반대는 오발 (#95) |
 | laser on | 쏘는 중 | 발사 중, 켜짐 | 수치 목록 "레이저" 줄의 값. 반대는 꺼짐 (#69) |
@@ -101,3 +103,4 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 - 2026-11-26: 조합 추가. variation을 조합으로 바꿈 (#92)
 - 2026-11-26: 기록(학습, 평가)과 모델 실험 B 추가 (#94)
 - 2026-11-26: 맞는 중, 명중 추가. 레이저를 쏠 때만 켜는 기록의 상태에서 포획 중을 대신한다 (#95)
+- 2026-11-26: 스친 발, 벽에 맞은 발 추가 (#91)
