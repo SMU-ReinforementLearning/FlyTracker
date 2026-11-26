@@ -1,0 +1,3 @@
+seed,shot,t_start_s,outcome,t_off_s,visible,est_beam_mm,true_beam_mm,distance_m,target_rate_yaw,target_rate_pitch
+20046,1,5.0,misfire,5.02,1,16.315,99.297,1.322,1.0,-0.1313
+20068,1,9.92,misfire,9.94,1,4.9648,22.7722,0.5541,0.1068,0.3444

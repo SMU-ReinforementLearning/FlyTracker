@@ -6,9 +6,11 @@ player 는 reset() 과 act(관측) -> 행동 을 가진 객체다. 조준기 자
 
 모델은 실행 폴더(runs/<실행 id>, 그 안의 model.zip 을 쓴다)나 checkpoint 파일(runs/<실행 id>/checkpoints/<tag>.zip)로
 가리킨다. 실행 폴더의 config.json 에서 환경 버전, 알고리즘, frame stack, 어느 쪽 모델인지를 읽는다.
-환경 버전이 지금과 다르면 불러오지 않는다. 환경 버전 5의 조준기는 예외로 현재 관측에서 shot 을 빼고 추론한다.
-현재 버전 조준기의 설정에서 fireMode 가 rule 이면 shot 을 포함한 현재 관측을 그대로 쓴다.
-두 버전 모두 추론한 yaw, pitch 에 기준선의 발사 규칙을 붙이며 Opponent.fire 는 "rule" 이다.
+환경 버전이 지금과 다르면 불러오지 않는다. 예외가 하나 있다. 환경 버전 5의 조준기 모델은 관측에 shot 이 없고
+행동에 fire 가 없다는 것만 다르므로, 관측에서 shot 을 빼서 주고 쏠지는 기준선의 규칙(RuleAimer.wants_fire)으로 정해서 쓴다.
+지금 환경에서 쏘는 것을 규칙에 맡겨 학습한 모델(algo.fire 가 "rule")도 같은 방식으로 쓴다.
+이렇게 불러온 모델은 조준만 학습한 것이고 쏘는 것은 배우지 않았다. Opponent.fire 가 "rule" 이다.
+algo.fireMode 가 "rule" 인 실행은 #59 의 조준기다. shot 이 든 관측을 그대로 주고 같은 규칙으로 쏜다. 새 모델에는 쓰지 않는다.
 """
 
 from __future__ import annotations
@@ -24,7 +26,7 @@ import numpy as np
 from .baseline import RuleAimer
 from .aimer import ACTION_DIM
 from .env import ENV_VERSION, OBS, EnvConfig
-from .wrappers import DISCRETE_ACTIONS
+from .wrappers import CONTROLS, DISCRETE_ACTIONS, FIRE_PRIORS, FIRES, accel_gain, accel_to_rate, fire_decision
 
 SIDES = ("aimer", "fly")
 RULE_SPECS = {"aimer": "baseline", "fly": "rule"}
@@ -47,12 +49,19 @@ class PolicyPlayer:
     """
 
     def __init__(self, policy, frame_stack: int = 1, discrete: bool = False, assist: float = 0.0, tracker: RuleAimer | None = None,
-                 rule_fire: bool = False, strip_shot: bool = True):
+                 rule_fire: bool = False, strip_shot: bool = True, accel_gain: np.ndarray | None = None):
         """assist 가 0 보다 크면 학습 때처럼 정책의 행동에 tracker 의 추적을 더한다 (wrappers.TrackingAssist).
 
-        rule_fire 가 True 면 정책이 낸 yaw, pitch 두 값에 tracker 의 규칙으로 정한 fire 를 붙인다.
-        strip_shot 은 환경 버전 5의 모델에서 관측 호환을 위해 shot 을 제거한다.
+        rule_fire 가 True 면 정책은 돌리는 두 값만 낸다. 관측에서 shot 을 빼서 주고, 정책이 낸 yaw, pitch 에
+        tracker 의 쏘는 규칙으로 정한 fire 를 붙인다. 연속 행동 모델에만 쓴다. 발사 행동이 없던 때(환경 버전 5)의 모델과
+        쏘는 것을 규칙에 맡겨 학습한 모델(실행의 algo.fire 가 "rule", wrappers.RuleFire)이 이 모양이다.
+        strip_shot 을 False 로 주면 rule_fire 여도 관측에서 shot 을 빼지 않는다. #59 의 조준기만 쓴다 (load_opponent).
+
+        accel_gain 을 주면 정책의 돌리는 행동은 각가속도다. 학습 때처럼 각속도 행동으로 바꿔서 쓴다 (wrappers.AccelControl).
         """
+        if accel_gain is not None and discrete:
+            raise ValueError("accel control needs a continuous-action policy")
+        self.accel_gain = accel_gain
         if rule_fire and (discrete or tracker is None):
             raise ValueError("rule_fire needs a continuous-action policy and a tracker")
         self.rule_fire = rule_fire
@@ -84,9 +93,36 @@ class PolicyPlayer:
             return DISCRETE_ACTIONS[int(action)][1].copy()
         if self.rule_fire:
             action = np.append(np.asarray(action, dtype=float), np.zeros(ACTION_DIM - len(action)))
+        if self.accel_gain is not None:
+            action = accel_to_rate(obs, action, self.accel_gain)
         a = self.tracker.assisted(obs, action, self.assist) if self.assist > 0 else np.asarray(action, dtype=float)
         if self.rule_fire:
             a[2] = 1.0 if self.tracker.wants_fire(obs) else -1.0
+        return a
+
+
+class FireOnlyPlayer:
+    """조준은 고정한 조준기 player 가 하고 쏠지만 정책이 정하는 조준기 (wrappers.FireOnly 로 학습한 모델)."""
+
+    def __init__(self, policy, aim: PolicyPlayer, frame_stack: int = 1, prior: str = "none"):
+        self.policy, self.aim, self.frame_stack, self.prior = policy, aim, frame_stack, prior
+        self._stack: deque | None = None
+
+    def reset(self) -> None:
+        self._stack = None
+        self.aim.reset()
+
+    def act(self, obs) -> np.ndarray:
+        x = np.asarray(obs, dtype=np.float32)
+        if self.frame_stack > 1:
+            if self._stack is None:
+                self._stack = deque([x] * self.frame_stack, maxlen=self.frame_stack)
+            else:
+                self._stack.append(x)
+            x = np.stack(self._stack)
+        value, _ = self.policy.predict(x, deterministic=True)
+        a = np.asarray(self.aim.act(obs), dtype=float)
+        a[2] = 1.0 if fire_decision(np.asarray(value).reshape(-1)[0], a[2] > 0.0, self.prior) else -1.0
         return a
 
 
@@ -127,8 +163,15 @@ def load_opponent(spec: str, side: str, config: EnvConfig) -> Opponent:
     run_cfg = json.loads((run_dir / "config.json").read_text(encoding="utf-8"))
     version = run_cfg.get("envVersion", 1)
     algo = run_cfg.get("algo", {})
-    legacy_fire = side == "aimer" and version in RULE_FIRE_VERSIONS
-    rule_fire = legacy_fire or (side == "aimer" and version == ENV_VERSION and algo.get("fireMode") == "rule")
+    control, fire = algo.get("control", "rate"), algo.get("fire", "policy")
+    if control not in CONTROLS or fire not in FIRES:
+        raise ValueError(f"{spec}: 알 수 없는 행동 방식이다 (control {control!r}, fire {fire!r})")
+    legacy_fire = side == "aimer" and version in RULE_FIRE_VERSIONS  # 발사 행동이 없던 때의 모델
+    wrapper_fire = side == "aimer" and fire == "rule"  # 기준이 되는 방식. wrappers.RuleFire 로 학습했고 관측에 shot 이 없다
+    # #59 의 조준기(scripts/train_calibrated_neural.py)는 algo.fire 대신 fireMode 를 적고, shot 이 든 관측으로 학습했다.
+    # 이미 학습한 그 모델을 불러오려고 읽기만 한다. 새 모델은 algo.fire 를 쓴다.
+    full_obs_fire = side == "aimer" and version == ENV_VERSION and "fire" not in algo and algo.get("fireMode") == "rule"
+    rule_fire = legacy_fire or wrapper_fire or full_obs_fire
     if version != ENV_VERSION and not legacy_fire:
         raise ValueError(f"{spec}: 환경 버전 {version}에서 학습한 모델이라, 지금 환경(버전 {ENV_VERSION})과 견줄 수 없다")
     run_side = algo.get("side", "aimer")
@@ -145,6 +188,18 @@ def load_opponent(spec: str, side: str, config: EnvConfig) -> Opponent:
     if name not in classes:
         raise ValueError(f"{spec}: 알 수 없는 알고리즘 {name!r}")
     model = classes[name].load(model_path, device="cpu")
+    label = run_dir.name if model_path.name == "model.zip" else f"{run_dir.name}/{model_path.stem}"
+    if algo.get("aim"):  # 발사만 학습한 모델. 조준 모델은 실행 폴더의 aim/ 에 복사해 둔다 (scripts/train.py --aim)
+        if side != "aimer" or name_is_discrete(algo):
+            raise ValueError(f"{spec}: 발사만 학습한 모델은 조준기 쪽 연속 행동 모델이어야 한다")
+        prior = algo.get("firePrior", "none")
+        if prior not in FIRE_PRIORS:
+            raise ValueError(f"{spec}: 알 수 없는 fire prior {prior!r}")
+        aim = load_opponent(str(run_dir / "aim"), "aimer", config)
+        if aim.fire != "rule":
+            raise ValueError(f"{spec}: 조준 모델은 쏘는 것을 규칙에 맡긴 모델이어야 한다")
+        player = FireOnlyPlayer(model, aim.player, frame_stack=int(algo.get("frameStack", 1)), prior=prior)
+        return Opponent(player, label, version, fire="policy")
     assist = float(algo.get("assist", 0.0))
     player = PolicyPlayer(
         model,
@@ -153,9 +208,9 @@ def load_opponent(spec: str, side: str, config: EnvConfig) -> Opponent:
         assist=assist,
         tracker=baseline_player(config).policy if assist > 0 or rule_fire else None,
         rule_fire=rule_fire,
-        strip_shot=legacy_fire,
+        strip_shot=legacy_fire or wrapper_fire,
+        accel_gain=accel_gain(config) if control == "accel" else None,
     )
-    label = run_dir.name if model_path.name == "model.zip" else f"{run_dir.name}/{model_path.stem}"
     if rule_fire:
         label += "+rule-fire"  # 표에서 발사까지 학습한 모델과 구별한다
     return Opponent(player, label, version, fire="rule" if rule_fire else "policy")
