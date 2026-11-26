@@ -1,4 +1,4 @@
-import { seedLabel } from '../../data/experiment.js'
+import { recordLabel, seedLabel } from '../../data/experiment.js'
 import { lastCheckpoint } from '../../data/runs.js'
 import styles from './Combinations.module.css'
 
@@ -52,11 +52,13 @@ function RunLink({ run, label, onOpen }) {
  * 맨 앞 칸은 그 줄을 부르는 글자다(A, B, C). 실행 패널도 같은 글자로 조합을 부른다.
  * 조합이 둘 이상이면 줄을 눌러 고른다. 고른 줄을 다시 누르면 전체로 돌아간다. 고른 조합은 selected(조합의 key)로 받는다.
  * 마지막 칸의 실행 버튼은 그 실행의 화면으로 간다. runs 는 이 issue 의 실행 목록이다.
+ * 기록 칸은 그 줄의 실행이 학습하는 동안 기록한 것인지(학습), 학습을 마친 모델을 다시 돌린 것인지(평가)를 적는다. 가를 줄이 하나도 없는 표에는 이 칸이 없다.
  */
 export function Combinations({ rows, runs, selected, onSelect, onOpenRun }) {
   const byId = new Map(runs.map((r) => [r.id, r]))
   const selectable = rows.length > 1
   const toggle = (key) => onSelect(key === selected ? null : key)
+  const recorded = rows.some((row) => row.record)
   return (
     <div className={styles.scroll}>
       <table className={styles.table}>
@@ -66,6 +68,7 @@ export function Combinations({ rows, runs, selected, onSelect, onOpenRun }) {
             <th scope="col">초파리</th>
             <th scope="col">조준기</th>
             <th scope="col">환경</th>
+            {recorded && <th scope="col">기록</th>}
             <th scope="col">실행</th>
           </tr>
         </thead>
@@ -99,6 +102,7 @@ export function Combinations({ rows, runs, selected, onSelect, onOpenRun }) {
               <td>
                 <CombinationCell cell={row.environment} />
               </td>
+              {recorded && <td className={styles.record}>{recordLabel(row.record)}</td>}
               <td>
                 <div className={styles.runs}>
                   {row.runs.map(({ id, seed }) => (

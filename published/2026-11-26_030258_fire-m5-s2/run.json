@@ -1,0 +1,1 @@
+{"id":"2026-11-26_030258_fire-m5-s2","name":"fire-m5-s2","createdAt":"2026-11-26T03:02:58","algo":"sac","actionMode":"continuous","notes":"issue #88 stage 2 gate candidate fire-m5, training seed 2","episodeCount":33,"issue":{"number":88,"title":"조준기 행동을 각가속도로 바꾸고 SAC로 조준과 발사 학습하기","url":"https://github.com/SMU-ReinforementLearning/FlyTracker/issues/88"},"author":"lhk0721"}

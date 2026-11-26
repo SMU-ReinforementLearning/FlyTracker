@@ -3,6 +3,7 @@ import { percent, seconds, signed, tagLabel } from '../../data/labels.js'
 import { byCreatedAt, rateOf, steppedCheckpoints } from '../../data/runs.js'
 import { useCombinations } from '../../data/useIssueData.js'
 import { togglePlay } from '../../playback/clock.js'
+import { recordLabel } from '../../data/experiment.js'
 import { CombinationCell } from '../Combinations/Combinations.jsx'
 import { CurveChart } from '../CurveChart/CurveChart.jsx'
 import { ListRow, RowList } from '../ListRow/ListRow.jsx'
@@ -171,6 +172,7 @@ function Combination({ run, group }) {
     ['초파리', combo.fly],
     ['조준기', seed === null ? combo.aimer : { ...combo.aimer, details: [...combo.aimer.details, { label: '학습 seed', value: String(seed) }] }],
     ['환경', combo.environment],
+    ...(combo.record ? [['기록', { title: recordLabel(combo.record), details: [] }]] : []), // 학습하는 동안 기록한 실행인지, 학습을 마친 모델을 다시 돌린 실행인지
   ]
   return (
     <section aria-label="조합">

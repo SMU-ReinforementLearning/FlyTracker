@@ -12,6 +12,7 @@ import { fetchEpisode, fetchEpisodes, fetchRuns } from './data/api.js'
 import { prepareEpisode } from './data/episode.js'
 import { seconds, signed, tagLabel } from './data/labels.js'
 import { gridOf, groupByIssue } from './data/runs.js'
+import { setAllRuns } from './data/useIssueData.js'
 import { load, togglePlay, useClock } from './playback/clock.js'
 import { useRoute } from './route.js'
 import { FirstPersonView, ZoomView } from './scene/FirstPersonView.jsx'
@@ -73,6 +74,7 @@ export default function App() {
   useEffect(() => {
     fetchRuns().then(
       (list) => {
+        setAllRuns(list) // 다른 issue 에서 학습한 모델을 찾는 데 쓴다
         setRuns(list)
         setRunsError(false)
       },

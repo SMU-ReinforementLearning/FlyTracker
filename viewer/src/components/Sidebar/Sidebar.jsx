@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { cellText, seedLabel } from '../../data/experiment.js'
+import { cellText, recordLabel, seedLabel } from '../../data/experiment.js'
 import { percent, shortDate } from '../../data/labels.js'
 import { issueName } from '../../data/lineage.js'
 import { byCreatedAt, lastCheckpoint, matchesQuery, NO_ISSUE, rateOf, sectionsByLane, steppedCheckpoints } from '../../data/runs.js'
@@ -76,6 +76,7 @@ export const groupTitle = (group) => (group.key === NO_ISSUE ? 'issue 없음' : 
 
 /**
  * 펼친 issue 의 실행 목록. issue 화면의 표와 같은 순서로 늘어놓는다. 설정을 다 읽기 전에는 실행 이름만 늘어놓는다.
+ * 학습 실행과 평가 실행이 섞인 묶음은 기록의 종류(학습, 평가)를 소제목으로 적어 둘로 나눈다. 줄 이름인 학습 seed 만으로는 둘을 가를 수 없다.
  * group.runs 는 검색으로 걸러진 것일 수 있다. 조합은 걸러지기 전의 실행(group.all)으로 나눈다. 그래야 글자가 issue 화면의 표와 같다.
  */
 function Runs({ group, runId, onSelectRun }) {
@@ -91,13 +92,23 @@ function Runs({ group, runId, onSelectRun }) {
     return [...placed, ...runs.filter((r) => !seen.has(r.id)).map((run) => ({ run, combo: null, seed: null }))] // 뒤는 설정을 못 읽은 실행
   }, [all, group.runs, combos])
   const lettered = (combos?.length ?? 0) > 1
-  return (
+  const mixed = new Set((combos ?? []).map((c) => c.record).filter(Boolean)).size > 1
+  const list = (items) => (
     <RowList>
-      {rows.map(({ run, combo, seed }) => (
+      {items.map(({ run, combo, seed }) => (
         <RunRow key={run.id} run={run} combo={combo} seed={seed} lettered={lettered} selected={run.id === runId} onSelect={onSelectRun} />
       ))}
     </RowList>
   )
+  if (!mixed) return list(rows)
+  // 종류가 없는 실행(기준선)은 소제목 없이 맨 앞에 둔다
+  const parts = [null, 'training', 'evaluation'].map((kind) => ({ kind, items: rows.filter((r) => (r.combo?.record ?? null) === kind) })).filter((p) => p.items.length > 0)
+  return parts.map(({ kind, items }) => (
+    <section key={kind ?? 'none'} aria-label={recordLabel(kind) ?? undefined}>
+      {kind && <h3 className={styles.record}>{recordLabel(kind)}</h3>}
+      {list(items)}
+    </section>
+  ))
 }
 
 /**

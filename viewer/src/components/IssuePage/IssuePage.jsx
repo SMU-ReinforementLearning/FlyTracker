@@ -3,7 +3,7 @@ import { combinationsOf, compareExperiments, experimentOf } from '../../data/exp
 import { changeOf } from '../../data/history.js'
 import { issueName } from '../../data/lineage.js'
 import { byCreatedAt, compareGroup, lastCheckpoint, NO_ISSUE, steppedCheckpoints } from '../../data/runs.js'
-import { NO_RUNS, useConfigs, useIssueInfo } from '../../data/useIssueData.js'
+import { NO_RUNS, useConfigs, useIssueInfo, useOrigins } from '../../data/useIssueData.js'
 import { Combinations } from '../Combinations/Combinations.jsx'
 import { CurveChart } from '../CurveChart/CurveChart.jsx'
 import { METRICS, MetricSwitch } from '../RunPanel/RunPanel.jsx'
@@ -171,7 +171,8 @@ export function IssuePage({ group, groups, onOpenIssue, onSelectRun }) {
 
   const configs = useConfigs(runs)
   const info = useIssueInfo(group.key)
-  const combinations = useMemo(() => (configs && info !== undefined ? combinationsOf(runs, configs, info) : NO_COMBINATIONS), [runs, configs, info])
+  const origins = useOrigins(runs, configs)
+  const combinations = useMemo(() => (configs && info !== undefined && origins ? combinationsOf(runs, configs, info, origins) : NO_COMBINATIONS), [runs, configs, info, origins])
   const picked = (combinations.length > 1 && combinations.find((c) => c.key === combination)) || null
   const shownIds = useMemo(() => (picked ? new Set(picked.runs.map((r) => r.id)) : null), [picked])
 
