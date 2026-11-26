@@ -6,10 +6,11 @@ player 는 reset() 과 act(관측) -> 행동 을 가진 객체다. 조준기 자
 
 모델은 실행 폴더(runs/<실행 id>, 그 안의 model.zip 을 쓴다)나 checkpoint 파일(runs/<실행 id>/checkpoints/<tag>.zip)로
 가리킨다. 실행 폴더의 config.json 에서 환경 버전, 알고리즘, frame stack, 어느 쪽 모델인지를 읽는다.
-환경 버전이 지금과 다르면 불러오지 않는다. 환경 버전 5의 조준기는 예외로 현재 관측에서 shot 을 빼고 추론한다.
-현재 버전 조준기 가운데 쏘는 것을 규칙에 맡겨 학습한 모델은 두 가지다. 설정의 fire 가 rule 이면 shot 을 뺀 관측을,
-fireMode 가 rule 이면 shot 을 포함한 현재 관측을 그대로 쓴다.
-셋 모두 추론한 yaw, pitch 에 기준선의 발사 규칙을 붙이며 Opponent.fire 는 "rule" 이다.
+환경 버전이 지금과 다르면 불러오지 않는다. 예외가 하나 있다. 환경 버전 5의 조준기 모델은 관측에 shot 이 없고
+행동에 fire 가 없다는 것만 다르므로, 관측에서 shot 을 빼서 주고 쏠지는 기준선의 규칙(RuleAimer.wants_fire)으로 정해서 쓴다.
+지금 환경에서 쏘는 것을 규칙에 맡겨 학습한 모델(algo.fire 가 "rule")도 같은 방식으로 쓴다.
+이렇게 불러온 모델은 조준만 학습한 것이고 쏘는 것은 배우지 않았다. Opponent.fire 가 "rule" 이다.
+algo.fireMode 가 "rule" 인 실행은 #59 의 조준기다. shot 이 든 관측을 그대로 주고 같은 규칙으로 쏜다. 새 모델에는 쓰지 않는다.
 """
 
 from __future__ import annotations
@@ -51,10 +52,10 @@ class PolicyPlayer:
                  rule_fire: bool = False, strip_shot: bool = True, accel_gain: np.ndarray | None = None):
         """assist 가 0 보다 크면 학습 때처럼 정책의 행동에 tracker 의 추적을 더한다 (wrappers.TrackingAssist).
 
-        rule_fire 가 True 면 정책이 낸 yaw, pitch 두 값에 tracker 의 쏘는 규칙으로 정한 fire 를 붙인다. 연속 행동 모델에만 쓴다.
-        strip_shot 이 True 면 관측에서 shot 을 빼서 준다. 발사 행동이 없던 때(환경 버전 5)의 모델과
-        wrappers.RuleFire 로 학습한 모델(실행의 algo.fire 가 "rule")이 그렇다. aimer_training_env.RuleFireTraining 으로
-        학습한 모델(algo.fireMode 가 "rule")은 shot 을 포함한 관측을 그대로 보므로 False 다.
+        rule_fire 가 True 면 정책은 돌리는 두 값만 낸다. 관측에서 shot 을 빼서 주고, 정책이 낸 yaw, pitch 에
+        tracker 의 쏘는 규칙으로 정한 fire 를 붙인다. 연속 행동 모델에만 쓴다. 발사 행동이 없던 때(환경 버전 5)의 모델과
+        쏘는 것을 규칙에 맡겨 학습한 모델(실행의 algo.fire 가 "rule", wrappers.RuleFire)이 이 모양이다.
+        strip_shot 을 False 로 주면 rule_fire 여도 관측에서 shot 을 빼지 않는다. #59 의 조준기만 쓴다 (load_opponent).
 
         accel_gain 을 주면 정책의 돌리는 행동은 각가속도다. 학습 때처럼 각속도 행동으로 바꿔서 쓴다 (wrappers.AccelControl).
         """
@@ -166,9 +167,10 @@ def load_opponent(spec: str, side: str, config: EnvConfig) -> Opponent:
     if control not in CONTROLS or fire not in FIRES:
         raise ValueError(f"{spec}: 알 수 없는 행동 방식이다 (control {control!r}, fire {fire!r})")
     legacy_fire = side == "aimer" and version in RULE_FIRE_VERSIONS  # 발사 행동이 없던 때의 모델
-    wrapper_fire = side == "aimer" and fire == "rule"  # wrappers.RuleFire 로 학습. 관측에 shot 이 없다
-    # aimer_training_env.RuleFireTraining 으로 학습. shot 을 포함한 관측을 그대로 본다
-    full_obs_fire = side == "aimer" and version == ENV_VERSION and algo.get("fireMode") == "rule"
+    wrapper_fire = side == "aimer" and fire == "rule"  # 기준이 되는 방식. wrappers.RuleFire 로 학습했고 관측에 shot 이 없다
+    # #59 의 조준기(scripts/train_calibrated_neural.py)는 algo.fire 대신 fireMode 를 적고, shot 이 든 관측으로 학습했다.
+    # 이미 학습한 그 모델을 불러오려고 읽기만 한다. 새 모델은 algo.fire 를 쓴다.
+    full_obs_fire = side == "aimer" and version == ENV_VERSION and "fire" not in algo and algo.get("fireMode") == "rule"
     rule_fire = legacy_fire or wrapper_fire or full_obs_fire
     if version != ENV_VERSION and not legacy_fire:
         raise ValueError(f"{spec}: 환경 버전 {version}에서 학습한 모델이라, 지금 환경(버전 {ENV_VERSION})과 견줄 수 없다")

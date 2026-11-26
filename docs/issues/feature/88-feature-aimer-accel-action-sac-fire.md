@@ -191,7 +191,8 @@ Merge of `origin/main` (9b3cb81) into the branch; conflict in `flytracker/player
 - `pytest -q` on the merged tree: 265 passed, 1 skipped (`tests/test_flight_calibration.py:82`, optional `h5py` not installed here). Both sides' tests are in that set (#88's control tests, #59's `test_current_neural_aimer.py`).
 #### Notes
 - The user (2026-11-26): "싹 정리해서 main 합치고 publish부터 진행해". Taken as: merge main into this branch, then do the publishing work of Scope 7; push, PR and merge to main still wait for the review gate.
-- Two rule-fire training wrappers now exist (`wrappers.RuleFire`, `aimer_training_env.RuleFireTraining`). Unifying them is a follow-up to agree with the teammate, not done here.
+- Two rule-fire training wrappers now exist (`wrappers.RuleFire`, `aimer_training_env.RuleFireTraining`).
+- Decision by the user (2026-11-26, given in another session, 3b9cfc2e, in the #81 worktree: "조준기는 내 쪽이니까 내걸로 맞추는 게 맞지 않나", "내 걸로 잡아"): `algo.fire` with `wrappers.RuleFire` (observation without `shot`) is the standard for aimer models. `algo.fireMode` is read only, to load the aimer already trained in #59; new models do not use it. That session prepared a resolved `players.py` in its scratchpad but could not apply it (bound to the #81 worktree). This session had resolved the merge on its own before learning of that; the behaviour was the same, and a follow-up commit aligned the comments with the decision and made `fire` take precedence when a config has both keys. Moving the teammate's training script to `algo.fire` is the teammate's to do; say so in the PR and tell the teammate.
 
 ### feat: #88 실행 13개를 올리고 README와 viewer에 각가속도 행동 넣기 (#88)
 > why: Scope 7 — the runs, the description file, the README options and the viewer rows were the last open part of the issue
