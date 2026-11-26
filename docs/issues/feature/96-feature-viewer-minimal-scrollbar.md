@@ -59,6 +59,7 @@ Management doc, registry row, `AGENTS.md` pointer.
 #### Notes
 - Not captured: the light scheme, Firefox, the run panel. Not done: the element-by-element list of Done Criteria 2.
 - The captures were in the session scratchpad and are not kept.
+- Committed after the build on this tree (built).
 
 ### chore: #96 포인터를 지우고 완료로 표시하기 (#96)
 > why: the pointer line has to go in the branch's last commit; a protected branch cannot take that edit after the merge

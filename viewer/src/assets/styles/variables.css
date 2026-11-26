@@ -18,6 +18,9 @@
   --color-fill: rgba(0, 0, 0, 0.05);
   --color-fill-strong: rgba(0, 0, 0, 0.08);
   --color-accent: #0071e3;
+  /* 스크롤바의 막대. 마우스를 올리면 진해진다 */
+  --color-scrollbar: rgba(0, 0, 0, 0.2);
+  --color-scrollbar-hover: rgba(0, 0, 0, 0.4);
   --color-capture: #1a8a62;
   /* 실행 여러 개를 겹쳐 그릴 때의 선 색. dataviz 검사 스크립트로 두 모드 모두 확인했다.
      밝은 모드의 3, 4, 5번은 바탕 대비 3:1 미만이라, 같은 값을 아래 표가 글자로도 보여 준다. */
@@ -79,6 +82,8 @@
     --color-fill: rgba(255, 255, 255, 0.06);
     --color-fill-strong: rgba(255, 255, 255, 0.1);
     --color-accent: #0a84ff;
+    --color-scrollbar: rgba(255, 255, 255, 0.2);
+    --color-scrollbar-hover: rgba(255, 255, 255, 0.4);
     --color-capture: #30d158;
     --color-series-1: #3987e5;
     --color-series-2: #d95926;
