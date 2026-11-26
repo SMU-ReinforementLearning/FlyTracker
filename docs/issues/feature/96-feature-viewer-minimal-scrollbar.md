@@ -4,7 +4,7 @@
 - Issue: #96
 - Branch: `96-feature-viewer-minimal-scrollbar`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 Replace the browser's default scrollbars in the viewer with one minimal design: a thin, rounded, faint thumb on a transparent track, in both colour schemes. The user (2026-11-26): "스크롤바 디자인, 브라우져 기본값 쓰지 말고, minimal하게 새로 디자인해". On Windows the default bars are wide grey gutters that cut into the sidebar, the run panel and the issue page.
@@ -24,7 +24,7 @@ Replace the browser's default scrollbars in the viewer with one minimal design: 
 - [ ] Before / after screenshots of the sidebar and the run panel with a scrollbar visible, dark and light.
 - [ ] No scrolling element keeps a default bar (checked by listing every element whose content overflows on the issue page, a run page and the lineage page).
 - [x] Viewer build passes; the user approved the look.
-- [ ] PR merged; `AGENTS.md` pointer removed in the branch's last commit.
+- [x] PR merged; `AGENTS.md` pointer removed in the branch's last commit.
 
 ## Current State
 2026-11-27. The user said "다 머지해" (2026-11-26) after seeing the screen: commit, push, PR and squash merge. The CSS is committed; the pointer line is removed in the last commit. Two criteria stay unticked (light scheme capture, the list of overflowing elements); the rule is one global rule, so no element can keep a default bar in Chromium or Safari, but that was not listed element by element.
@@ -60,6 +60,7 @@ Management doc, registry row, `AGENTS.md` pointer.
 - Not captured: the light scheme, Firefox, the run panel. Not done: the element-by-element list of Done Criteria 2.
 - The captures were in the session scratchpad and are not kept.
 - Committed after the build on this tree (built).
+- 2026-11-27: origin/main with #94 and #95 merged into the branch (conflicts in the registry and in variables.css, both sides kept). On the merged tree: full pytest 278 passed, 1 skipped; build passes.
 
 ### chore: #96 포인터를 지우고 완료로 표시하기 (#96)
 > why: the pointer line has to go in the branch's last commit; a protected branch cannot take that edit after the merge

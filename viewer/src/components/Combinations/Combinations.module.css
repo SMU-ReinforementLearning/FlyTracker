@@ -85,6 +85,12 @@
   font-weight: var(--font-weight-medium);
 }
 
+/* 기록의 종류(학습, 평가). 종류와 버전의 윗줄과 같은 굵기로 둔다 */
+.table td.record {
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
 /* 고를 수 있는 줄 */
 .selectable {
   cursor: pointer;

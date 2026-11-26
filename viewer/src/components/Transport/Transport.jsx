@@ -33,6 +33,34 @@ function Icon({ name }) {
   )
 }
 
+// 발의 결과를 적는 말. 용어집(ui-text.glossary.md)의 표기다
+const SHOT_NAME = { hit: '명중', miss: '오발', open: '쏘는 중' }
+
+/**
+ * 재생 막대 아래의 발 표시. 발 하나가 막대 하나이고, 자리와 길이는 그 발을 쏜 시간이다.
+ * 명중한 발과 오발은 색이 다르다. 누르면 그 발이 시작한 때로 간다.
+ * 재생 막대의 손잡이는 양 끝에서 손잡이 반지름만큼 안쪽까지만 가므로 같은 만큼 들여서 놓는다.
+ */
+function ShotMarks({ shots, duration }) {
+  if (shots.length === 0 || !(duration > 0)) return null
+  return (
+    <div className={styles.shots}>
+      {shots.map((shot, k) => (
+        <button
+          key={shot.i}
+          type="button"
+          className={styles.shot}
+          data-result={shot.result}
+          style={{ left: `${(shot.start / duration) * 100}%`, width: `${((shot.end - shot.start) / duration) * 100}%` }}
+          aria-label={`${k + 1}번째 발, ${SHOT_NAME[shot.result]}, ${shot.start.toFixed(2)}초`}
+          title={`${SHOT_NAME[shot.result]} ${shot.start.toFixed(2)}초`}
+          onClick={() => seek(shot.start)}
+        />
+      ))}
+    </div>
+  )
+}
+
 export function Transport({ ep }) {
   const c = useClock(20)
   const progress = c.duration > 0 ? (c.t / c.duration) * 100 : 0
@@ -49,6 +77,7 @@ export function Transport({ ep }) {
           <Icon name="next" />
         </IconButton>
       </div>
+      <div className={styles.track}>
       <input
         className={styles.scrubber}
         type="range"
@@ -60,6 +89,8 @@ export function Transport({ ep }) {
         aria-label="재생 위치"
         onChange={(e) => seek(Number(e.target.value))}
       />
+      <ShotMarks shots={ep.shotList} duration={c.duration} />
+      </div>
       <span className={styles.time}>
         {c.t.toFixed(2)} / {c.duration.toFixed(2)}초
       </span>

@@ -22,7 +22,9 @@ export function Readouts({ ep, scheme }) {
   const flightLabel = ep.meta.flyModel === 'neural' ? '신경 날개 (실험)' : '규칙 기반'
   const escapeLabel = '도피 회로 출력'
 
-  const state = capture > 0 ? ['포획 중', colors.capture] : missed ? ['오발', colors.misfire] : visible ? ['보임', colors.visible] : ['안 보임', colors.idle]
+  // 레이저를 쏠 때만 켜는 기록에서 포획 진행이 차는 것은 쏜 발이 초파리 위에 있다는 뜻이다. 조준을 유지하던 기록의 '포획 중' 과 다른 말로 적는다.
+  // 발이 끝나기 전에는 아직 벗어날 수 있으므로 '맞는 중' 이고, 끝까지 맞아 포획이 되면 '명중' 이다
+  const state = capture > 0 ? [ep.firing ? (capture >= 1 ? '명중' : '맞는 중') : '포획 중', colors.capture] : missed ? ['오발', colors.misfire] : visible ? ['보임', colors.visible] : ['안 보임', colors.idle]
   const rows = ep.meta.mode === 'free-flight' ? [
     ['비행 모델', ep.meta.flyModel === 'neural' ? '신경 기반' : '규칙 기반'],
     ...(ep.meta.flyModel === 'neural' ? [['비행 설정', flightLabel]] : []),

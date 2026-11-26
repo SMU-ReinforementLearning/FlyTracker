@@ -27,9 +27,48 @@
   color: var(--color-bg-window);
 }
 
-.scrubber {
+/* 재생 막대와 그 아래의 발 표시 */
+.track {
+  position: relative;
   flex: 1;
   min-width: 8rem;
+  display: flex;
+}
+
+/* 손잡이 반지름(0.7rem)만큼 양쪽을 들인다. 그래야 표시의 자리가 손잡이의 자리와 맞는다 */
+.shots {
+  position: absolute;
+  left: 0.7rem;
+  right: 0.7rem;
+  top: 100%;
+  height: 0.5rem;
+  pointer-events: none;
+}
+
+.shot {
+  position: absolute;
+  top: 0;
+  min-width: 0.4rem;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0.15rem;
+  background: var(--color-text-tertiary);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.shot[data-result='hit'] {
+  background: var(--color-shot-hit);
+}
+
+.shot[data-result='miss'] {
+  background: var(--color-shot-miss);
+}
+
+.scrubber {
+  flex: 1;
+  min-width: 0;
   height: 2rem;
   margin: 0;
   appearance: none;
