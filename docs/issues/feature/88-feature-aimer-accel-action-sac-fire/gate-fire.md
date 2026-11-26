@@ -135,6 +135,7 @@ What the policies do (`data/fire-only.md`, required by the decision rule; determ
 
 Consequences:
 
-- Fire stays with the rule. `accel-pen-rule` with rule fire remains the best pair measured in #88.
+- `accel-pen-rule` with rule fire remains the best pair measured in #88.
+- Scope of this verdict (added 2026-11-26 after the user's review; the rows and the decision above are unchanged): it answers only this gate's question, "faster than the rule". It does not close fire learning. The rule mirrors the capture condition, so on time there was at most about 0.07 s to win (0.472 misfires x 0.15 s lock-out; the agent's bound, not measured), and the misfire weight pulled against time. The user wants a policy that fires on its own and wants misfires reduced for a reason that exists in the environment (safety, damage, the fly reacting to a grazing shot). The next gates ask different questions: "as good as the rule without the rule" (non-inferiority, no misfire weight), then fire learning in an environment where a misfire has a cost.
 - Per the decision rule the gate is not re-run with a tweak. A longer run (1,000,000 steps) would be a new gate; the flat curves give no sign that it would change the answer.
 - Limit: 200 evaluation seeds already used in stage 1; one observation window (4 steps); two misfire weights, neither tuned; rule fly only.

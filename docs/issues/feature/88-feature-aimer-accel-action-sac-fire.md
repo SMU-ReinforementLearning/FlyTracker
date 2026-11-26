@@ -41,12 +41,14 @@ Train SAC aimers that steer alone with angular-acceleration actions instead of a
 ## Current State
 2026-11-26 03:30 KST. Training finished, results downloaded and verified, instance destroyed (nothing is running or billing). Verdicts are in `gate.md`: one of five adopted (`accel-pen-rule`: 2.611 s, 589/600, 0.47 misfires per episode; v0 4.894 s). `accel-rule` passes on time but is rejected by the capture exclusion (0.965 < 0.97); `rate-rule` and both fire-learning conditions are rejected. Korean results: `conditions.md`, section "결과". Nothing pushed.
 
-Stage 2 (2026-11-26, the user: proceed with the staged fire learning as proposed) is finished: 4 conditions x 3 seeds x 500,000 steps trained on vast.ai, downloaded and verified, instance 62621473 destroyed (`vastai show instances` lists none; nothing is running or billing). Verdict in `gate-fire.md`: all four rejected, every candidate is slower than `accel-pen-rule` with rule fire (P(faster) 0.000-0.001). Fire stays with the rule. Korean results: `conditions.md`, section "발사만 학습한 단계". The user said (2026-11-26) a separate 1,000,000-step run would be decided after seeing the results; the curves are flat from 50,000 steps, the agent's opinion is not to run it. Nothing pushed.
+Stage 2 (2026-11-26, the user: proceed with the staged fire learning as proposed) is finished: 4 conditions x 3 seeds x 500,000 steps trained on vast.ai, downloaded and verified, instance 62621473 destroyed (`vastai show instances` lists none; nothing is running or billing). Verdict in `gate-fire.md`: all four rejected, every candidate is slower than `accel-pen-rule` with rule fire (P(faster) 0.000-0.001). Korean results: `conditions.md`, section "발사만 학습한 단계". The curves are flat from 50,000 steps; the agent's opinion is not to run the same setup for 1,000,000 steps. Nothing pushed.
+
+Direction from the user (2026-11-26, after the results): fire learning is NOT closed. The reject answers only "faster than the rule". The user's points: (1) a rule-based trigger is not where an RL project should end; a policy that fires on its own and does as well as the rule has value; (2) misfires should be reduced, for safety and damage to walls and furniture, not because of the 0.15 s; (3) a fly grazed by a shot that does not kill it should be startled (the fly already has a threat response); (4) with several flies, the others would see the flashes and change behaviour. Agent's proposal, not yet approved in detail: split misfires into grazing shots (fly escapes) and wall shots (counted, limited in the gate); new environment version in a new issue; several flies in a later issue. Open questions to the user: whether the fly reacts from first contact (realistic, lowers capture for every aimer) or only when the shot fails; the limit on wall shots; the non-inferiority margin.
 
 Left, waiting for the user (screen text and a decision are involved):
 - Scope 7 remainder: published runs (`published/issues/88.json`), README training options, viewer rows (`history.js`, `lineage.js`, the control row on the card).
 - Whether to gate `accel-pen-rule` against v1 (descriptively 0.41 s faster, P = 1.000; not a pre-registered comparison).
-- Whether to run the 1,000,000-step fire-only variant (a new gate) or close fire learning here.
+- The next fire-learning gates (see "Direction from the user" above and Follow-up Candidates).
 
 Where things are:
 - Models: `runs/g88/<condition>-s<k>/<run>/` (gitignored, only on this machine; archive `runs/_download/runs-g88.tgz`, 869 MB, sha256 in `runs/_download/manifest.sha256`). Diagnosis traces: `runs/d88/*.npz`.
@@ -186,5 +188,6 @@ Management doc, registry row, `AGENTS.md` pointer.
 - Gate it against `accel-pen-rule` with rule fire on time and misfires, written before training.
 ### Follow-up Candidates
 - Gate `accel-pen-rule` against v1.
+- Fire learning, continued (the user, 2026-11-26): (a) no misfire weight, non-inferiority against the rule: fire-only on the fixed aim, and aim and fire together from scratch (stage 1 only tried weights 0.3 and 1.0, so whether the weight caused the never-firing collapse is untested); (b) fine-tuning one network from the learned aim with a rule-like fire start (never tried; `scripts/train.py` cannot continue from a model, SAC's critic changes shape with the third action); (c) a new environment version where a grazing shot startles the fly and wall shots are counted, then fire learning gated on time and wall shots; (d) several flies, later.
 - A second `action_change` weight (only 1.0 was tried) belongs to a new gate.
 ### References
