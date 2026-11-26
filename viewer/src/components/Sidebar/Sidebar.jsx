@@ -39,34 +39,33 @@ function Chevron() {
 }
 
 /**
- * 실행 줄. 줄마다 같은 자리에 같은 것을 적는다. 맨 앞은 issue 화면의 표에서 그 조합을 부르는 글자(A, B, C)이고,
- * 첫 줄은 조준기, 그 아래는 초파리, 환경(조합마다 다를 때) 순서다. 같은 종류끼리 무엇이 다른지는 글자로 표에서 찾는다.
- * combo 는 이 실행이 든 조합이고(combinationsOf), seed 는 조합 안에서 실행을 가르는 학습 seed 다. lettered 는 조합이 둘 이상이라 글자를 적는지다.
- * combo 가 없으면(설정을 읽기 전이거나 못 읽은 실행) 실행 이름만 적는다.
+ * 실행 줄. 실행을 가르는 짧은 이름만 적는다. 초파리와 조준기가 무엇인지는 issue 화면의 표에서 같은 글자의 줄을 본다.
+ * 조합이 둘 이상인 묶음이면 그 조합을 부르는 글자(A, B, C)가 앞에 오고, 조합 안에 학습 seed 만 다른 실행이 여럿이면 학습 seed 가 뒤따른다.
+ * 조합이 하나뿐인 묶음은 학습 seed 만, 그것도 없으면 실행 이름을 적는다. combo 가 없으면(설정을 읽기 전이거나 못 읽은 실행) 실행 이름이다.
+ * 초파리, 조준기, 환경, 실행 이름, 올린 사람, 만든 때는 마우스를 올리면 나온다.
  */
-function RunRow({ run, combo, seed, lettered, showEnvironment, selected, onSelect }) {
+function RunRow({ run, combo, seed, lettered, selected, onSelect }) {
   const last = lastCheckpoint(run)
   const rate = rateOf(last)
   const observing = ['free-flight', 'tracking-observation'].includes(run.algo)
-  const hint = [run.name, run.author, shortDate(run.createdAt)].filter(Boolean).join(' · ')
-  const aimer = combo ? [combo.aimer.title, seedLabel(seed)].filter(Boolean).join(' · ') : run.name
+  const letter = lettered && combo ? combo.letter : null
+  const name = seedLabel(seed) ?? (letter ? null : run.name)
+  const hint = [combo && `${cellText(combo.fly)} / ${cellText(combo.aimer)} / 환경 ${cellText(combo.environment)}`, run.name, run.author, shortDate(run.createdAt)].filter(Boolean).join('\n')
   return (
-    <ListRow current={selected} onClick={() => onSelect(run.id)} className={lettered ? `${styles.row} ${styles.lettered}` : styles.row} title={hint}>
-      {lettered && (
-        <span className={styles.letter} aria-label={combo ? `실험 ${combo.letter}` : undefined}>
-          {combo?.letter}
+    <ListRow current={selected} onClick={() => onSelect(run.id)} className={styles.row} title={hint}>
+      <span className={styles.line}>
+        <span className={styles.title}>
+          {letter && (
+            <span className={styles.letter} aria-label={`실험 ${letter}`}>
+              {letter}
+            </span>
+          )}
+          {name}
         </span>
-      )}
-      <span className={styles.body}>
-        <span className={styles.line}>
-          <span className={styles.title}>{aimer}</span>
-          <span className={`${styles.aside} ${styles.rate}`}>
-            {!observing && <Sparkline run={run} />}
-            {!observing && rate !== null && <span aria-label={`포획률 ${percent(rate)}`}>{percent(rate)}</span>}
-          </span>
+        <span className={`${styles.aside} ${styles.rate}`}>
+          {!observing && <Sparkline run={run} />}
+          {!observing && rate !== null && <span aria-label={`포획률 ${percent(rate)}`}>{percent(rate)}</span>}
         </span>
-        {combo && <span className={styles.sub}>{cellText(combo.fly)}</span>}
-        {combo && showEnvironment && <span className={styles.sub}>환경 {cellText(combo.environment)}</span>}
       </span>
     </ListRow>
   )
@@ -76,8 +75,7 @@ function RunRow({ run, combo, seed, lettered, showEnvironment, selected, onSelec
 export const groupTitle = (group) => (group.key === NO_ISSUE ? 'issue 없음' : issueName(group.issue))
 
 /**
- * 펼친 issue 의 실행 목록. 조합 순서로 늘어놓고, 줄마다 조합의 글자와 그 실행의 조준기, 초파리를 적는다.
- * 환경이 모든 조합에서 같으면 목록 위에 한 번만 적고, 다르면 줄마다 적는다. 설정을 다 읽기 전에는 실행 이름만 늘어놓는다.
+ * 펼친 issue 의 실행 목록. issue 화면의 표와 같은 순서로 늘어놓는다. 설정을 다 읽기 전에는 실행 이름만 늘어놓는다.
  * group.runs 는 검색으로 걸러진 것일 수 있다. 조합은 걸러지기 전의 실행(group.all)으로 나눈다. 그래야 글자가 issue 화면의 표와 같다.
  */
 function Runs({ group, runId, onSelectRun }) {
@@ -92,33 +90,32 @@ function Runs({ group, runId, onSelectRun }) {
     const seen = new Set(placed.map((p) => p.run.id))
     return [...placed, ...runs.filter((r) => !seen.has(r.id)).map((run) => ({ run, combo: null, seed: null }))] // 뒤는 설정을 못 읽은 실행
   }, [all, group.runs, combos])
-  const environments = new Set((combos ?? []).map((c) => cellText(c.environment)))
   const lettered = (combos?.length ?? 0) > 1
   return (
-    <>
-      {environments.size === 1 && <p className={styles.environment}>환경 {[...environments][0]}</p>}
-      <RowList>
-        {rows.map(({ run, combo, seed }) => (
-          <RunRow key={run.id} run={run} combo={combo} seed={seed} lettered={lettered} showEnvironment={environments.size > 1} selected={run.id === runId} onSelect={onSelectRun} />
-        ))}
-      </RowList>
-    </>
+    <RowList>
+      {rows.map(({ run, combo, seed }) => (
+        <RunRow key={run.id} run={run} combo={combo} seed={seed} lettered={lettered} selected={run.id === runId} onSelect={onSelectRun} />
+      ))}
+    </RowList>
   )
 }
 
-function Group({ group, open, onToggle, runId, issueKey, onSelectRun, onOpenIssue }) {
+/**
+ * issue 묶음. 이름 줄 하나가 묶음을 펼치고 접는다. 따로 둔 화살표 버튼은 없다.
+ * 접힌 이름을 누르면 묶음이 펼쳐지고 issue 화면이 열린다. 그 issue 화면을 보는 중에 다시 누르면 접힌다.
+ * 펼쳐져 있지만 다른 화면(그 묶음의 실행)을 보는 중이면 접지 않고 issue 화면으로 간다.
+ */
+function Group({ group, open, current, onPress, runId, onSelectRun }) {
   const title = groupTitle(group)
   return (
     <section className={styles.group} aria-label={title}>
-      <div className={styles.groupHead}>
-        <button type="button" className={styles.disclosure} aria-expanded={open} aria-label={`${title} ${open ? '접기' : '펼치기'}`} onClick={onToggle}>
+      <button type="button" className={styles.groupName} aria-expanded={open} aria-current={current} title={group.key === NO_ISSUE ? undefined : group.issue.title} onClick={onPress}>
+        <span className={styles.chevron}>
           <Chevron />
-        </button>
-        <button type="button" className={styles.groupName} aria-current={issueKey === group.key} title={group.key === NO_ISSUE ? undefined : group.issue.title} onClick={() => onOpenIssue(group.key)}>
-          {group.key !== NO_ISSUE && <span className={styles.groupNum}>#{group.issue.number}</span>}
-          <span className={styles.groupText}>{title}</span>
-        </button>
-      </div>
+        </span>
+        {group.key !== NO_ISSUE && <span className={styles.groupNum}>#{group.issue.number}</span>}
+        <span className={styles.groupText}>{title}</span>
+      </button>
       {open && <Runs group={group} runId={runId} onSelectRun={onSelectRun} />}
     </section>
   )
@@ -134,15 +131,16 @@ export function Sidebar({ groups, error, runId, issueKey, home, onSelectRun, onO
     if (issueKey != null) setOpened((prev) => (prev.has(issueKey) ? prev : new Set(prev).add(issueKey)))
   }, [issueKey])
 
-  const toggle = (key) =>
-    setOpened((prev) => {
-      const next = new Set(prev)
-      if (next.has(key)) next.delete(key)
-      else next.add(key)
-      return next
-    })
-
-  const openIssue = (key) => {
+  // 이름 줄을 눌렀을 때. 펼쳐진 묶음의 issue 화면을 보는 중이면 접고, 아니면 펼치면서 issue 화면을 연다.
+  const press = (key) => {
+    if (opened.has(key) && issueKey === key) {
+      setOpened((prev) => {
+        const next = new Set(prev)
+        next.delete(key)
+        return next
+      })
+      return
+    }
     setOpened((prev) => (prev.has(key) ? prev : new Set(prev).add(key)))
     onOpenIssue(key)
   }
@@ -178,11 +176,10 @@ export function Sidebar({ groups, error, runId, issueKey, home, onSelectRun, onO
                 key={g.key}
                 group={g}
                 open={searching || opened.has(g.key)}
-                onToggle={() => toggle(g.key)}
+                current={issueKey === g.key}
+                onPress={() => press(g.key)}
                 runId={runId}
-                issueKey={issueKey}
                 onSelectRun={onSelectRun}
-                onOpenIssue={openIssue}
               />
             ))}
           </section>

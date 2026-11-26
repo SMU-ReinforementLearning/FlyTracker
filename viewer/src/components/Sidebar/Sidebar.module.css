@@ -66,44 +66,19 @@
   font-weight: var(--font-weight-semibold);
 }
 
-/* issue 묶음 */
+/* issue 묶음. 이름 줄이 묶음을 펼치고 접는다 */
 
 .group + .group {
   margin-top: 1rem;
 }
 
-.groupHead {
-  display: flex;
-  align-items: center;
-}
-
-.disclosure {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 2rem;
-  height: 2.6rem;
-  padding: 0;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: none;
-  color: var(--color-text-tertiary);
-}
-
-.disclosure svg {
-  transition: transform 0.15s;
-}
-
-.disclosure[aria-expanded='true'] svg {
-  transform: rotate(90deg);
-}
-
 .groupName {
-  flex: 1;
+  width: 100%;
   min-width: 0;
   display: flex;
+  align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 0.6rem;
+  padding: 0.5rem 0.6rem 0.5rem 0.4rem;
   border: 0;
   border-radius: var(--radius-sm);
   background: none;
@@ -114,14 +89,30 @@
   cursor: default;
 }
 
-.groupName:hover,
-.disclosure:hover {
+.groupName:hover {
   background: var(--color-fill);
 }
 
 .groupName[aria-current='true'] {
   background: var(--color-fill-strong);
   color: var(--color-text-primary);
+}
+
+/* 펼쳤는지 알리는 화살표. 이름 줄 안에 있고 따로 눌리지 않는다 */
+.chevron {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.4rem;
+  color: var(--color-text-tertiary);
+}
+
+.chevron svg {
+  transition: transform 0.15s;
+}
+
+.groupName[aria-expanded='true'] .chevron svg {
+  transform: rotate(90deg);
 }
 
 .groupNum {
@@ -142,27 +133,6 @@
   padding-left: 2.6rem;
 }
 
-/* 조합이 둘 이상인 묶음의 줄. 맨 앞에 조합을 부르는 글자가 서고, 나머지는 그 오른쪽에 쌓인다 */
-.group .lettered {
-  display: flex;
-  align-items: baseline;
-  gap: 0.6rem;
-  padding-left: 1.6rem;
-}
-
-.letter {
-  flex: none;
-  min-width: 1.4rem;
-  font-weight: var(--font-weight-semibold);
-  font-variant-numeric: tabular-nums;
-}
-
-.body {
-  display: block;
-  flex: 1;
-  min-width: 0;
-}
-
 .line {
   display: flex;
   justify-content: space-between;
@@ -177,29 +147,19 @@
   text-overflow: ellipsis;
 }
 
+/* 조합을 부르는 글자. 뒤따르는 학습 seed 와 조금 띄운다 */
+.letter {
+  display: inline-block;
+  min-width: 1.4rem;
+  margin-right: 0.6rem;
+  font-weight: var(--font-weight-semibold);
+}
+
 .rate {
   flex: none;
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-}
-
-/* 초파리, 환경. 한 줄에 하나씩 놓는다. 길면 끝을 줄이고, 다 읽으려면 issue 화면의 표를 본다 */
-.sub {
-  display: block;
-  margin-top: 0.1rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* 묶음의 모든 조합에 같은 환경. 실행 줄 위에 한 번만 적는다 */
-.environment {
-  margin: 0;
-  padding: 0.2rem 1rem 0.4rem 2.6rem;
-  color: var(--color-text-tertiary);
-  font-size: var(--font-size-xs);
-  font-variant-numeric: tabular-nums;
 }
 
 .spark path {

@@ -389,7 +389,8 @@ const COLUMNS = [
  * details 는 title 이 같은 조합끼리 값이 다른 줄이다(자극 켬과 끔, 돌리는 행동). 다른 조합과 같은 줄은 적지 않는다.
  * 한쪽에만 있는 줄(자극을 껐을 때 사라지는 자극 길이)은 값이 서로 다른 줄이 따로 있으면 적지 않는다. 그 줄이 이미 둘을 가른다.
  * runs 는 [{ id, seed }] 이고, seed 는 조합 안에서 실행을 가르는 학습 seed 다. 학습 seed 로 가를 수 없으면 null 이다.
- * 순서는 조준기, 초파리, 환경의 글자 순서다. 기준선이 학습한 조준기보다, 규칙 초파리가 신경 초파리보다 앞에 온다.
+ * 순서는 표의 칸 순서대로 초파리, 조준기, 환경의 글자 순서다. 같은 초파리의 줄이 모이고, 그 안에서 기준선이 학습한 조준기보다 앞에 온다.
+ * 규칙 초파리가 신경 초파리보다 앞이다. 어느 한쪽을 기준으로 삼지 않으려고 칸 순서를 그대로 따른다.
  */
 export function combinationsOf(runs, configs, info) {
   const groups = new Map()
@@ -425,7 +426,7 @@ export function combinationsOf(runs, configs, info) {
     const cells = Object.fromEntries(COLUMNS.map((col) => [col.key, cellOf(i, col)]))
     return { key: g.runs[0].id, ...cells, runs: g.runs.map((r, k) => ({ id: r.id, seed: named ? seeds[k] : null })) }
   })
-  const order = (row) => [row.aimer, row.fly, row.environment].map(cellText).join(' | ')
+  const order = (row) => [row.fly, row.aimer, row.environment].map(cellText).join(' | ')
   rows.sort((a, b) => order(a).localeCompare(order(b), 'ko', { numeric: true }))
   return rows.map((row, i) => ({ ...row, letter: letterOf(i) }))
 }

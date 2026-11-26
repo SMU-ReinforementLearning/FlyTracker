@@ -83,6 +83,21 @@ Console: only the favicon 404 and THREE.Clock deprecation warnings, both present
 - Not checked: the letter column, the new title and the lettered sidebar rows in a browser; keyboard selection; light colour scheme.
 - The captures must be retaken before the commit.
 
+### feat: 사이드바의 실행 줄을 글자와 학습 seed만으로 줄이고 issue 이름 줄로 묶음 여닫기 (#92)
+> why: user requests after the first commit (2026-11-26) — the long row text was cut off anyway, the separate toggle button was unwanted, and the list read as aimer-centred
+#### Scope
+`viewer/src/components/Sidebar/`, `viewer/src/data/experiment.js` (row order), README.
+#### Changes
+- Run rows show only the secondary key: the combination letter, then the training seed when the combination has several runs; with one combination, the seed or the run name. Fly, aimer, environment, run name, author and date are in the tooltip. The "환경 버전 N" line above the rows is gone.
+- The disclosure button is removed. The issue name row carries the chevron and `aria-expanded`: pressing a closed group opens it and the issue page; pressing it again while its issue page is shown closes it; pressing it while one of its runs is shown goes to the issue page.
+- `combinationsOf` sorts by fly, aimer, environment (the column order) instead of aimer first, so rows of the same fly sit together and the letters follow that order.
+#### Verification
+- `uv run --all-groups --all-extras python -m pytest -q` → 272 passed (run on the previous commit's tree); the four viewer test files re-run after these edits → 44 passed
+- `npm run build` → built
+- NOT looked at in a browser: the dev server was stopped by the harness for low memory and was not restarted. The PNGs in `captures/` show the first state (title "조합", no letters, two-line sidebar rows, aimer-first order).
+#### Notes
+- Follow-up: retake the captures.
+
 ## Management Notes
 ### Follow-up Candidates
 - Record the training-time misfire penalty in replayed runs' config so #88's fire-only combinations can be told apart.
