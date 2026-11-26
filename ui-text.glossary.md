@@ -59,6 +59,8 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 | another area an issue also changed | 조준기도 바꿈 | 조준기 포함, + 조준기 | 계보 노드의 아랫줄. 영역 이름 뒤에 "도 바꿈" (#77) |
 | version an issue raised, shown on a lineage node | 환경 버전 3, 조준기 v1, 규칙 초파리 | 환경 v3, env 3, 조준기 버전 1 | 계보 노드 맨 위의 표시. 환경은 "환경 버전 N", 조준기는 "조준기 vN", 초파리는 종류 이름이다. 영역 이름 옆의 지금 상태는 "버전 6", "v1", "규칙, 신경"으로 줄인다 (#80) |
 | episodes captured out of episodes run, on a lineage node | 포획 5/200 | 5/200 포획, 포획률 2.5% | 계보 노드의 수치 줄에만 쓴다. 문장에서는 "200개 가운데 5개" (#80) |
+| whether a run was recorded during training or replays a trained model | 기록 | 종류, 타입, 모드 | 실험 목록의 칸과 실행 패널의 줄. 값은 "학습"(학습하는 동안 checkpoint마다 기록한 실행) 또는 "평가"(학습을 마친 모델을 다시 돌린 실행). 사이드바에서는 둘이 섞인 묶음의 소제목이다. 기준선과 관찰 기록에는 나오지 않는다 (#94) |
+| row in which an evaluated model was trained | 모델 실험 B, 모델 #51 실험 B | 학습 실험 B, 출처 B | 평가 실행의 조준기 칸에 붙는 줄. 모델을 학습한 실행이 올라와 있을 때만 나온다. 다른 issue에서 학습했으면 issue 번호가 앞에 오고, 그 issue의 조합이 하나뿐이면 "모델 #35"다. 발사만 학습한 모델의 "조준을 맡은 모델" 줄도 같은 방식으로 적는다 (#94) |
 | training seed | 학습 seed | 시드 | 알고리즘 설정의 `seed` |
 | seeds of recorded episodes | 에피소드 seed | 평가 시드 | 설명 파일의 `notes`에 적는다 |
 
@@ -97,4 +99,5 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 - 2026-11-25: 영역 이름을 사이드바의 구역 제목으로도 쓴다고 적음 (#81)
 - 2026-11-26: 돌리는 행동, 조준을 맡은 모델, 오발 벌점 추가. 쏘는 방식에 값 하나 추가 (#88)
 - 2026-11-26: 조합 추가. variation을 조합으로 바꿈 (#92)
+- 2026-11-26: 기록(학습, 평가)과 모델 실험 B 추가 (#94)
 - 2026-11-26: 맞는 중, 명중 추가. 레이저를 쏠 때만 켜는 기록의 상태에서 포획 중을 대신한다 (#95)

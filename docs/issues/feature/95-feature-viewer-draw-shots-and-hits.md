@@ -4,7 +4,7 @@
 - Issue: #95
 - Branch: `95-feature-viewer-draw-shots-and-hits`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 Make a laser shot and a kill visible in the viewer as events of their own, so that an episode won by the first shot no longer looks like the old "hold the aim line on the fly" capture. Since environment version 6 the aimer fires 0.15 s shots and a capture is a shot that stays on the fly, but the viewer draws the aim line all the time and only raises its opacity while firing, calls the hit "포획 중" with a progress value that fills like the old hold gauge, and shows nothing when the fly is hit. The user (2026-11-26), watching #88's runs: "첫 발에 잡았다 하더라도 이렇게 쏜 게 안보이면 조준선 유지 포획처럼 보이잖아. 사실은 사살인데.", and again after #94's screens: "여전히 사살한 마지막 발사때는 그냥 조준선 일치시키고 끝나는 것 처럼 보이네".
@@ -32,7 +32,7 @@ Make a laser shot and a kill visible in the viewer as events of their own, so th
 - [x] The last frame of a captured episode shows the hit.
 - [x] Records without `firing` render as before (before / after screenshots of one).
 - [x] `pytest` and the viewer build pass; screenshots at 1600 px and 390 px shown to the user; wording approved.
-- [ ] PR merged; `AGENTS.md` pointer removed in the branch's last commit.
+- [x] PR merged; `AGENTS.md` pointer removed in the branch's last commit.
 
 ## Current State
 2026-11-27. The user said "다 머지해" (2026-11-26) after seeing the screens: commit, push, PR and squash merge. Scope 1-5 is committed; the pointer line is removed in the last commit.
@@ -74,6 +74,7 @@ Management doc, registry row, `AGENTS.md` pointer.
 - The light colour scheme was not captured. The version 5 run was captured after the change only, not before.
 - "포획 진행" in the readouts and the word "포획" itself are unchanged; left to the user.
 - Committed after the full pytest and the build on this tree (274 passed, 1 skipped; built).
+- 2026-11-27: origin/main with #94 merged into the branch (conflicts in the registry and the glossary's history, both sides kept). On the merged tree the six viewer and publish test files pass (56 passed; the shot test now also covers #94's 1,341 new episodes) and the build passes; the full pytest was not re-run after the merge.
 
 ### chore: #95 포인터를 지우고 완료로 표시하기 (#95)
 > why: the pointer line has to go in the branch's last commit; a protected branch cannot take that edit after the merge
