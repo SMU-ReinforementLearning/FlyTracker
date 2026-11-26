@@ -162,6 +162,14 @@ const NODES = {
     aimerVersion: 'v1',
     metric: '평균 3.03초 · 기준선 4.89초',
   },
+  88: {
+    lane: 'aimer',
+    parents: [72],
+    name: '정책 행동을 각가속도로',
+    result: '정책이 각가속도를 내게 하자 추적 보조 없이도 조준했다. 쏘기는 규칙에 맡겼고 평균 2.61초다. 쏘는 것까지 학습한 조건은 규칙보다 빠르지 않았다.',
+    change: { what: '정책의 돌리는 행동', from: '각속도', to: '각가속도' },
+    metric: '평균 2.61초 · 기준선 4.89초',
+  },
 }
 
 /** issue 를 화면에서 부르는 이름. 계보에 없는 issue 는 GitHub 의 issue 제목으로 부른다. issue 는 { number, title } 이다. */

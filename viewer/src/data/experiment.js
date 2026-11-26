@@ -82,6 +82,9 @@ function sidesOf(cfg) {
       model: algo.model, // 이미 학습한 모델을 다른 환경에서 돌린 실행(#44)이면 그 모델의 실행 id
       trainedEnv: algo.trainedEnvVersion,
       fire: algo.fire, // 쏠지를 누가 정하나(#72). 'rule' 이면 조준만 학습한 모델에 기준선의 쏘는 규칙을 붙인 것이다
+      control: algo.control, // 정책의 돌리는 행동이 뜻하는 것(#88). 'rate' 는 각속도, 'accel' 은 각가속도. 그 전 실행에는 없고 각속도다
+      aim: algo.aim, // 발사만 학습한 모델(#88)이면 조준을 맡은 모델의 실행 id
+      firePrior: algo.firePrior, // 발사만 학습한 모델의 발사 값이 어디서 시작하나(#88). 'rule' 이면 기준선의 규칙
     }
     const opponent = algo.opponent
     if (algo.side === 'fly') {
@@ -116,7 +119,9 @@ function cardsOf(side, sides, table, versionLabel) {
         makeRow('함께 보는 최근 관측', 'algo.frameStack', list.map((s) => (has(s.frameStack) ? qty(s.frameStack, '개') : null))),
         makeRow('추적 보조', 'algo.assist', list.map((s) => (has(s.assist) ? item(s.assist > 0 ? `기준선 추적 + 행동 × ${fmtNum(s.assist)}` : '없음') : null))),
         makeRow('학습한 환경 버전', 'algo.trainedEnvVersion', list.map((s) => (has(s.trainedEnv) ? item(String(s.trainedEnv)) : null))),
-        makeRow('쏘는 방식', 'algo.fire', list.map((s) => (has(s.fire) ? item(s.fire === 'rule' ? '기준선의 규칙' : '정책이 정함') : null))),
+        makeRow('돌리는 행동', 'algo.control', list.map((s) => (has(s.control) && !has(s.aim) ? item(s.control === 'accel' ? '각가속도' : '각속도') : null))), // 발사만 학습한 모델은 돌리지 않는다
+        makeRow('쏘는 방식', 'algo.fire', list.map((s) => (has(s.fire) ? item(s.fire === 'rule' ? '기준선의 규칙' : s.firePrior === 'rule' ? '정책이 정함, 기준선의 규칙에서 시작' : '정책이 정함') : null))),
+        makeRow('조준을 맡은 모델', 'algo.aim', list.map((s) => (has(s.aim) ? item(s.aim) : null))),
         makeRow('모델', 'algo.model', list.map((s) => (has(s.model) ? item(s.model) : null))),
       ].filter(Boolean)
     } else if (first.kind === 'baseline') {
@@ -237,6 +242,7 @@ const AIMER_REWARD = [
   ['lost', '놓쳤을 때 벌점', ''],
   ['action_change', '행동 변화 벌점', ''],
   ['capture', '포획 보상', ''],
+  ['misfire', '오발 벌점', ''], // 오발 한 발마다 한 번 뺀다. 기본값은 0 이다(#88)
 ]
 
 // 학습한 초파리 보상의 가중치. env.fly_reward 에 있고, 조준기 보상의 부호를 뒤집은 값이라 벌점이 보상으로 바뀐다(FlyRewardWeights).

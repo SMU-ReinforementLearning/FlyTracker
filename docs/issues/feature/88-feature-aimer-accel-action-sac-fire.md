@@ -34,8 +34,8 @@ Train SAC aimers that steer alone with angular-acceleration actions instead of a
 - [x] 15 runs reach 1,000,000 steps; results downloaded and verified; instance destroyed.
 - [x] Each candidate evaluated on seeds 20000-20199; bootstrap output and verdicts written into `gate.md`.
 - [x] #85's diagnosis repeated on the new models (distance, scatter, captures in training).
-- [ ] Runs published under issue #88; README, `history.js`, `lineage.js` and the viewer card updated.
-- [ ] `uv run pytest -q` and the viewer build pass.
+- [x] Runs published under issue #88; README, `history.js`, `lineage.js` and the viewer card updated.
+- [x] `uv run pytest -q` and the viewer build pass.
 - [ ] PR merged; `AGENTS.md` pointer removed in the branch's last commit.
 
 ## Current State
@@ -45,8 +45,9 @@ Stage 2 (2026-11-26, the user: proceed with the staged fire learning as proposed
 
 Direction from the user (2026-11-26, after the results): fire learning is NOT closed. The reject answers only "faster than the rule". The user's points: (1) a rule-based trigger is not where an RL project should end; a policy that fires on its own and does as well as the rule has value; (2) misfires should be reduced, for safety and damage to walls and furniture, not because of the 0.15 s; (3) a fly grazed by a shot that does not kill it should be startled (the fly already has a threat response); (4) with several flies, the others would see the flashes and change behaviour. Agent's proposal, not yet approved in detail: split misfires into grazing shots (fly escapes) and wall shots (counted, limited in the gate); new environment version in a new issue; several flies in a later issue. Open questions to the user: whether the fly reacts from first contact (realistic, lowers capture for every aimer) or only when the shot fails; the limit on wall shots; the non-inferiority margin.
 
-Left, waiting for the user (screen text and a decision are involved):
-- Scope 7 remainder: published runs (`published/issues/88.json`), README training options, viewer rows (`history.js`, `lineage.js`, the control row on the card).
+2026-11-26 17:40 KST: main (with #59) merged into the branch, 13 runs published, README and viewer updated, all committed locally. Left before the PR: the user's review of the screen text; then remove this branch's pointer line from `AGENTS.md` as the last commit, push, PR. Nothing pushed yet.
+
+Left, waiting for the user:
 - Whether to gate `accel-pen-rule` against v1 (descriptively 0.41 s faster, P = 1.000; not a pre-registered comparison).
 - The next fire-learning gates (see "Direction from the user" above and Follow-up Candidates).
 
@@ -191,6 +192,34 @@ Merge of `origin/main` (9b3cb81) into the branch; conflict in `flytracker/player
 #### Notes
 - The user (2026-11-26): "싹 정리해서 main 합치고 publish부터 진행해". Taken as: merge main into this branch, then do the publishing work of Scope 7; push, PR and merge to main still wait for the review gate.
 - Two rule-fire training wrappers now exist (`wrappers.RuleFire`, `aimer_training_env.RuleFireTraining`). Unifying them is a follow-up to agree with the teammate, not done here.
+
+### feat: #88 실행 13개를 올리고 README와 viewer에 각가속도 행동 넣기 (#88)
+> why: Scope 7 — the runs, the description file, the README options and the viewer rows were the last open part of the issue
+#### Scope
+`published/2026-11-26_17*` (13 runs), `published/issues/88.json`, `README.md`, `viewer/src/data/experiment.js`, `history.js`, `lineage.js`, `ui-text.glossary.md`, this doc.
+#### Changes
+- Recorded with `scripts/record_match.py`, seeds 10000-10002, 3 episodes each, and copied with `scripts/publish_run.py --issue 88`: against the rule fly `accel-pen-rule` s0-s2, `rate-rule-s0`, `accel-fire-m10-s0`, `fire-m1-s0`, `fire-prior-m5-s0`; against the neural fly (calibrated profile of #59), stimulus off and on, `accel-pen-rule` s0-s2. 34 of 39 episodes end in a capture (`rate-rule-s0` 1/3, `accel-fire-m10-s0` 0/3, the rest 3/3).
+- `published/issues/88.json`: phase, five purpose paragraphs (numbers from `gate.md` and `gate-fire.md`), `compare: 72`, six notes. Says that fire learning continues in an environment where a misfire has a cost.
+- README: `--control`, `--fire`, `--aim`, `--fire-prior`, `misfire` weight under "학습"; new section "각가속도로 학습한 조준기" with the five-condition table.
+- Viewer: learned-aimer card rows "돌리는 행동" (`algo.control`; hidden for fire-only models), "조준을 맡은 모델" (`algo.aim`), a third value of "쏘는 방식" for the rule prior; reward row "오발 벌점"; history entries for the new keys; lineage node 88 (aimer lane, parent 72, no aimer version: v1 was not gated against).
+- Glossary: three terms added, one value added.
+#### Verification
+- After the merge of main, `accel-pen-rule-s0` and `fire-prior-m5-s0` were measured again on seeds 20000-20199: `gate.csv` sha256 identical to the committed files (`f01bd040...`, `fed52ba8...`).
+- `pytest -q`: 267 passed, 1 skipped (optional `h5py`). `npm run build` in `viewer/`: success.
+- No local path in the published `config.json` / `run.json` (grep for `Users`, drive letters: no match).
+- UI evidence, commit e6b53d6 (dirty: this commit's changes), Chrome 158.0.8127.38, dev server of this worktree on 127.0.0.1:5188, ready = document complete, fonts loaded, body text over 200 characters; settle 1500 ms; reduced motion on. PNGs are not committed (scratchpad).
+
+| page | viewport | overflow | probes | console |
+| --- | --- | --- | --- | --- |
+| lineage (`/`) | 1600x900 | none | node name "정책 행동을 각가속도로" present | favicon 404 (existing) |
+| lineage (`/`) | 390x844 (mobile, dpr 2) | none | node name present | clean |
+| `/?issue=88` | 1600x900 | none | rows "돌리는 행동", "조준을 맡은 모델", "오발 벌점", value "기준선의 규칙에서 시작" all present | clean |
+| `/?issue=88` | 390x844 (mobile, dpr 2) | 2 buttons of the variation switch past the right edge (right 464, 408) | same four present | clean |
+
+  Looked at the desktop PNGs: the experiment text, the sidebar group for #88 and the lineage column render as expected. The phone overflow is the variation switch, a row that scrolls sideways when an issue has many variations (the same was noted in #59's PR); not changed here.
+#### Notes
+- `history.js` gives #88 the merge date 2026-11-26. Correct it if the PR merges on another day (the lineage orders rows by this date).
+- Not done: 200-episode measurements against the neural fly; the description file says so.
 
 ## Management Notes
 ### Proposal: staged fire learning (approved by the user 2026-11-26; gate in `gate-fire.md`)
