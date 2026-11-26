@@ -41,16 +41,17 @@ Train SAC aimers that steer alone with angular-acceleration actions instead of a
 ## Current State
 2026-11-26 03:30 KST. Training finished, results downloaded and verified, instance destroyed (nothing is running or billing). Verdicts are in `gate.md`: one of five adopted (`accel-pen-rule`: 2.611 s, 589/600, 0.47 misfires per episode; v0 4.894 s). `accel-rule` passes on time but is rejected by the capture exclusion (0.965 < 0.97); `rate-rule` and both fire-learning conditions are rejected. Korean results: `conditions.md`, section "결과". Nothing pushed.
 
-Stage 2 (2026-11-26, the user: proceed with the staged fire learning as proposed): code and `gate-fire.md` committed (tests 236 passed), no training started at that point. Next: train 4 conditions x 3 seeds x 500,000 steps (`--aim runs/g88/accel-pen-rule-s<k>/<run>`), evaluate as in stage 1, write the verdict into `gate-fire.md`.
+Stage 2 (2026-11-26, the user: proceed with the staged fire learning as proposed) is finished: 4 conditions x 3 seeds x 500,000 steps trained on vast.ai, downloaded and verified, instance 62621473 destroyed (`vastai show instances` lists none; nothing is running or billing). Verdict in `gate-fire.md`: all four rejected, every candidate is slower than `accel-pen-rule` with rule fire (P(faster) 0.000-0.001). Fire stays with the rule. Korean results: `conditions.md`, section "발사만 학습한 단계". The user said (2026-11-26) a separate 1,000,000-step run would be decided after seeing the results; the curves are flat from 50,000 steps, the agent's opinion is not to run it. Nothing pushed.
 
 Left, waiting for the user (screen text and a decision are involved):
 - Scope 7 remainder: published runs (`published/issues/88.json`), README training options, viewer rows (`history.js`, `lineage.js`, the control row on the card).
 - Whether to gate `accel-pen-rule` against v1 (descriptively 0.41 s faster, P = 1.000; not a pre-registered comparison).
-- The staged fire-learning step. Proposal in Management Notes below.
+- Whether to run the 1,000,000-step fire-only variant (a new gate) or close fire learning here.
 
 Where things are:
 - Models: `runs/g88/<condition>-s<k>/<run>/` (gitignored, only on this machine; archive `runs/_download/runs-g88.tgz`, 869 MB, sha256 in `runs/_download/manifest.sha256`). Diagnosis traces: `runs/d88/*.npz`.
 - Helper scripts (gitignored): `runs/_ops/` (`fetch.sh`, `eval_all.sh`, `diag_all.sh`, `diag_fire.sh`).
+- Stage-2 models: `runs/g88f/<condition>-s<k>/<run>/` with the aim model copied to `aim/` (gitignored, only on this machine; archive `runs/_download2/runs-g88f.tgz`, sha256 in `runs/_download2/manifest.sha256`). Helpers: `runs/_ops2/` (`fetch.sh`, `eval_all.sh`, `diag_fire.sh`).
 - Trap: this session could not `EnterWorktree` into `FlyTracker-88`; it works there by absolute path, and compound shell commands that mention git are refused, so multi-step work goes into script files.
 
 Standing permissions from the user (2026-11-25, before going to sleep): commit on this branch without the review gate when the tests pass; no push, PR or merge; rent one vast.ai instance within 10 USD in total and destroy it after the results are downloaded and verified.
@@ -160,6 +161,22 @@ Management doc, registry row, `AGENTS.md` pointer.
 #### Notes
 - Misfire weight 5.0 is the agent's choice (reason in the gate); 1.0 comes from stage 1. The user confirmed the pair 1.0 / 5.0 before training (2026-11-26).
 - The user's permissions for this stage (2026-11-26): commit on this branch without the review gate when the tests pass, no push, PR or merge; one vast.ai instance within 5 USD, destroyed after the results are downloaded and verified.
+
+### docs: 발사만 학습한 조준기 12개의 판정과 진단 결과 적기 (#88)
+> why: stage 2 was trained and measured; the verdict and what the policies do with the trigger have to be on record
+#### Scope
+`gate-fire.md` (Verdict), `conditions.md` (Korean results), `data/fire-*-s<k>/`, `data/fire-only.md`, `data/training-logs-fire.md`, `data/README.md`, `gate/fire-*.csv`, `gate/bootstrap-output-fire.md`, `run_gate_fire.py`, `fire_only_diag.py`, `training_logs.py`, this doc.
+#### Changes
+- Verdict: all four candidates rejected. Time against `accel-pen-rule` with rule fire (2.611 s): `fire-m1` +0.065 s, `fire-m5` +0.228 s, `fire-prior-m1` +0.047 s, `fire-prior-m5` +0.025 s; P(faster) 0.000-0.001. Capture 587-589 of 600. Misfires 1.060 / 0.378 / 0.617 / 0.425 against 0.472.
+- `run_gate_fire.py`: every bootstrap of `gate-fire.md` into `gate/bootstrap-output-fire.md`. `fire_only_diag.py`: fire value by beam distance, agreement with the rule, hit rate of shots the rule would and would not take, sampled-action play. `training_logs.py`: a `fire` argument for the stage-2 runs.
+#### Verification
+- 12 runs at `step_0500000`; `sha256sum -c` of the downloaded archives OK; 12 `model.zip` and 12 `aim/model.zip` found before the instance was destroyed; `vastai show instances`: none.
+- Each model measured on all 200 seeds (N = 200 in every bootstrap table); the baseline sha256 in the tool output is the frozen `9996b2a3...`.
+- `pytest -q`: 236 passed (no library code changed in this commit).
+#### Notes
+- The declared "fewer misfires at equal time" case did not apply to `fire-m5` / `fire-prior-m5`: misfires P(fewer) 0.987 / 0.936 but time P(faster) 0.000 / 0.001.
+- Why the policy does not beat the rule is not measured; `conditions.md` marks its explanation (0.08 s of history against a 0.15 s shot) as a guess.
+- vast.ai: one instance, about 3.6 hours at about 0.08 USD per hour (the agent's estimate from the hourly price, not read from the bill); within the 5 USD limit.
 
 ## Management Notes
 ### Proposal: staged fire learning (approved by the user 2026-11-26; gate in `gate-fire.md`)

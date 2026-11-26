@@ -98,4 +98,43 @@ None. Each candidate is gated on its own. Comparisons between the four are descr
 
 ## Verdict
 
-(not measured yet)
+Measured 2026-11-26 on the local Windows machine. All 12 runs reached 500,000 steps (trained on vast.ai, 12 processes on one 16-core instance, 03:02-06:3x UTC; archive sha256 verified before the instance was destroyed). Tool output, unedited: `gate/bootstrap-output-fire.md` (sha256 of every input at its top; the baseline's is the frozen one).
+
+**Decision: reject, all four. 0 of 4 candidates passed the time gate.** With the aim fixed, none of the learned fire decisions catches the fly faster than the fire rule on the same aim; every one is slower.
+
+Gated and reported rows (A = `accel-pen-rule` with rule fire, N = 200, 10,000 resamples, seed 42):
+
+| candidate | time A | time B | Δ (B−A) | 95% CI | P(faster) | capture (of 600) | misfires/ep (A 0.472) | P(fewer misfires) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `fire-m1` | 2.6114 | 2.6760 | +0.0646 | [+0.0411, +0.0926] | 0.000 FAIL | 0.9800 (588) | 1.060 | 0.000 |
+| `fire-m5` | 2.6114 | 2.8394 | +0.2280 | [+0.1616, +0.3020] | 0.000 FAIL | 0.9800 (588) | 0.378 | 0.987 |
+| `fire-prior-m1` | 2.6114 | 2.6584 | +0.0470 | [+0.0193, +0.0835] | 0.000 FAIL | 0.9783 (587) | 0.617 | 0.000 |
+| `fire-prior-m5` | 2.6114 | 2.6359 | +0.0245 | [+0.0087, +0.0437] | 0.001 FAIL | 0.9817 (589) | 0.425 | 0.936 |
+
+Per training seed, P(faster than `accel-pen-rule-s<k>` with rule fire) on time, s0 / s1 / s2: `fire-m1` 0.000 / 0.003 / 0.000; `fire-m5` 0.000 / 0.000 / 0.000; `fire-prior-m1` 0.000 / 0.000 / 0.002; `fire-prior-m5` 0.001 / 0.137 / 0.000. All twelve models are slower than their own aim model with the rule.
+
+Exclusions and conditions:
+
+- Capture below 0.97: did not fire for any candidate (0.9783-0.9817; baseline 0.9817).
+- Per-seed P < 0.50: fired for all twelve models. Pooled misfires above 0.472: fired for `fire-m1` and `fire-prior-m1`. Both would have made a passing candidate undecided; none passed, so the verdict is the time gate's.
+- Declared misfire case (time fails, misfires P(fewer) ≥ 0.90, time P(faster) ≥ 0.50, capture ≥ 0.97): `fire-m5` and `fire-prior-m5` have fewer misfires (P 0.987, 0.936) and capture ≥ 0.97, but time P(faster) is 0.000 and 0.001, not ≥ 0.50. The case does not apply → reject, not undecided. The fewer misfires were paid for in time.
+
+Descriptive (not gated; from the same tool output):
+
+- The rule start helps: `fire-prior-m5` vs `fire-m5` time −0.204 s (P 1.000); `fire-prior-m1` vs `fire-m1` misfires −0.443 (P 1.000), time −0.018 s (P 0.801).
+- The heavier misfire weight cuts misfires: with the prior 0.617 → 0.425 (P 1.000); without it 1.060 → 0.378, at +0.16 s.
+- Against v1 (3.026 s, 0.600 misfires) all four are faster (P 0.983-1.000); that is the aim's doing, already seen in stage 1.
+
+What the policies do (`data/fire-only.md`, required by the decision rule; deterministic, the gate's 200 episodes, steps where a new shot can start):
+
+- Unlike stage 1, none collapsed to never firing: every model fires and captures.
+- Without the prior the policy rebuilt something close to the rule but worse: the fire value falls with beam distance (median about 0 inside 1.25 mm, −0.4 to −0.8 beyond), `m1` models take 32-51 % of their shots where the rule would not, and those shots hit 11-27 % of the time against 70-76 % for the shots the rule would also take. `m5` models take few such shots (5-10 %) but hold on 81-90 % of the steps where the rule says fire, which is where their extra 0.15-0.36 s goes.
+- With the prior and weight 5.0 the policy almost only removes shots: 0.7-2.0 % of its shots are ones the rule would not take, and it holds on 38-49 % of the steps where the rule says fire. Shots it does take hit 69-72 %, about the rule's own rate, so the held steps removed some misfires (0.472 → 0.425) and cost 0.025 s.
+- In no model do the shots the rule would not take hit more often than the ones it would. Nothing here found an earlier good shot than the rule's.
+- Training curves (`data/training-logs-fire.md`): mean episode length and reward are flat from 50,000 to 500,000 steps in all 12 runs (e.g. `fire-prior-m5-s2` 115 → 115 steps, `fire-m1-s2` 119 → 123). Sampled-action play (table 2 of `data/fire-only.md`) looks like the deterministic play: 1.2-2.3 shots per episode, fire sd 0.15-0.23.
+
+Consequences:
+
+- Fire stays with the rule. `accel-pen-rule` with rule fire remains the best pair measured in #88.
+- Per the decision rule the gate is not re-run with a tweak. A longer run (1,000,000 steps) would be a new gate; the flat curves give no sign that it would change the answer.
+- Limit: 200 evaluation seeds already used in stage 1; one observation window (4 steps); two misfire weights, neither tuned; rule fly only.

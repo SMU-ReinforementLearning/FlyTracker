@@ -16,6 +16,16 @@ Everything here was produced on the local Windows machine on 2026-11-26 from the
 | `fire-head.md` | the fire action's mean by beam distance (fire-learning models) | `fire_head.py` |
 | `fire-stochastic.md` | fire-learning models with sampled actions, 50 episodes: shots, misfires, captures, fire sd | `fire_stochastic.py` |
 
+Stage 2 (`gate-fire.md`; 12 fire-only models in `runs/g88f/<condition>-s<seed>/<run>/`, 500,000 steps each, aim model in the run's `aim/`):
+
+| path | what | made by |
+| --- | --- | --- |
+| `fire-*-s<k>/gate.csv`, `episodes.csv`, `shots.csv`, `meta.json` | one fire-only model on seeds 20000-20199 | `measure_aimers.py <run> --out <dir>` |
+| `../gate/fire-*.csv` | per-seed mean of the condition's three models | `measure_aimers.py mean` |
+| `../gate/bootstrap-output-fire.md` | every bootstrap named in `gate-fire.md`, unedited | `run_gate_fire.py` |
+| `fire-only.md` | fire value by beam distance, agreement with the rule, hit rate of shots; sampled-action play | `fire_only_diag.py runs/g88f` |
+| `training-logs-fire.md` | episode length, reward, entropy coefficient during training | `training_logs.py runs/g88f fire` |
+
 ## Re-run (from the repo root, models in `runs/g88`)
 
 ```
