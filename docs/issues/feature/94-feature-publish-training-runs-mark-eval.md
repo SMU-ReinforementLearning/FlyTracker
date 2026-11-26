@@ -4,7 +4,7 @@
 - Issue: #94
 - Branch: `94-feature-publish-training-runs-mark-eval`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 Publish the 15 stage-1 training runs of #88 so the viewer can replay how the aim developed during training, and make the viewer say which runs were recorded during training and which are a finished model played again. #88 published only replays of the final models (3 episodes each, tag `step_1000000`), so the user, looking at #88's row A, found one checkpoint and nothing that says the run is an evaluation (2026-11-26: "100만 스텝 것 밖에 없는데, 그건 왜그래? 평가라 그래?", "평가랑 학습 구분이 없네?").
@@ -32,7 +32,7 @@ Publish the 15 stage-1 training runs of #88 so the viewer can replay how the aim
 - [x] The viewer shows the kind for every run of #88 and the kinds are right for all published issues (checked over every published run, not a sample).
 - [x] Screenshots (desktop and 390 px) of the issue page, sidebar and run panel shown to the user; wording approved.
 - [x] Viewer build passes; viewer tests pass.
-- [ ] PR merged; `AGENTS.md` pointer removed in the branch's last commit.
+- [x] PR merged; `AGENTS.md` pointer removed in the branch's last commit.
 
 ## Current State
 2026-11-27. The user said "다 머지해" (2026-11-26) after seeing the screens of #94, #95 and #96: commit, push, PR and squash merge. Everything in Scope 1-6 is committed; the pointer line is removed in the last commit.

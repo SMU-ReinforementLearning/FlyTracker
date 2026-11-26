@@ -62,7 +62,6 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `94-feature-publish-training-runs-mark-eval` — `docs/issues/feature/94-feature-publish-training-runs-mark-eval.md` — 각가속도 조준기(#88)의 학습 실행 15개를 올리고 viewer에서 학습 실행과 평가 실행 구분하기
 
 ## Environment (repo slot)
 
