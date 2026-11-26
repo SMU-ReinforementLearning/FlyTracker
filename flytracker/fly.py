@@ -72,6 +72,9 @@ class FlyParams:
     evade_cooldown: float = 0.4  # s (가정)
     evade_speed_gain: float = 1.6  # 회피 직후 속도 배율 (가정)
     evade_boost_time: float = 0.3  # s (가정)
+    # 쏘는 빔이 몸에 닿으면 위협으로 느낀다 (#91, 환경 버전 7). 겨누는 것은 알 수 없지만 맞은 열은 느낀다고 본 가정이다.
+    # 반응 지연, 선회, 가속, cooldown 은 위 값을 그대로 쓴다. 반응 지연은 시각 위협에서 잰 값이다
+    evade_laser: bool = True
 
     @classmethod
     def hovering(cls) -> "FlyParams":
@@ -133,6 +136,16 @@ class Fly:
         self._boost_left = p.evade_boost_time
         self._boost_gain = float(np.clip(speed_gain, 1.0, p.evade_speed_gain))
         self._cooldown = p.evade_cooldown
+        return True
+
+    def startle(self) -> bool:
+        """쏘는 빔이 몸에 닿았다. 반응 지연 뒤에 조준기 반대쪽으로 회피한다. 놀랐으면 True.
+
+        이미 반응을 기다리는 중이거나 직전 회피의 cooldown 이 남았으면 무시한다. 학습한 초파리는 회피를 스스로 정하므로 무시한다.
+        """
+        if self.external_escape or not self.escape_ready:
+            return False
+        self._react_in = self.p.evade_reaction
         return True
 
     def reset(self, pos: np.ndarray, heading: np.ndarray) -> None:

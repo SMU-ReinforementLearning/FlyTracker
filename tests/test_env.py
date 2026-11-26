@@ -272,6 +272,64 @@ def test_shot_that_leaves_the_fly_is_a_misfire_and_the_next_shot_can_capture():
     assert terminated and info["captured"] and (info["shots"], info["misfires"]) == (2, 1)
 
 
+def test_misfires_are_counted_as_wall_shots_or_grazes_when_the_shot_ends():
+    # 한 번도 닿지 않은 발은 벽에 맞은 발, 닿았다가 벗어난 발은 스친 발이다 (#91).
+    env = _held_fly_env(offset_m=0.01)
+    for _ in range(7):
+        _, _, _, _, info = env.step(FIRE)
+    assert (info["misfires"], info["wall_shots"], info["grazes"]) == (1, 0, 0)  # 아직 쏘는 중이다
+    _, _, _, _, info = env.step(np.zeros(3))  # 한 발이 끝난다
+    assert (info["shots"], info["misfires"], info["wall_shots"], info["grazes"]) == (1, 1, 1, 0)
+
+    env = _held_fly_env()
+    for _ in range(6):
+        env.step(FIRE)
+    env.fly.pos = env.fly.pos + np.array([0.0, 0.01, 0.0])
+    for _ in range(2):
+        _, _, terminated, _, info = env.step(np.zeros(3))
+    assert not terminated and (info["shots"], info["misfires"], info["wall_shots"], info["grazes"]) == (1, 1, 0, 1)
+
+
+def test_beam_contact_during_a_shot_startles_the_rule_fly():
+    # 쏘는 빔이 닿는 순간부터 놀란다. 0.06초 뒤에 방향을 틀고, 회피 뒤 cooldown 동안은 다시 놀라지 않는다 (#91).
+    env = _held_fly_env()
+    _, _, _, _, info = env.step(np.zeros(3))  # 겨누기만 해서는 모른다
+    assert not info["fly_alarmed"]
+    _, _, _, _, info = env.step(FIRE)  # 물리 step 2번. 첫 번째에서 닿았고 그 뒤 0.01초가 지났다
+    assert info["fly_alarmed"] and env.fly._react_in == pytest.approx(env.config.fly.evade_reaction - 0.01)
+    assert env.fly._boost_left == 0.0  # 반응 지연 중이라 아직 피하지 않는다
+    for _ in range(3):
+        _, _, terminated, _, info = env.step(np.zeros(3))
+    # 닿은 지 0.06초가 지나 회피를 시작했다. 가속 중이고, cooldown 동안은 다시 놀라지 않는다
+    assert not terminated and env.fly._react_in is None and env.fly._boost_left > 0.0
+    assert not env.fly.escape_ready and not env.fly.startle()
+
+
+def test_no_startle_when_the_shot_misses_or_the_option_is_off():
+    env = _held_fly_env(offset_m=0.01)
+    for _ in range(8):
+        _, _, _, _, info = env.step(FIRE)
+        assert not info["fly_alarmed"]
+
+    env = _held_fly_env(fly=replace(FlyParams.hovering(), evade_laser=False))
+    for _ in range(7):
+        _, _, terminated, _, info = env.step(FIRE)
+        assert not terminated and not info["fly_alarmed"]
+    _, _, terminated, _, info = env.step(FIRE)
+    assert terminated and info["captured"]
+
+
+def test_learned_fly_decides_its_own_escape_when_hit():
+    from flytracker.fly import Fly
+
+    fly = Fly(FlyParams(), np.random.default_rng(0))
+    fly.reset(np.array([0.0, 1.0, 0.0]), np.array([0.0, 0.0, -1.0]))
+    fly.external_escape = True
+    assert not fly.startle() and not fly.alarmed
+    fly.external_escape = False
+    assert fly.startle() and fly.alarmed and not fly.startle()
+
+
 def test_fly_behind_the_turret_is_not_hit():
     env = FlyChaseEnv(static_fly_config())
     env.reset(seed=0)

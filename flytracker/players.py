@@ -32,6 +32,9 @@ SIDES = ("aimer", "fly")
 RULE_SPECS = {"aimer": "baseline", "fly": "rule"}
 # 발사 행동이 생기기 전의 환경 버전. 이 버전의 조준기 모델은 쏘는 규칙을 붙여서 지금 환경에 넣을 수 있다
 RULE_FIRE_VERSIONS = (5,)
+# 관측, 행동, 보상이 지금과 같은 환경 버전. 이 버전에서 학습한 모델은 그대로 불러온다.
+# 버전 7(#91)은 규칙 초파리가 쏘는 빔에 놀라는 것과 오발을 종류별로 세는 것만 버전 6과 다르다.
+SAME_SPACES_VERSIONS = (6, ENV_VERSION)
 
 
 def algo_classes() -> dict:
@@ -170,9 +173,9 @@ def load_opponent(spec: str, side: str, config: EnvConfig) -> Opponent:
     wrapper_fire = side == "aimer" and fire == "rule"  # 기준이 되는 방식. wrappers.RuleFire 로 학습했고 관측에 shot 이 없다
     # #59 의 조준기(scripts/train_calibrated_neural.py)는 algo.fire 대신 fireMode 를 적고, shot 이 든 관측으로 학습했다.
     # 이미 학습한 그 모델을 불러오려고 읽기만 한다. 새 모델은 algo.fire 를 쓴다.
-    full_obs_fire = side == "aimer" and version == ENV_VERSION and "fire" not in algo and algo.get("fireMode") == "rule"
+    full_obs_fire = side == "aimer" and version in SAME_SPACES_VERSIONS and "fire" not in algo and algo.get("fireMode") == "rule"
     rule_fire = legacy_fire or wrapper_fire or full_obs_fire
-    if version != ENV_VERSION and not legacy_fire:
+    if version not in SAME_SPACES_VERSIONS and not legacy_fire:
         raise ValueError(f"{spec}: 환경 버전 {version}에서 학습한 모델이라, 지금 환경(버전 {ENV_VERSION})과 견줄 수 없다")
     run_side = algo.get("side", "aimer")
     if run_side != side:

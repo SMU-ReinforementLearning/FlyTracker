@@ -86,10 +86,14 @@ def test_model_from_another_env_version_is_refused(tmp_path):
     run_dir = _train_and_save(tmp_path, "fly")
     path = run_dir / "config.json"
     config = json.loads(path.read_text(encoding="utf-8"))
-    config["envVersion"] = ENV_VERSION - 1
+    config["envVersion"] = 5  # 조준기 관측에 shot 이 없던 버전
     path.write_text(json.dumps(config), encoding="utf-8")
     with pytest.raises(ValueError, match="환경 버전"):
         load_opponent(str(run_dir), "fly", EnvConfig())
+
+    config["envVersion"] = 6  # 관측, 행동, 보상이 버전 7과 같다. 학습한 버전을 적어서 불러온다 (#91)
+    path.write_text(json.dumps(config), encoding="utf-8")
+    assert load_opponent(str(run_dir), "fly", EnvConfig()).env_version == 6 and ENV_VERSION == 7
 
 
 class TwoValuePolicy(Recorder):

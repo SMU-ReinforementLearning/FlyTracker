@@ -41,7 +41,7 @@ Environment version 7: a rule fly touched by the laser beam is startled and esca
 - [ ] PR merged; `AGENTS.md` pointer removed in the branch's last commit.
 
 ## Current State
-2026-11-26: issue registered, worktree created from `origin/main` @ ca60b27 (the merge of #88), this document filled. Nothing implemented or committed yet; the first commit waits for the user's approval of the seeded files.
+2026-11-26: issue registered and first commit made (9735310) after the user's go-ahead. Scope 1-4 implemented and tested (272 passed), gate document and measuring script written; the user reviewed the report of both and said "진행해. vast.ai에서 진행해", which approves these two commits, the gate as written and measuring on vast.ai. Review-free commits for the rest of the issue were asked about and not answered: later commits still go through the review gate, except the mechanical freeze of `gate/v1.csv` that the approved gate itself requires between the two measuring steps. Nothing has been measured under version 7 except a 3-episode smoke of the rule aimer. Next: measure v0 and v1 on the instance, freeze `gate/v1.csv`, measure the candidate, write the verdict, report wall-shot counts to the user.
 
 Decisions already made by the user (2026-11-26): the fly reacts from the moment the beam touches it; version goes up to 7 and version 6 models stay loadable; the neural fly is changed only after talking to the teammate; the misfire penalty is kept, to be given to wall shots, with a zero-penalty condition as control, in the next issue; the price of a wall shot is set after seeing this issue's numbers.
 
@@ -64,6 +64,36 @@ This document, the registry row in `docs/issues/README.md`, the pointer line in 
 - `issue-start` summary: issue #91 (Feature, label enhancement, Priority High, assigned), branch from `origin/main` @ ca60b27.
 #### Notes
 - No code yet.
+
+### feat: 쏘는 빔에 닿은 규칙 초파리가 놀라게 하고 오발을 두 종류로 세기 (#91)
+> why: Scope 1-4 — the environment change itself, before anything is measured under it
+#### Scope
+`flytracker/env.py`, `fly.py`, `players.py`, `record.py`, `tests/test_env.py`, `tests/test_players.py`, this doc.
+#### Changes
+- `Fly.startle()`: sets the existing reaction delay when the fly can react (not while waiting to react, not during the cooldown, not for a learned fly). `FlyParams.evade_laser` (default on) switches it.
+- `FlyChaseEnv._advance_shot`: on every physics step of a shot with the beam on the fly, marks the shot as touched and startles a rule fly; when a missed shot ends it is counted in `grazes` (touched) or `wall_shots` (never touched). `info` carries both; the episode summary carries `grazes` and `wallShots`.
+- `ENV_VERSION` 7 with the comment line; `players.SAME_SPACES_VERSIONS = (6, 7)`: version 6 models load with their trained version recorded; version 5 aimer models as before; others refused.
+#### Verification
+- `uv run pytest -q`: 272 passed (267 of main + 5 new: misfire kinds, startle timing and cooldown, no startle on a miss or with the option off, learned fly ignores it, version 6 loads). The first run failed 2: `tests/test_viewer_attitude.py` needed `npm ci` in `viewer/` (fresh worktree), and the new startle test asserted on the heading, which a hovering fly changes by itself; it now asserts on the reaction timer.
+- Neural fly: `startle` is called only for `Fly` instances (`isinstance`), so the neural path is untouched; its existing tests pass.
+#### Notes
+- The user's decisions are in Current State. Agent's defaults used: touch = the capture condition of that physics step during a shot; escape parameters and direction unchanged.
+- Smoke only (not a result): the rule aimer on seeds 10000-10002 under version 7 captured 3/3 in 6.26 s with 6.67 misfires per episode, all grazes (version 6 on seeds 10000-10199: 4.99 s, 0.55). The fly escapes in the middle of a shot, as expected.
+
+### docs: 환경 버전 7에서 조준기를 견줄 판정 기준을 재기 전에 적기 (#91)
+> why: the comparison rules have to exist before v1 or the candidate is measured under version 7
+#### Scope
+`docs/issues/feature/91-feature-fly-laser-startle-misfire-kinds/gate.md`, `measure_v7.py`, this doc.
+#### Changes
+- Gate: `accel-pen-rule` (3 models) against v1 (3 models) on seeds 20000-20199, time, P >= 0.90; capture exclusion relative to v1 (P(candidate misses fewer) < 0.10 -> not adopted); per-model and "neither captures half" conditions -> undecided; misfire kinds reported, not gated.
+- `measure_v7.py`: #72's `run_episode` plus `grazes` and `wall_shots` per episode and in `gate.csv`; `mean` over models; no local paths in `meta.json`; the commit is read from `FLYTRACKER_COMMIT` when set (a code bundle on a rented instance has no `.git`).
+- `gate/truth.csv` written (ids 20000-20199), sha256 in the gate.
+- Where: one vast.ai instance, baseline first, `gate/v1.csv` frozen in a commit, then the candidate (the user, 2026-11-26: "vast.ai에서 진행해").
+#### Verification
+- `measure_v7.py baseline --episodes 3 --seed 10000`: runs, writes the six columns.
+- `uv run pytest -q`: 272 passed (rerun after the script edit).
+#### Notes
+- The capture exclusion is the agent's proposal (the fixed 0.97 floor of #72 cannot be assumed under version 7); the user approved the gate as written ("진행해", 2026-11-26) before anything was measured.
 
 ## Management Notes
 ### Follow-up Candidates

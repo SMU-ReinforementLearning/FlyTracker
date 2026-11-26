@@ -146,6 +146,8 @@ class EpisodeRecorder(gym.Wrapper):
             "visibleRatio": round(sum(frames["visible"]) / n, 4),
             "shots": int(base.shots),  # 쏜 발 수
             "misfires": int(base.misfires),  # 그 가운데 빗나간 발 수
+            "grazes": int(base.grazes),  # 오발 가운데 빔이 초파리에 닿았던 발 (환경 버전 7부터)
+            "wallShots": int(base.wall_shots),  # 오발 가운데 한 번도 닿지 않은 발
         }
         if not cfg.capture_enabled:
             summary.update(mode="tracking-observation", result="observation_complete")
