@@ -47,3 +47,4 @@ One row per management document, added in the same commit that creates the doc.
 | #82 | docs/issues/docs/82-docs-aimer-history.md | done | 조준기 변천사 문서로 정리하기 |
 | #88 | docs/issues/feature/88-feature-aimer-accel-action-sac-fire.md | in progress | 조준기 행동을 각가속도로 바꾸고 SAC로 조준과 발사 학습하기 |
 | #92 | docs/issues/feature/92-feature-viewer-combination-table.md | done | viewer에서 실행의 초파리, 조준기, 환경 조합을 표로 보여 주기 |
+| #96 | docs/issues/feature/96-feature-viewer-minimal-scrollbar.md | in progress | viewer 스크롤바를 브라우저 기본 모양 대신 가늘고 옅게 그리기 |

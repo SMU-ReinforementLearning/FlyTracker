@@ -62,6 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
+- `96-feature-viewer-minimal-scrollbar` — `docs/issues/feature/96-feature-viewer-minimal-scrollbar.md` — viewer 스크롤바를 브라우저 기본 모양 대신 가늘고 옅게 그리기
 
 ## Environment (repo slot)
 
