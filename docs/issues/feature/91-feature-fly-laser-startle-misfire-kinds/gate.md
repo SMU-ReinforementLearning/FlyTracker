@@ -69,4 +69,46 @@ None. One candidate, no knob.
 
 ## Verdict
 
-(not measured yet)
+Measured 2026-11-26 on vast.ai instance 62693179 from the bundle of commit b967875 (the candidate after `gate/v1.csv` was frozen in 6e40c1c). `gate/accel-pen-rule.csv` sha256 `1a7fbb9333bc644dcba973219a478cef387e0b8d242f707a42fbb4ae526ea567`.
+
+**Decision: adopt.** `accel-pen-rule` becomes aimer v2.
+
+Rule fly, seeds 20000-20199, per episode:
+
+| condition | captured | time | misfires | grazes | wall shots |
+| --- | --- | --- | --- | --- | --- |
+| v0 (rule aimer, reference) | 192/200 (0.960) | 6.037 s | 5.010 | 4.770 | 0.240 |
+| v1 (3 models) | 468/600 (0.780) | 5.442 s | 6.408 | 6.013 | 0.372 |
+| `accel-pen-rule` (3 models) | 506/600 (0.843) | 4.851 s | 6.205 | 5.928 | 0.252 |
+
+Per model: v1 s0 0.715 / 5.976 s, s1 0.730 / 5.979 s, s2 0.895 / 4.372 s; candidate s0 0.860 / 4.697 s, s1 0.800 / 5.072 s, s2 0.870 / 4.784 s.
+
+Paired bootstrap, candidate against v1 (10,000 resamples, seed 42):
+
+| target | v1 | candidate | Δ | 95% CI | P(candidate better) |
+| --- | --- | --- | --- | --- | --- |
+| time (gated) | 5.4422 | 4.8511 | -0.5911 | [-0.8793, -0.3034] | 1.000 |
+| capture, as miss rate (exclusion) | 0.2200 | 0.1567 | -0.0633 | [-0.1050, -0.0217] | 0.998 |
+| misfires (reported) | 6.4083 | 6.2050 | -0.2033 | [-0.7784, +0.3667] | 0.761 |
+| grazes (reported) | 6.0133 | 5.9283 | -0.0850 | [-0.6300, +0.4483] | 0.627 |
+| wall shots (reported) | 0.3717 | 0.2517 | -0.1200 | [-0.1967, -0.0450] | 1.000 |
+
+- Time gate: P 1.000 ≥ 0.90 → pass.
+- Capture exclusion: P(candidate misses fewer) 0.998, not below 0.10 → does not fire.
+- Per model, P(faster than pooled v1): s0 1.000, s1 0.957, s2 0.999, none below 0.50 → does not fire.
+- "Neither captures half": 468 and 506 of 600 → does not fire.
+- Deployed gate: none.
+
+What the gate does not say (read before using the verdict):
+
+- Both learned aimers got worse under version 7; neither was trained against a fly that reacts. Version 6 on the same seeds: v1 584/600 at 3.026 s, candidate 589/600 at 2.611 s.
+- The rule aimer v0 captures more flies than either (0.960 against 0.843 and 0.780) though it is slower in mean time (6.037 s, a miss counted as 10 s). The gate compared the candidate with v1 only. "v2" means the learned reference, not the best aimer on capture under version 7.
+- About 6 shots per episode end as misfires, and about 95% of those are grazes: the beam reaches the fly, the fly leaves before 0.15 s. Wall shots are 0.24 to 0.37 per episode.
+
+Neural fly (calibrated profile, seeds 20000-20059, 60 episodes per model; reported, not gated; the neural fly does not react to the beam):
+
+| condition | stimulus off: captured, time, misfires (grazes, wall) | stimulus on |
+| --- | --- | --- |
+| v0 | 0.983, 5.285 s, 1.233 (1.100, 0.133) | 0.983, 5.395 s, 1.633 (1.517, 0.117) |
+| v1 (3 models) | 0.906, 3.971 s, 1.750 (1.556, 0.183) | 0.933, 4.044 s, 2.139 (1.928, 0.200) |
+| `accel-pen-rule` (3 models) | 0.956, 3.263 s, 1.861 (1.772, 0.083) | 0.972, 3.132 s, 2.083 (1.994, 0.078) |

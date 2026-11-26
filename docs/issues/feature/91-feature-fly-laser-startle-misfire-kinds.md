@@ -41,7 +41,7 @@ Environment version 7: a rule fly touched by the laser beam is startled and esca
 - [ ] PR merged; `AGENTS.md` pointer removed in the branch's last commit.
 
 ## Current State
-2026-11-26: issue registered and first commit made (9735310) after the user's go-ahead. Scope 1-4 implemented and tested (272 passed), gate document and measuring script written; the user reviewed the report of both and said "진행해. vast.ai에서 진행해", which approves these two commits, the gate as written and measuring on vast.ai. Review-free commits for the rest of the issue were asked about and not answered: later commits still go through the review gate, except the mechanical freeze of `gate/v1.csv` that the approved gate itself requires between the two measuring steps. The environment change is commit d3b95b2. Nothing has been measured under version 7 except a 3-episode smoke of the rule aimer. Next: measure v0 and v1 on the instance, freeze `gate/v1.csv`, measure the candidate, write the verdict, report wall-shot counts to the user.
+2026-11-26: issue registered and first commit made (9735310) after the user's go-ahead. Scope 1-4 implemented and tested (272 passed), gate document and measuring script written; the user reviewed the report of both and said "진행해. vast.ai에서 진행해", which approves these two commits, the gate as written and measuring on vast.ai. Review-free commits for the rest of the issue were asked about and not answered: later commits still go through the review gate, except the mechanical freeze of `gate/v1.csv` that the approved gate itself requires between the two measuring steps. The environment change is commit d3b95b2, the gate b967875, the frozen baseline 6e40c1c. Measured the same day on vast.ai (instance destroyed, none left): verdict **adopt** (`accel-pen-rule` faster than v1, P 1.000; capture 0.843 against 0.780). The verdict text and `gate/accel-pen-rule.csv` are written but NOT committed: they wait for the user's review. Full outputs (21 runs: episodes, shots, meta) are only in `runs/_ops91/dl/all/` (gitignored) until they are published. Reported to the user with the wall-shot counts (0.24 to 0.37 per episode; about 95% of misfires are grazes) and with the caveat that the rule aimer v0 captures more (0.960) than both learned aimers under version 7. Next: the user's review and the price of a wall shot; then README, viewer data, glossary, published runs, `published/issues/91.json`.
 
 Decisions already made by the user (2026-11-26): the fly reacts from the moment the beam touches it; version goes up to 7 and version 6 models stay loadable; the neural fly is changed only after talking to the teammate; the misfire penalty is kept, to be given to wall shots, with a zero-penalty condition as control, in the next issue; the price of a wall shot is set after seeing this issue's numbers.
 
@@ -109,6 +109,22 @@ This document, the registry row in `docs/issues/README.md`, the pointer line in 
 #### Notes
 - Committed without the review gate: a mechanical step the approved gate itself orders between the two measuring steps. The candidate had not been measured when this was committed.
 - Two rented instances failed before this one (no sshd after 15 min; `docker_build() error`), and a third refused the key (`bad ownership or modes for file /root/.ssh/authorized_keys`); fixed by an onstart command that sets owner and modes of `/root/.ssh`. Scripts are in `runs/_ops91/` (gitignored).
+
+### docs: 환경 버전 7에서 각가속도 조준기를 v2로 정한 판정 적기 (#91)
+> why: the candidate was measured; the verdict goes under the gate that was written first
+#### Scope
+`gate.md` (Verdict), `gate/accel-pen-rule.csv`, this doc.
+#### Changes
+- Verdict: adopt. Time P 1.000 (4.851 s against 5.442 s), capture exclusion not fired (P 0.998; 506 against 468 of 600), per model P 1.000 / 0.957 / 0.999.
+- Caveats written into the verdict: both learned aimers got worse than under version 6; v0 captures most (192/200); about 95% of misfires are grazes; wall shots 0.24-0.37 per episode.
+- Neural fly table (60 episodes, reported only).
+#### Verification
+- `paired_bootstrap.py` output pasted from the run of 2026-11-26 (10,000 resamples, seed 42); sha256 of `accel-pen-rule.csv` equals the instance's `state/P2_GATE_SHA256`; the downloaded archive passed its sha256 and held 21 complete runs (7 x 200 rule episodes, 14 x 60 neural episodes) before the instance was destroyed.
+- Neural pooled values are means of the three per-model summary lines, computed by hand from the logs.
+#### Notes
+- The user approved on 2026-11-26 ("그래. 다 문서화하고 머지해"): this commit, the documentation commit, push, PR and squash merge.
+- The user set the price of a wall shot for the next issue: 1 s as the main condition, with 0 s (control) and 3 s beside it.
+- Full per-episode outputs stay in `runs/_ops91/dl/all/` (gitignored); only the gate CSVs are in the repo.
 
 ## Management Notes
 ### Follow-up Candidates
