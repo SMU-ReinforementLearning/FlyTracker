@@ -13,7 +13,7 @@ Both were trained under earlier versions (5 and 6) against a fly that does not r
 ## Baseline
 
 - Aimer v1: the three final models of #51, `sac-beam-assist-s0`, `-s1`, `-s2` (environment version 5, loaded with the baseline's firing rule), measured under version 7. Value per seed = mean over the three models.
-- Predictions file: `gate/v1.csv` — measured first and frozen by sha256 here, before the candidate is measured: `(filled when measured)`
+- Predictions file: `gate/v1.csv` — measured first and frozen by sha256 here, before the candidate is measured: `cfcd2ffd60fc6dc2cf0cd5b07881f1f4755ccaa680c0173e507fe67149d172f8` (LF line endings, as written on the instance; measured 2026-11-26 from commit b967875: capture 0.780, 5.442 s, 6.408 misfires per episode = 6.013 grazes + 0.372 wall shots + shots still on at the end). `gate/v0.csv`: `34a572c5d373421f6cd42272aaaa4d2868dc2215b7305cbb86beb649b5db41d0` (capture 0.960, 6.037 s, 5.010 = 4.770 + 0.240).
 - Truth file: `gate/truth.csv` (capture 1, time 0, misfires 0, grazes 0, wall_shots 0 for ids 20000-20199) — sha256 `81ae80c6b41bb8084206bc5a953051ac25b737513604d3d4781d78d3818a60f5`
 
 Reference, not the baseline: v0 (the rule aimer) under version 7, `gate/v0.csv`.

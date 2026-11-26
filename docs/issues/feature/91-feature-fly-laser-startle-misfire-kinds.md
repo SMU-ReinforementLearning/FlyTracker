@@ -95,6 +95,21 @@ This document, the registry row in `docs/issues/README.md`, the pointer line in 
 #### Notes
 - The capture exclusion is the agent's proposal (the fixed 0.97 floor of #72 cannot be assumed under version 7); the user approved the gate as written ("진행해", 2026-11-26) before anything was measured.
 
+### docs: 후보를 재기 전에 버전 7의 v1 측정값을 고정하기 (#91)
+> why: the gate requires `gate/v1.csv` to be frozen by sha256 before the candidate is measured
+#### Scope
+`gate/v0.csv`, `gate/v1.csv`, `gate.md` (Baseline section), this doc.
+#### Changes
+- v0 and v1 (3 models) measured on vast.ai instance 62693179 (32 cores; torch 2.15.0+cpu, sb3 2.9.2, gymnasium 1.4.0, numpy 2.4.6) from the bundle of commit b967875, seeds 20000-20199, rule fly.
+- sha256 of both files written into the gate.
+#### Verification
+- Instance setup: `tests/test_env.py` and `tests/test_players.py` 32 passed, `ENV_VERSION` 7, six models present.
+- sha256 of the downloaded files equals the instance's `state/P1_GATE_SHA256`.
+- v0: capture 0.960, 6.037 s, misfires 5.010 (grazes 4.770, wall shots 0.240). v1 per model: s0 0.715 / 5.976 s, s1 0.730 / 5.979 s, s2 0.895 / 4.372 s; pooled 0.780, 5.442 s, 6.408 (6.013, 0.372).
+#### Notes
+- Committed without the review gate: a mechanical step the approved gate itself orders between the two measuring steps. The candidate had not been measured when this was committed.
+- Two rented instances failed before this one (no sshd after 15 min; `docker_build() error`), and a third refused the key (`bad ownership or modes for file /root/.ssh/authorized_keys`); fixed by an onstart command that sets owner and modes of `/root/.ssh`. Scripts are in `runs/_ops91/` (gitignored).
+
 ## Management Notes
 ### Follow-up Candidates
 - Fire learning under version 7 (joint with zero penalty as control and with a wall-shot penalty; fire-only on a fixed aim; fine-tuning if the joint run never fires), evaluated on the rule fly and the calibrated neural fly.
