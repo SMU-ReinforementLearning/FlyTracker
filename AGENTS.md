@@ -62,6 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
+- `95-feature-viewer-draw-shots-and-hits` — `docs/issues/feature/95-feature-viewer-draw-shots-and-hits.md` — viewer에서 레이저를 쏘는 발과 명중을 조준선과 다르게 그리기
 
 ## Environment (repo slot)
 
