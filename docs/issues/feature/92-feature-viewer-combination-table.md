@@ -4,7 +4,7 @@
 - Issue: #92
 - Branch: `92-feature-viewer-combination-table`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 
 ## Summary
 The viewer now states each run's fly, aimer and environment in fixed places: a combination table on the issue page, a three-row block on the run panel, and fixed lines in the sidebar's run rows. Before this, the sidebar and the issue page's variation buttons listed only "what differs", so the same slot held a fly kind in one issue and a reward weight in another, and the run page showed nothing but the run name.
@@ -98,8 +98,20 @@ Console: only the favicon 404 and THREE.Clock deprecation warnings, both present
 #### Notes
 - Follow-up: retake the captures.
 
+### chore: #92 포인터를 지우고 완료로 표시하기 (#92)
+> why: last commit before the PR; a protected branch cannot take the pointer removal after the merge
+#### Scope
+`AGENTS.md`, `docs/issues/README.md`, this document.
+#### Changes
+- Pointer line removed, registry row and Status set to done.
+#### Verification
+None needed; no code.
+#### Notes
+The capture-retake criterion stays open (see Follow-up Candidates).
+
 ## Management Notes
 ### Follow-up Candidates
+- Retake the captures: the merged sidebar (letter + seed rows, name row as the drawer), the "실험 목록" title and the letter column were never looked at in a browser.
 - Record the training-time misfire penalty in replayed runs' config so #88's fire-only combinations can be told apart.
 - Run page toolbar title could name the combination instead of the run name.
 ### References

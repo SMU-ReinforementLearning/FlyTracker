@@ -62,7 +62,6 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `92-feature-viewer-combination-table` — `docs/issues/feature/92-feature-viewer-combination-table.md` — viewer에서 실행의 초파리, 조준기, 환경 조합을 표로 보여 주기
 
 ## Environment (repo slot)
 
