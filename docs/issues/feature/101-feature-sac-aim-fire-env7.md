@@ -60,7 +60,7 @@ Decided by the user (2026-11-26): fire learning continues under an environment w
 
 Answered at the first review (2026-11-26, "커밋해도 돼. 조준도 버젼 7에서 다시 학습해"): the first commit is approved, and the aim is trained again under version 7 (`v7-rule` stays in the plan). Items 2-4 below were shown in the same report and not answered; they are still open, and no instance is rented before item 4 is.
 
-After the first commit (f1fea2e): the `wall_shot` reward term with its test, the gate document, `score.py` and `gate/truth.csv` are written and tested (286 passed) but NOT committed — two commits prepared in the Work Log (feat, then docs gate) wait for the user's review. Nothing is trained; no instance is rented. vast.ai helper scripts are to be adapted from `C:\Users\neighbor\Documents\Code\Github\FlyTracker-88\runs\_ops\` (training) and `FlyTracker-91\runs\_ops91\` (measuring).
+2026-11-27: the user approved everything open ("다 승인. commit하고 vast.ai에서 학습 시작해"). Commits: f1fea2e (seed), 61890d2 (`wall_shot` reward term), then the gate. The training bundle is built from the gate commit; training of the 12 runs starts on vast.ai right after it. Later commits (results, verdicts) go through the review gate again. vast.ai helper scripts are to be adapted from `C:\Users\neighbor\Documents\Code\Github\FlyTracker-88\runs\_ops\` (training) and `FlyTracker-91\runs\_ops91\` (measuring).
 
 Open:
 1. (answered: yes, train the aim again.)
