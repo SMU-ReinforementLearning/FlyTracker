@@ -49,3 +49,4 @@ One row per management document, added in the same commit that creates the doc.
 | #92 | docs/issues/feature/92-feature-viewer-combination-table.md | done | viewer에서 실행의 초파리, 조준기, 환경 조합을 표로 보여 주기 |
 | #94 | docs/issues/feature/94-feature-publish-training-runs-mark-eval.md | done | 각가속도 조준기(#88)의 학습 실행 15개를 올리고 viewer에서 학습 실행과 평가 실행 구분하기 |
 | #95 | docs/issues/feature/95-feature-viewer-draw-shots-and-hits.md | done | viewer에서 레이저를 쏘는 발과 명중을 조준선과 다르게 그리기 |
+| #96 | docs/issues/feature/96-feature-viewer-minimal-scrollbar.md | done | viewer 스크롤바를 브라우저 기본 모양 대신 가늘고 옅게 그리기 |
