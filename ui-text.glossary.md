@@ -48,7 +48,10 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 | reward weight per misfire | 오발 벌점 | 미스 페널티, 오발 가중치 | 조준기 보상 카드의 줄 (#88) |
 | the baseline's firing rule | 쏘는 기준 | 발사 조건, 트리거 반경 | 기준선 카드의 줄. 값은 "빔까지 1.25mm 안" (#72) |
 | length of one shot | 한 발 길이 | 발사 시간, 포획 유지 시간 | 조준기 설정의 줄. 환경 버전 6부터의 실행에 나오고, 그 전 실행에는 환경 칸에 "포획 유지 시간"으로 나온다 (#72) |
-| aim stimulus on or off | 자극 켬, 자극 끔 | 자극 있음, 자극 없음 | 신경 초파리 설정의 "자극" 줄의 값이고 variation 이름에 붙는다 (#72) |
+| aim stimulus on or off | 자극 켬, 자극 끔 | 자극 있음, 자극 없음 | 신경 초파리 설정의 "자극" 줄의 값이고 조합 표의 초파리 칸에 붙는다 (#72, #92) |
+| fly, aimer and environment that a set of runs shares | 조합 | variation, 변형, 매치업 | issue 화면의 표에서 줄 하나. 설명 글에서 쓰는 말이고 화면 제목에는 쓰지 않는다. 학습 seed만 다른 실행은 한 조합이다 (#92) |
+| list of an issue's combinations | 실험 목록 | 조합, 조합 표, variation | issue 화면의 표 제목. 칸은 실험, 초파리, 조준기, 환경, 실행 순서다 (#92) |
+| letter that names one row of the list | 실험 A | 조합 A, 1번, variation A | 표의 맨 앞 칸과 실행 패널의 "실험" 줄. 글자만 A, B, C로 적는다 (#92) |
 | map of issues by area and by what each one builds on | 계보 | 트리, 로드맵, 타임라인 | 첫 화면의 제목이자 사이드바 맨 위 줄 (#77) |
 | area an issue mainly changed | 초파리, 조준기, 환경 | 플라이, 에이머, 조건 | 계보의 세로줄 이름이자 사이드바의 구역 제목. 이 순서로 쓴다 (#77, #81) |
 | another area an issue also changed | 조준기도 바꿈 | 조준기 포함, + 조준기 | 계보 노드의 아랫줄. 영역 이름 뒤에 "도 바꿈" (#77) |
@@ -89,3 +92,4 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 - 2026-11-25: 계보 노드의 버전 표시와 수치 표기 추가 (#80)
 - 2026-11-25: 영역 이름을 사이드바의 구역 제목으로도 쓴다고 적음 (#81)
 - 2026-11-26: 돌리는 행동, 조준을 맡은 모델, 오발 벌점 추가. 쏘는 방식에 값 하나 추가 (#88)
+- 2026-11-26: 조합 추가. variation을 조합으로 바꿈 (#92)

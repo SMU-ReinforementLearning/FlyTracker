@@ -85,6 +85,8 @@ export default function App() {
   const group = groups?.find((g) => g.key === route.issue) ?? null
   const run = group ? null : (runs?.find((r) => r.id === route.run) ?? null)
   const runId = run?.id ?? null
+  // 고른 실행이 든 issue 묶음. 실행 패널이 같은 묶음의 실행과 견주어 조합을 적는 데 쓴다.
+  const runGroup = useMemo(() => (runId ? (groups?.find((g) => g.runs.some((r) => r.id === runId)) ?? null) : null), [groups, runId])
 
   useEffect(() => {
     if (!runId) return
@@ -188,12 +190,12 @@ export default function App() {
           </div>
         </header>
         {group ? (
-          <IssuePage key={group.key} group={group} groups={groups} onOpenIssue={openIssue} />
+          <IssuePage key={group.key} group={group} groups={groups} onOpenIssue={openIssue} onSelectRun={selectRun} />
         ) : home ? (
           <Lineage groups={groups} onOpenIssue={openIssue} />
         ) : (
           <div className={styles.workspace}>
-            {run && sel && <RunPanel key={run.id} run={run} grid={grid} sel={sel} onSelect={selectEpisode} />}
+            {run && sel && <RunPanel key={run.id} run={run} group={runGroup} grid={grid} sel={sel} onSelect={selectEpisode} />}
             {ep ? (
               <div className={styles.stage}>
                 <div className={styles.scene}>

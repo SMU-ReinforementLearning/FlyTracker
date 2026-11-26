@@ -1,4 +1,4 @@
-/* 사이드바: 검색, 영역 구역, issue 묶음, 실행 줄 */
+/* 사이드바: 검색, 영역 구역, issue 묶음, 실행 줄(조준기, 초파리, 환경) */
 
 .sidebar {
   background: var(--color-bg-sidebar);
@@ -136,46 +136,31 @@
   text-overflow: ellipsis;
 }
 
-/* variation: 무엇이 다른지 적은 줄과 그 설정으로 돌린 실행들 */
-
-.variation + .variation {
-  margin-top: 1rem;
-}
-
-.parts {
-  padding-left: 0;
-}
-
-.parts {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  margin: 0;
-  padding: 0.3rem 1rem 0.4rem 2.6rem;
-  font-size: var(--font-size-xs);
-}
-
-.part {
-  display: flex;
-  gap: var(--space-2);
-}
-
-.part dt {
-  flex: none;
-  color: var(--color-text-tertiary);
-}
-
-.part dd {
-  margin: 0;
-  min-width: 0;
-  color: var(--color-text-secondary);
-  font-weight: var(--font-weight-medium);
-}
-
 /* 실행 줄. 줄 모양은 ListRow 가 맡고, 여기서는 들여쓰기와 줄 안의 배치만 정한다. */
 
 .group .row {
   padding-left: 2.6rem;
+}
+
+/* 조합이 둘 이상인 묶음의 줄. 맨 앞에 조합을 부르는 글자가 서고, 나머지는 그 오른쪽에 쌓인다 */
+.group .lettered {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding-left: 1.6rem;
+}
+
+.letter {
+  flex: none;
+  min-width: 1.4rem;
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.body {
+  display: block;
+  flex: 1;
+  min-width: 0;
 }
 
 .line {
@@ -199,10 +184,22 @@
   gap: 0.6rem;
 }
 
-.meta {
+/* 초파리, 환경. 한 줄에 하나씩 놓는다. 길면 끝을 줄이고, 다 읽으려면 issue 화면의 표를 본다 */
+.sub {
+  display: block;
+  margin-top: 0.1rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* 묶음의 모든 조합에 같은 환경. 실행 줄 위에 한 번만 적는다 */
+.environment {
+  margin: 0;
+  padding: 0.2rem 1rem 0.4rem 2.6rem;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
 }
 
 .spark path {

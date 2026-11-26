@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { variationsOf } from '../../data/experiment.js'
-import { algoLabel, percent, shortDate } from '../../data/labels.js'
+import { cellText, seedLabel } from '../../data/experiment.js'
+import { percent, shortDate } from '../../data/labels.js'
 import { issueName } from '../../data/lineage.js'
 import { byCreatedAt, lastCheckpoint, matchesQuery, NO_ISSUE, rateOf, sectionsByLane, steppedCheckpoints } from '../../data/runs.js'
-import { useConfigs, useIssueInfo } from '../../data/useIssueData.js'
+import { useCombinations } from '../../data/useIssueData.js'
 import { ListRow, RowList } from '../ListRow/ListRow.jsx'
 import styles from './Sidebar.module.css'
 
@@ -38,23 +38,35 @@ function Chevron() {
   )
 }
 
-/** label 은 variation 안에서 실행을 가르는 이름(학습 seed)이다. 없으면 실행 이름을 적는다. */
-function RunRow({ run, label, selected, onSelect }) {
+/**
+ * 실행 줄. 줄마다 같은 자리에 같은 것을 적는다. 맨 앞은 issue 화면의 표에서 그 조합을 부르는 글자(A, B, C)이고,
+ * 첫 줄은 조준기, 그 아래는 초파리, 환경(조합마다 다를 때) 순서다. 같은 종류끼리 무엇이 다른지는 글자로 표에서 찾는다.
+ * combo 는 이 실행이 든 조합이고(combinationsOf), seed 는 조합 안에서 실행을 가르는 학습 seed 다. lettered 는 조합이 둘 이상이라 글자를 적는지다.
+ * combo 가 없으면(설정을 읽기 전이거나 못 읽은 실행) 실행 이름만 적는다.
+ */
+function RunRow({ run, combo, seed, lettered, showEnvironment, selected, onSelect }) {
   const last = lastCheckpoint(run)
   const rate = rateOf(last)
-  const meta = [algoLabel(run.algo), run.author].filter(Boolean).join(' · ')
+  const observing = ['free-flight', 'tracking-observation'].includes(run.algo)
+  const hint = [run.name, run.author, shortDate(run.createdAt)].filter(Boolean).join(' · ')
+  const aimer = combo ? [combo.aimer.title, seedLabel(seed)].filter(Boolean).join(' · ') : run.name
   return (
-    <ListRow current={selected} onClick={() => onSelect(run.id)} className={styles.row} title={label ? run.name : undefined}>
-      <span className={styles.line}>
-        <span className={styles.title}>{label ?? run.name}</span>
-        <span className={`${styles.aside} ${styles.rate}`}>
-          {!['free-flight', 'tracking-observation'].includes(run.algo) && <Sparkline run={run} />}
-          {!['free-flight', 'tracking-observation'].includes(run.algo) && rate !== null && <span aria-label={`포획률 ${percent(rate)}`}>{percent(rate)}</span>}
+    <ListRow current={selected} onClick={() => onSelect(run.id)} className={lettered ? `${styles.row} ${styles.lettered}` : styles.row} title={hint}>
+      {lettered && (
+        <span className={styles.letter} aria-label={combo ? `실험 ${combo.letter}` : undefined}>
+          {combo?.letter}
         </span>
-      </span>
-      <span className={`${styles.line} ${styles.sub}`}>
-        <span className={styles.meta}>{meta}</span>
-        <span>{shortDate(run.createdAt)}</span>
+      )}
+      <span className={styles.body}>
+        <span className={styles.line}>
+          <span className={styles.title}>{aimer}</span>
+          <span className={`${styles.aside} ${styles.rate}`}>
+            {!observing && <Sparkline run={run} />}
+            {!observing && rate !== null && <span aria-label={`포획률 ${percent(rate)}`}>{percent(rate)}</span>}
+          </span>
+        </span>
+        {combo && <span className={styles.sub}>{cellText(combo.fly)}</span>}
+        {combo && showEnvironment && <span className={styles.sub}>환경 {cellText(combo.environment)}</span>}
       </span>
     </ListRow>
   )
@@ -64,61 +76,34 @@ function RunRow({ run, label, selected, onSelect }) {
 export const groupTitle = (group) => (group.key === NO_ISSUE ? 'issue 없음' : issueName(group.issue))
 
 /**
- * 펼친 issue 의 실행 목록. 설정이 다른 실행끼리 variation 으로 나누고, variation 마다 무엇이 다른지를 이름과 값 줄로 적는다.
- * 그 아래의 실행은 학습 seed 만 다르므로 학습 seed 로 부른다. 설정을 다 읽기 전이거나 variation 이 하나뿐이면 실행 이름 그대로 늘어놓는다.
- * group.runs 는 검색으로 걸러진 것일 수 있다. variation 은 걸러진 실행만으로 나눈다.
+ * 펼친 issue 의 실행 목록. 조합 순서로 늘어놓고, 줄마다 조합의 글자와 그 실행의 조준기, 초파리를 적는다.
+ * 환경이 모든 조합에서 같으면 목록 위에 한 번만 적고, 다르면 줄마다 적는다. 설정을 다 읽기 전에는 실행 이름만 늘어놓는다.
+ * group.runs 는 검색으로 걸러진 것일 수 있다. 조합은 걸러지기 전의 실행(group.all)으로 나눈다. 그래야 글자가 issue 화면의 표와 같다.
  */
 function Runs({ group, runId, onSelectRun }) {
-  const runs = useMemo(() => [...group.runs].sort(byCreatedAt), [group.runs])
-  const configs = useConfigs(runs)
-  const info = useIssueInfo(group.key)
-  const blocks = useMemo(() => {
-    if (!configs || info === undefined) return null
-    const { items } = variationsOf(runs, configs, info)
-    if (items.length === 0) return null
-    const seedOf = new Map(runs.map((r, i) => [r.id, configs[i]?.algo?.seed ?? null]))
+  const all = useMemo(() => [...(group.all ?? group.runs)].sort(byCreatedAt), [group.all, group.runs])
+  const combos = useCombinations(all, group.key)
+  const rows = useMemo(() => {
+    const shown = new Set(group.runs.map((r) => r.id))
+    const runs = all.filter((r) => shown.has(r.id))
+    if (!combos) return runs.map((run) => ({ run, combo: null, seed: null }))
     const byId = new Map(runs.map((r) => [r.id, r]))
-    const placed = new Set(items.flatMap((v) => v.runIds))
-    const rest = runs.filter((r) => !placed.has(r.id)) // 설정을 못 읽은 실행
-    return [
-      ...items.map((v) => {
-        const list = v.runIds.map((id) => byId.get(id))
-        const seeds = list.map((r) => seedOf.get(r.id))
-        const named = list.length > 1 && seeds.every((x) => x !== null) && new Set(seeds).size === list.length
-        return { key: v.key, parts: v.parts, runs: list.map((run, i) => ({ run, label: named ? `학습 seed ${seeds[i]}` : null })) }
-      }),
-      ...(rest.length ? [{ key: 'rest', parts: [], runs: rest.map((run) => ({ run, label: null })) }] : []),
-    ]
-  }, [runs, configs, info])
-
-  if (!blocks) {
-    return (
+    const placed = combos.flatMap((combo) => combo.runs.filter(({ id }) => byId.has(id)).map(({ id, seed }) => ({ run: byId.get(id), combo, seed })))
+    const seen = new Set(placed.map((p) => p.run.id))
+    return [...placed, ...runs.filter((r) => !seen.has(r.id)).map((run) => ({ run, combo: null, seed: null }))] // 뒤는 설정을 못 읽은 실행
+  }, [all, group.runs, combos])
+  const environments = new Set((combos ?? []).map((c) => cellText(c.environment)))
+  const lettered = (combos?.length ?? 0) > 1
+  return (
+    <>
+      {environments.size === 1 && <p className={styles.environment}>환경 {[...environments][0]}</p>}
       <RowList>
-        {group.runs.map((run) => (
-          <RunRow key={run.id} run={run} selected={run.id === runId} onSelect={onSelectRun} />
+        {rows.map(({ run, combo, seed }) => (
+          <RunRow key={run.id} run={run} combo={combo} seed={seed} lettered={lettered} showEnvironment={environments.size > 1} selected={run.id === runId} onSelect={onSelectRun} />
         ))}
       </RowList>
-    )
-  }
-  return blocks.map((b) => (
-    <div key={b.key} className={styles.variation}>
-      {b.parts.length > 0 && (
-        <dl className={styles.parts}>
-          {b.parts.map((part) => (
-            <div key={part.label} className={styles.part}>
-              <dt>{part.label}</dt>
-              <dd>{part.value}</dd>
-            </div>
-          ))}
-        </dl>
-      )}
-      <RowList>
-        {b.runs.map(({ run, label }) => (
-          <RunRow key={run.id} run={run} label={label} selected={run.id === runId} onSelect={onSelectRun} />
-        ))}
-      </RowList>
-    </div>
-  ))
+    </>
+  )
 }
 
 function Group({ group, open, onToggle, runId, issueKey, onSelectRun, onOpenIssue }) {
@@ -162,9 +147,9 @@ export function Sidebar({ groups, error, runId, issueKey, home, onSelectRun, onO
     onOpenIssue(key)
   }
 
-  // 검색으로 거른 묶음. 다시 그릴 때마다 새 목록을 만들면 펼친 묶음이 설정을 다시 읽으므로 기억해 둔다.
+  // 검색으로 거른 묶음. 걸러지기 전의 실행은 all 에 둔다(조합의 글자를 정하는 데 쓴다). 다시 그릴 때마다 새 목록을 만들면 펼친 묶음이 설정을 다시 읽으므로 기억해 둔다.
   const shown = useMemo(
-    () => (groups ?? []).map((g) => ({ ...g, runs: g.runs.filter((r) => matchesQuery(r, query)) })).filter((g) => g.runs.length > 0),
+    () => (groups ?? []).map((g) => ({ ...g, all: g.runs, runs: g.runs.filter((r) => matchesQuery(r, query)) })).filter((g) => g.runs.length > 0),
     [groups, query],
   )
 

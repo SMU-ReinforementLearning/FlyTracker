@@ -34,7 +34,7 @@ A reader can tell, for any run, which fly met which aimer under which environmen
 - [ ] User approves the sidebar layout — it was proposed as option 1 and built without an explicit answer
 
 ## Current State
-All code, README, glossary, test and captures are written in the worktree and NOT committed. Waiting at the pre-commit review gate. Two commits are planned: the seed commit (`chore:`) and the feature commit (`feat:`). Before the PR: add nothing to `history.js`/`lineage.js` (viewer-only change, no env/fly/aimer change), and remove the AGENTS.md pointer as the last commit.
+Code, README, glossary, test and captures are committed. The user approved the merge on 2026-11-26 without a new capture run ("이렇게 머지해볼래?"), so the row letters, the "실험 목록" title and the lettered sidebar rows went in without being looked at in a browser; the PNGs in `captures/` show the state before them. Nothing was added to `history.js`/`lineage.js` (viewer-only change, no env/fly/aimer change).
 
 ## Work Log
 <!-- one `### <commit title>` per commit, written BEFORE the commit and staged with it -->
