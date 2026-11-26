@@ -41,6 +41,8 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 | virtual looming stimulus shown to the neural fly | 자극 | 스티뮬러스, 가상 원반 | 신경 초파리 설정의 줄 이름에 쓴다. 예: 자극 횟수 (#62) |
 | one laser shot (0.15 s) | 발 | 샷, 사격 | 수치 목록의 "쏜 발". 값은 "3발". 환경 버전 6부터의 기록에만 나온다 (#69) |
 | shot during which the beam left the fly | 오발 | 미스, 빗나감 | 상태이자 수치 목록의 줄 이름. 값은 "2발" (#69) |
+| shot in progress with the beam on the fly | 맞는 중 | 포획 중, 조사 중 | 상태. 레이저를 쏠 때만 켜는 기록(환경 버전 6부터)에서 "포획 중" 대신 쓴다. 발이 끝나기 전이라 아직 오발이 될 수 있다 (#95) |
+| shot that stayed on the fly to its end | 명중 | 히트, 킬, 사살 | 상태(마지막 프레임)이자 재생 막대의 발 표시 이름. 반대는 오발 (#95) |
 | laser on | 쏘는 중 | 발사 중, 켜짐 | 수치 목록 "레이저" 줄의 값. 반대는 꺼짐 (#69) |
 | who decides when to fire | 쏘는 방식 | 발사 방식, 트리거 | 학습한 조준기 카드의 줄. 값은 "기준선의 규칙", "정책이 정함", "정책이 정함, 기준선의 규칙에서 시작" (#72, #88) |
 | what the policy's turning action means | 돌리는 행동 | 제어 방식, 컨트롤, 액션 타입 | 학습한 조준기 카드의 줄. 값은 "각속도" 또는 "각가속도". 발사만 학습한 모델에는 나오지 않는다 (#88) |
@@ -68,7 +70,9 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 | `result: capture` | 포획 |
 | `result: timeout` | 시간 초과 |
 | `visible: 1` / `0` | 보임 / 안 보임 |
-| `captureProgress > 0` | 포획 중 |
+| `captureProgress > 0` (`firing` 이 없는 기록) | 포획 중 |
+| `firing: true` 이고 `0 < captureProgress < 1` | 맞는 중 |
+| `firing: true` 이고 `captureProgress = 1` | 명중 |
 | `firing: true` 이고 `captureProgress = 0` | 오발 |
 | `firing: true` / `false` | 쏘는 중 / 꺼짐 |
 | `alarmed: 1` / `0` | 비상시 / 평시 |
@@ -93,3 +97,4 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 - 2026-11-25: 영역 이름을 사이드바의 구역 제목으로도 쓴다고 적음 (#81)
 - 2026-11-26: 돌리는 행동, 조준을 맡은 모델, 오발 벌점 추가. 쏘는 방식에 값 하나 추가 (#88)
 - 2026-11-26: 조합 추가. variation을 조합으로 바꿈 (#92)
+- 2026-11-26: 맞는 중, 명중 추가. 레이저를 쏠 때만 켜는 기록의 상태에서 포획 중을 대신한다 (#95)

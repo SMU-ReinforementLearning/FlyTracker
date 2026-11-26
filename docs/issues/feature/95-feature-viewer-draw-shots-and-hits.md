@@ -73,6 +73,7 @@ Management doc, registry row, `AGENTS.md` pointer.
 - The beam radius is enlarged (4 mm core, 14 mm glow) because the real 1.25 mm radius is invisible in the room view; README says so.
 - The light colour scheme was not captured. The version 5 run was captured after the change only, not before.
 - "포획 진행" in the readouts and the word "포획" itself are unchanged; left to the user.
+- Committed after the full pytest and the build on this tree (274 passed, 1 skipped; built).
 
 ### chore: #95 포인터를 지우고 완료로 표시하기 (#95)
 > why: the pointer line has to go in the branch's last commit; a protected branch cannot take that edit after the merge
