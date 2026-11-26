@@ -41,7 +41,7 @@ Train SAC aimers that steer alone with angular-acceleration actions instead of a
 ## Current State
 2026-11-26 03:30 KST. Training finished, results downloaded and verified, instance destroyed (nothing is running or billing). Verdicts are in `gate.md`: one of five adopted (`accel-pen-rule`: 2.611 s, 589/600, 0.47 misfires per episode; v0 4.894 s). `accel-rule` passes on time but is rejected by the capture exclusion (0.965 < 0.97); `rate-rule` and both fire-learning conditions are rejected. Korean results: `conditions.md`, section "결과". Nothing pushed.
 
-Stage 2 (2026-11-26, the user: proceed with the staged fire learning as proposed): code and `gate-fire.md` written, tests 236 passed, not committed yet (review gate) and no training started. Next: commit code and gate, train 4 conditions x 3 seeds x 500,000 steps (`--aim runs/g88/accel-pen-rule-s<k>/<run>`), evaluate as in stage 1, write the verdict into `gate-fire.md`.
+Stage 2 (2026-11-26, the user: proceed with the staged fire learning as proposed): code and `gate-fire.md` committed (tests 236 passed), no training started at that point. Next: train 4 conditions x 3 seeds x 500,000 steps (`--aim runs/g88/accel-pen-rule-s<k>/<run>`), evaluate as in stage 1, write the verdict into `gate-fire.md`.
 
 Left, waiting for the user (screen text and a decision are involved):
 - Scope 7 remainder: published runs (`published/issues/88.json`), README training options, viewer rows (`history.js`, `lineage.js`, the control row on the card).
