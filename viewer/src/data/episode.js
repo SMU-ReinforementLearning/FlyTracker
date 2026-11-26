@@ -48,6 +48,32 @@ function headings(f) {
   return out
 }
 
+/**
+ * 에피소드에서 쏜 발의 목록. 레이저를 쏠 때만 켜는 기록(환경 버전 6부터)에서만 뽑고, 그 전 기록은 빈 목록이다.
+ * 돌려주는 것: [{ i, start, end, result }]. i 는 발이 시작한 프레임, start 와 end 는 초다.
+ * result 는 'hit'(이 발로 포획), 'miss'(오발), 'open'(에피소드가 끝날 때 아직 쏘는 중)이다.
+ * 발의 시작은 쏜 발 수(shots)가 늘어난 프레임이고, 끝은 레이저가 꺼지거나 다음 발이 시작한 때다.
+ * 오발 수(misfires)는 빔이 초파리를 벗어난 프레임에 늘어난다. 그 프레임이 든 발이 오발이다.
+ */
+export function shotsOf(f, captured) {
+  if (!f.firing || !f.shots || !f.misfires) return []
+  const n = f.t.length
+  const out = []
+  for (let i = 0; i < n; i++) {
+    if (f.shots[i] > (i > 0 ? f.shots[i - 1] : 0)) out.push({ i, start: f.t[i], end: f.t[n - 1], result: 'open' })
+  }
+  out.forEach((shot, k) => {
+    const next = k + 1 < out.length ? out[k + 1].i : n
+    let last = shot.i
+    while (last + 1 < next && f.firing[last + 1]) last += 1
+    shot.end = f.t[Math.min(last + 1, n - 1)]
+    const before = shot.i > 0 ? f.misfires[shot.i - 1] : 0
+    if (f.misfires[next - 1] > before) shot.result = 'miss'
+    else if (captured && next === n) shot.result = 'hit'
+  })
+  return out
+}
+
 export function prepareEpisode(raw) {
   const f = raw.frames
   const n = f.t.length
@@ -85,6 +111,7 @@ export function prepareEpisode(raw) {
     firing: f.firing ? Uint8Array.from(f.firing, Number) : null,
     shots: f.shots ? Uint16Array.from(f.shots) : null,
     misfires: f.misfires ? Uint16Array.from(f.misfires) : null,
+    shotList: shotsOf(f, raw.summary?.captured === true),
     angle: Float32Array.from(f.angleErrDeg),
     beam: f.beamDistMm ? Float32Array.from(f.beamDistMm) : null, // mm. 포획이 레이저 명중으로 바뀐 뒤(환경 버전 3)의 기록에만 있다
     distance: Float32Array.from(f.distance),

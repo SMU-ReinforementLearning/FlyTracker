@@ -35,7 +35,7 @@ function FollowAimer({ ep, fov = ep.meta.fovV }) {
 /**
  * 조준기 화면의 가운데를 확대한 화면. 빔 지름 2.5mm 와 초파리(몸 길이 약 3mm)를 가려 볼 수 있다.
  * 원은 초파리가 있는 거리에서 빔이 차지하는 범위다. 초파리 중심이 원 안에 있으면 맞은 것이다.
- * 레이저를 쏠 때만 켜는 기록에서는 쏘지 않는 동안 원을 흐리게 그리고, 빗나간 발은 붉게 그린다.
+ * 레이저를 쏠 때만 켜는 기록에서는 쏘지 않는 동안 원을 흐린 테두리로만 그린다. 쏘는 동안에는 원을 채우고, 빗나간 발은 붉게 그린다.
  * 포획이 레이저 명중인 기록(captureRadius 가 있다)에만 쓴다.
  */
 export function ZoomView({ ep }) {
@@ -52,6 +52,7 @@ export function ZoomView({ ep }) {
     el.dataset.capture = s.capture > 0 ? 'true' : 'false'
     el.dataset.firing = s.firing ? 'true' : 'false'
     el.dataset.missed = s.missed ? 'true' : 'false'
+    el.dataset.shot = ep.firing !== null && s.firing ? 'true' : 'false'
   }, [ep, s, tanHalf])
   useAnimationFrame(update)
 
@@ -75,9 +76,11 @@ export function ZoomView({ ep }) {
  * 포획을 각도로 판정하던 기록(captureAngleDeg 가 있다)은 그 각도 범위를 원으로 그린다.
  * 초파리는 실제 크기로 그린다. 멀리 있으면 화소 하나보다 작아서, 위치는 초점 사각형으로 본다.
  * 빔에 맞았는지는 아래의 확대 화면(ZoomView)으로 본다.
+ * 레이저를 쏠 때만 켜는 기록에서는 쏘는 동안 화면 가운데에 빛나는 점이 켜진다. 초파리 위에 있으면 초록, 벗어났으면 붉은색이다.
  */
 export function FirstPersonView({ ep }) {
   const focus = useRef(null)
+  const shot = useRef(null)
   const s = useMemo(newSample, [])
   const halfV = (ep.meta.fovV * Math.PI) / 360
   const byAngle = ep.meta.captureAngleDeg != null
@@ -91,6 +94,7 @@ export function FirstPersonView({ ep }) {
     el.style.left = `${((s.u + 1) / 2) * 100}%`
     el.style.top = `${((1 - s.v) / 2) * 100}%`
     el.dataset.capture = s.capture > 0 ? 'true' : 'false'
+    if (shot.current) shot.current.dataset.state = ep.firing !== null && s.firing ? (s.missed ? 'miss' : 'hit') : 'off'
   }, [ep, s])
   useAnimationFrame(update)
 
@@ -107,6 +111,7 @@ export function FirstPersonView({ ep }) {
       {ep.meta.captureEnabled !== false && (byAngle
         ? <div className={styles.ring} style={{ height: `${ringPct}%` }} aria-hidden="true" />
         : <div className={styles.cross} aria-hidden="true" />)}
+      {ep.firing !== null && <div ref={shot} className={styles.shot} data-state="off" aria-hidden="true" />}
       <div ref={focus} className={styles.focus} aria-hidden="true" />
     </div>
   )
