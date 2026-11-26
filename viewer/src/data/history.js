@@ -8,6 +8,8 @@ const REPO = 'https://github.com/SMU-ReinforementLearning/FlyTracker'
 // env 는 그 issue 의 변경이 들어 있는 가장 낮은 환경 버전이다. 환경 버전이 그보다 낮은 실행에는 그 변경이 없다.
 // #31 은 환경 버전 2 때 merge 됐지만 공개된 신경 초파리 실행에 환경 버전이 적혀 있지 않아(1 로 센다) 1 로 둔다.
 const ISSUES = {
+  59: { title: '실측 비행계수 보정과 신경 초파리 순차 학습', author: 'heohs', merged: '2026-11-25', env: 6 },
+
   1: { title: '강화학습 환경과 에피소드 viewer 뼈대', author: 'lhk0721', merged: '2026-11-04', env: 1 },
   4: { title: '초파리 행동을 평시와 비상시로 나누기', author: 'lhk0721', merged: '2026-11-09', env: 1 },
   7: { title: '조준기를 위치가 고정된 포대로 바꾸기', author: 'lhk0721', merged: '2026-11-09', env: 1 },
@@ -105,6 +107,8 @@ const HISTORY = {
   ],
   'env.fly.evade_speed_gain': [[1, '처음 넣은 값이다. 근거 문헌이 없는 가정이다. 학습한 초파리가 고를 수 있는 속도 배율의 위쪽 한계로도 쓴다.']],
   'env.fly_reaction_delay': [[34, '학습한 초파리는 관측을 3 step 늦게 받는다. 규칙 초파리의 반응 지연과 같은 값이다.']],
+  'env.neural.profile_id': [[59, '공개 궤적에 맞춰 조정한 비행계수를 기존 계수와 비교하려고 두 설정을 남겼다.']],
+  'evaluation.flyWeights': [[59, '같은 조준기를 상대로 원래 가중치와 학습 가중치 후보의 비행을 비교한다.']],
   'env.stimulus.enabled': [[31, '조준 때문에 생기는 가상 자극은 끌 수 있다. 꺼도 벽에 다가갈 때 생기는 입력은 그대로다.']],
   'env.stimulus.align_deg': [[31, '조준기가 신경 초파리를 겨누면 커지는 원반을 보여 주는 가상 자극을 넣었다. 실험 규칙이고 생물학적 문턱값이 아니다.']],
   'env.stimulus.charge_ms': [[31, '이 시간만큼 이어서 겨눠야 가상 자극이 나온다. 실험 규칙이다.']],
@@ -152,6 +156,7 @@ const HISTORY = {
 }
 
 const dateLabel = (iso) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso
   const [y, m, d] = iso.split('-').map(Number)
   return `${y}년 ${m}월 ${d}일`
 }

@@ -180,6 +180,18 @@ Management doc, registry row, `AGENTS.md` pointer.
 - Why the policy does not beat the rule is not measured; `conditions.md` marks its explanation (0.08 s of history against a 0.15 s shot) as a guess.
 - vast.ai: one instance, about 3.6 hours at about 0.08 USD per hour (the agent's estimate from the hourly price, not read from the bill); within the 5 USD limit.
 
+### merge: main을 #88 branch에 합치기 (#88)
+> why: the teammate's #59 (calibrated neural fly, its own rule-fire training path) landed on main on 2026-11-25 after this branch was cut; publishing and the PR need the branch on current main
+#### Scope
+Merge of `origin/main` (9b3cb81) into the branch; conflict in `flytracker/players.py` only.
+#### Changes
+- `PolicyPlayer` keeps both parameters: `strip_shot` (main) and `accel_gain` (#88). `load_opponent` knows three rule-fire kinds: environment version 5 models and `algo.fire == "rule"` (`wrappers.RuleFire`, observation without `shot`) strip `shot`; `algo.fireMode == "rule"` (the teammate's `aimer_training_env.RuleFireTraining`, full observation) does not. Neither config key was renamed: published runs of #59 carry `fireMode`, #88's runs carry `fire`.
+#### Verification
+- `pytest -q` on the merged tree: 265 passed, 1 skipped (`tests/test_flight_calibration.py:82`, optional `h5py` not installed here). Both sides' tests are in that set (#88's control tests, #59's `test_current_neural_aimer.py`).
+#### Notes
+- The user (2026-11-26): "싹 정리해서 main 합치고 publish부터 진행해". Taken as: merge main into this branch, then do the publishing work of Scope 7; push, PR and merge to main still wait for the review gate.
+- Two rule-fire training wrappers now exist (`wrappers.RuleFire`, `aimer_training_env.RuleFireTraining`). Unifying them is a follow-up to agree with the teammate, not done here.
+
 ## Management Notes
 ### Proposal: staged fire learning (approved by the user 2026-11-26; gate in `gate-fire.md`)
 - Start from an `accel-pen-rule` model with the steering frozen (or a low learning rate) and learn only the fire decision; the aim then already holds the beam inside the radius, so a shot can succeed from the first episode.

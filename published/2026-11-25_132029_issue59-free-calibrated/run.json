@@ -1,0 +1,1 @@
+{"id":"2026-11-25_132029_issue59-free-calibrated","name":"실측으로 보정한 비행계수 자유비행","createdAt":"2026-11-25T13:20:29","algo":"free-flight","actionMode":"continuous","notes":"seed 0~2, 10초, 조준기 없음","episodeCount":3,"issue":{"number":59,"title":"신경회로 초파리 학습","url":"https://github.com/SMU-ReinforementLearning/FlyTracker/issues/59"},"author":"heohs"}

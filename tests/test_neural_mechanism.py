@@ -27,7 +27,7 @@ def test_provenance_contains_only_active_physics():
     assert d["speed_command_mps"] is None
     assert "speed_components" not in d and "motor_seed" not in p
     assert p["dynamics"] == "neuromechanical"
-    assert p["biological_validation"]["status"] == "not_calibrated"
+    assert p["biological_validation"]["status"] == "not_biologically_validated"
     for name, sha in p["integration_sha256"].items():
         assert sha == hashlib.sha256((Path(__file__).resolve().parents[1]/"flytracker"/name).read_bytes()).hexdigest()
     assert d["applied_control"]["end_ms"] - d["applied_control"]["start_ms"] == 5
@@ -56,7 +56,7 @@ def test_retained_current_record_config_loads_but_retired_models_do_not():
     from flytracker import EnvConfig, StimulusConfig
     old_neutral = dict(dynamics="neuromechanical", motion_profile="basic",
                        wall_lookahead=.25, wall_accel=1., wall_turn_rate=2.)
-    assert EnvConfig.from_dict({"neural": old_neutral, "stimulus": {"release_ms": 200}}).neural == NeuralConfig()
+    assert EnvConfig.from_dict({"neural": old_neutral, "stimulus": {"release_ms": 200}}).neural == NeuralConfig(profile_id=None)
     with pytest.raises(ValueError):
         EnvConfig.from_dict({"neural": dict(old_neutral, dynamics="source")})
     with pytest.raises(ValueError):

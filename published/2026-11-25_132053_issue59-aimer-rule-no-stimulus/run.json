@@ -1,0 +1,1 @@
+{"id":"2026-11-25_132053_issue59-aimer-rule-no-stimulus","name":"규칙 조준기 (가상 자극 끔)","createdAt":"2026-11-25T13:20:53","algo":"rule-baseline","actionMode":"continuous","notes":"보정 초파리 배율 1, 평가 seed 30000~30002","episodeCount":3,"issue":{"number":59,"title":"신경회로 초파리 학습","url":"https://github.com/SMU-ReinforementLearning/FlyTracker/issues/59"},"author":"heohs"}
