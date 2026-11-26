@@ -4,7 +4,7 @@
 - Issue: #91
 - Branch: `91-feature-fly-laser-startle-misfire-kinds`
 - Umbrella: (none)
-- Status: in progress
+- Status: done
 - Follows: #88 (acceleration action; fire learning not faster than the rule), #69 (shots and misfires), #4 (the fly's threat response)
 
 ## Summary
@@ -38,7 +38,7 @@ Environment version 7: a rule fly touched by the laser beam is startled and esca
 - [x] v0, v1, `accel-pen-rule` measured on seeds 20000-20199; verdict written; numbers reported to the user with the wall-shot counts.
 - [x] README, viewer data, glossary, published runs and `published/issues/91.json` updated.
 - [x] `uv run pytest -q` and the viewer build pass.
-- [ ] PR merged; `AGENTS.md` pointer removed in the branch's last commit.
+- [x] PR merged; `AGENTS.md` pointer removed in the branch's last commit.
 
 ## Current State
 2026-11-26: issue registered and first commit made (9735310) after the user's go-ahead. Scope 1-4 implemented and tested (272 passed), gate document and measuring script written; the user reviewed the report of both and said "진행해. vast.ai에서 진행해", which approves these two commits, the gate as written and measuring on vast.ai. Review-free commits for the rest of the issue were asked about and not answered: later commits still go through the review gate, except the mechanical freeze of `gate/v1.csv` that the approved gate itself requires between the two measuring steps. The environment change is commit d3b95b2, the gate b967875, the frozen baseline 6e40c1c. Measured the same day on vast.ai (instance destroyed, none left): verdict **adopt** (`accel-pen-rule` faster than v1, P 1.000; capture 0.843 against 0.780). Reported to the user with the wall-shot counts (0.24 to 0.37 per episode; about 95% of misfires are grazes) and with the caveat that the rule aimer v0 captures more (0.960) than both learned aimers under version 7. The user then approved everything up to the squash merge ("그래. 다 문서화하고 머지해"): verdict 4b46c3d, README / viewer data / glossary / published runs 1eb17b0, `origin/main` (#92, #94, #95) merged in, pointer removed last. Full per-episode outputs (21 runs: episodes, shots, meta) are only in `runs/_ops91/dl/all/` of this worktree (gitignored); do not delete the worktree's `runs/` in post-PR cleanup without copying them.
