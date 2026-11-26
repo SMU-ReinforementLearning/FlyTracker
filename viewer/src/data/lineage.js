@@ -170,6 +170,17 @@ const NODES = {
     change: { what: '정책의 돌리는 행동', from: '각속도', to: '각가속도' },
     metric: '평균 2.61초 · 기준선 4.89초',
   },
+  91: {
+    lane: 'environment',
+    also: ['fly', 'aimer'],
+    parents: [69, 88],
+    name: '빔에 놀라는 초파리',
+    result: '쏘는 빔이 닿으면 규칙 초파리가 달아난다. 학습한 조준기의 포획률이 97%대에서 78%와 84%로 내려갔다. 각가속도로 학습한 조준기가 v1보다 빨라서 v2로 정했다.',
+    envVersion: 7,
+    aimerVersion: 'v2',
+    change: { what: '빔이 닿은 규칙 초파리', from: '반응 없음', to: '놀라서 달아남' },
+    metric: 'v2 포획 506/600 · 평균 4.85초',
+  },
 }
 
 /** issue 를 화면에서 부르는 이름. 계보에 없는 issue 는 GitHub 의 issue 제목으로 부른다. issue 는 { number, title } 이다. */

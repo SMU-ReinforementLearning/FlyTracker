@@ -41,6 +41,8 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 | virtual looming stimulus shown to the neural fly | 자극 | 스티뮬러스, 가상 원반 | 신경 초파리 설정의 줄 이름에 쓴다. 예: 자극 횟수 (#62) |
 | one laser shot (0.15 s) | 발 | 샷, 사격 | 수치 목록의 "쏜 발". 값은 "3발". 환경 버전 6부터의 기록에만 나온다 (#69) |
 | shot during which the beam left the fly | 오발 | 미스, 빗나감 | 상태이자 수치 목록의 줄 이름. 값은 "2발" (#69) |
+| misfire during which the beam touched the fly at least once | 스친 발 | 스침, 그레이즈, 빗맞은 발 | 문서와 issue 화면의 글에 쓴다. 화면의 수치 목록에는 아직 없다. 환경 버전 7부터 (#91) |
+| misfire during which the beam never touched the fly | 벽에 맞은 발 | 벽 오발, 헛발, 월샷 | 문서와 issue 화면의 글에 쓴다. 화면의 수치 목록에는 아직 없다. 환경 버전 7부터 (#91) |
 | laser on | 쏘는 중 | 발사 중, 켜짐 | 수치 목록 "레이저" 줄의 값. 반대는 꺼짐 (#69) |
 | who decides when to fire | 쏘는 방식 | 발사 방식, 트리거 | 학습한 조준기 카드의 줄. 값은 "기준선의 규칙", "정책이 정함", "정책이 정함, 기준선의 규칙에서 시작" (#72, #88) |
 | what the policy's turning action means | 돌리는 행동 | 제어 방식, 컨트롤, 액션 타입 | 학습한 조준기 카드의 줄. 값은 "각속도" 또는 "각가속도". 발사만 학습한 모델에는 나오지 않는다 (#88) |
@@ -89,3 +91,4 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 - 2026-11-25: 계보 노드의 버전 표시와 수치 표기 추가 (#80)
 - 2026-11-25: 영역 이름을 사이드바의 구역 제목으로도 쓴다고 적음 (#81)
 - 2026-11-26: 돌리는 행동, 조준을 맡은 모델, 오발 벌점 추가. 쏘는 방식에 값 하나 추가 (#88)
+- 2026-11-26: 스친 발, 벽에 맞은 발 추가 (#91)

@@ -31,13 +31,13 @@ Environment version 7: a rule fly touched by the laser beam is startled and esca
 - Showing the two misfire kinds in the viewer's readouts beyond what the issue page needs (decide when the numbers exist).
 
 ## Done Criteria
-- [ ] Rule fly startled by beam contact during a shot; tested (reaction delay, no second startle inside the cooldown, no reaction without a shot, none for the neural fly).
-- [ ] Grazing and wall shots counted and exposed; `misfires` equals their sum for finished shots; tested.
-- [ ] Version 7; version 6 and version 5 aimer models load and play; tested.
-- [ ] Gate document complete above "Verdict" and committed before any aimer is measured under version 7.
-- [ ] v0, v1, `accel-pen-rule` measured on seeds 20000-20199; verdict written; numbers reported to the user with the wall-shot counts.
-- [ ] README, viewer data, glossary, published runs and `published/issues/91.json` updated.
-- [ ] `uv run pytest -q` and the viewer build pass.
+- [x] Rule fly startled by beam contact during a shot; tested (reaction delay, no second startle inside the cooldown, no reaction without a shot, none for the neural fly).
+- [x] Grazing and wall shots counted and exposed; `misfires` equals their sum for finished shots; tested.
+- [x] Version 7; version 6 and version 5 aimer models load and play; tested.
+- [x] Gate document complete above "Verdict" and committed before any aimer is measured under version 7.
+- [x] v0, v1, `accel-pen-rule` measured on seeds 20000-20199; verdict written; numbers reported to the user with the wall-shot counts.
+- [x] README, viewer data, glossary, published runs and `published/issues/91.json` updated.
+- [x] `uv run pytest -q` and the viewer build pass.
 - [ ] PR merged; `AGENTS.md` pointer removed in the branch's last commit.
 
 ## Current State
@@ -125,6 +125,23 @@ This document, the registry row in `docs/issues/README.md`, the pointer line in 
 - The user approved on 2026-11-26 ("그래. 다 문서화하고 머지해"): this commit, the documentation commit, push, PR and squash merge.
 - The user set the price of a wall shot for the next issue: 1 s as the main condition, with 0 s (control) and 3 s beside it.
 - Full per-episode outputs stay in `runs/_ops91/dl/all/` (gitignored); only the gate CSVs are in the repo.
+
+### docs: 환경 버전 7의 초파리 반응과 조준기 성적을 README와 viewer에 넣고 실행 올리기 (#91)
+> why: Scope 6 — the change and its numbers have to be readable outside the issue folder
+#### Scope
+`README.md`, `viewer/src/data/history.js`, `viewer/src/data/lineage.js`, `ui-text.glossary.md`, `published/2026-11-26_2214*..2215*` (7 runs), `published/issues/91.json`, this doc.
+#### Changes
+- README: the fly's reaction to the beam and the two misfire kinds (after the shot paragraph); the sentence that a rule fly flies the same path whatever the aimer does is now limited to version 6 and earlier; a new section "환경 버전 7에서 다시 잰 조준기" with the rule-fly and neural-fly tables and the verdict; `grazes` / `wallShots` in the episode file table; pointers from the version 6 sections.
+- Viewer data: issue 91 in `history.js` (env 7) with an `envVersion` history line; node 91 in `lineage.js` (environment lane, version 7, aimer v2).
+- Glossary: 스친 발, 벽에 맞은 발.
+- Published: v0, v1 x3, `accel-pen-rule` x3 recorded under version 7 on the rule fly, seeds 10000-10002 (21 episodes, all captured; 70 shots, 49 misfires of which 48 grazes), and the issue page text.
+#### Verification
+- `uv run pytest -q`: 274 passed. `npm run build` in `viewer/`: built.
+- No local path in the published folders (grep for the user folder and the staging folder: no match).
+#### Notes
+- No screenshot evidence was taken for the new lineage node and the issue page; `tests/test_viewer_lineage.py` covers the node's shape only.
+- The baseline table on seeds 10000-10199 in the README stays a version 6 table (not re-measured under version 7); the README says so.
+- The two counters are in `info` and in the episode summary, not in every frame; the viewer's readouts show the misfire total only.
 
 ## Management Notes
 ### Follow-up Candidates
