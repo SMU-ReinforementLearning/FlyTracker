@@ -43,6 +43,8 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 | shot during which the beam left the fly | 오발 | 미스, 빗나감 | 상태이자 수치 목록의 줄 이름. 값은 "2발" (#69) |
 | misfire during which the beam touched the fly at least once | 스친 발 | 스침, 그레이즈, 빗맞은 발 | 문서와 issue 화면의 글에 쓴다. 화면의 수치 목록에는 아직 없다. 환경 버전 7부터 (#91) |
 | misfire during which the beam never touched the fly | 벽에 맞은 발 | 벽 오발, 헛발, 월샷 | 문서와 issue 화면의 글에 쓴다. 화면의 수치 목록에는 아직 없다. 환경 버전 7부터 (#91) |
+| shot in progress with the beam on the fly | 맞는 중 | 포획 중, 조사 중 | 상태. 레이저를 쏠 때만 켜는 기록(환경 버전 6부터)에서 "포획 중" 대신 쓴다. 발이 끝나기 전이라 아직 오발이 될 수 있다 (#95) |
+| shot that stayed on the fly to its end | 명중 | 히트, 킬, 사살 | 상태(마지막 프레임)이자 재생 막대의 발 표시 이름. 반대는 오발 (#95) |
 | laser on | 쏘는 중 | 발사 중, 켜짐 | 수치 목록 "레이저" 줄의 값. 반대는 꺼짐 (#69) |
 | who decides when to fire | 쏘는 방식 | 발사 방식, 트리거 | 학습한 조준기 카드의 줄. 값은 "기준선의 규칙", "정책이 정함", "정책이 정함, 기준선의 규칙에서 시작" (#72, #88) |
 | what the policy's turning action means | 돌리는 행동 | 제어 방식, 컨트롤, 액션 타입 | 학습한 조준기 카드의 줄. 값은 "각속도" 또는 "각가속도". 발사만 학습한 모델에는 나오지 않는다 (#88) |
@@ -50,12 +52,17 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 | reward weight per misfire | 오발 벌점 | 미스 페널티, 오발 가중치 | 조준기 보상 카드의 줄 (#88) |
 | the baseline's firing rule | 쏘는 기준 | 발사 조건, 트리거 반경 | 기준선 카드의 줄. 값은 "빔까지 1.25mm 안" (#72) |
 | length of one shot | 한 발 길이 | 발사 시간, 포획 유지 시간 | 조준기 설정의 줄. 환경 버전 6부터의 실행에 나오고, 그 전 실행에는 환경 칸에 "포획 유지 시간"으로 나온다 (#72) |
-| aim stimulus on or off | 자극 켬, 자극 끔 | 자극 있음, 자극 없음 | 신경 초파리 설정의 "자극" 줄의 값이고 variation 이름에 붙는다 (#72) |
+| aim stimulus on or off | 자극 켬, 자극 끔 | 자극 있음, 자극 없음 | 신경 초파리 설정의 "자극" 줄의 값이고 조합 표의 초파리 칸에 붙는다 (#72, #92) |
+| fly, aimer and environment that a set of runs shares | 조합 | variation, 변형, 매치업 | issue 화면의 표에서 줄 하나. 설명 글에서 쓰는 말이고 화면 제목에는 쓰지 않는다. 학습 seed만 다른 실행은 한 조합이다 (#92) |
+| list of an issue's combinations | 실험 목록 | 조합, 조합 표, variation | issue 화면의 표 제목. 칸은 실험, 초파리, 조준기, 환경, 실행 순서다 (#92) |
+| letter that names one row of the list | 실험 A | 조합 A, 1번, variation A | 표의 맨 앞 칸과 실행 패널의 "실험" 줄. 글자만 A, B, C로 적는다 (#92) |
 | map of issues by area and by what each one builds on | 계보 | 트리, 로드맵, 타임라인 | 첫 화면의 제목이자 사이드바 맨 위 줄 (#77) |
 | area an issue mainly changed | 초파리, 조준기, 환경 | 플라이, 에이머, 조건 | 계보의 세로줄 이름이자 사이드바의 구역 제목. 이 순서로 쓴다 (#77, #81) |
 | another area an issue also changed | 조준기도 바꿈 | 조준기 포함, + 조준기 | 계보 노드의 아랫줄. 영역 이름 뒤에 "도 바꿈" (#77) |
 | version an issue raised, shown on a lineage node | 환경 버전 3, 조준기 v1, 규칙 초파리 | 환경 v3, env 3, 조준기 버전 1 | 계보 노드 맨 위의 표시. 환경은 "환경 버전 N", 조준기는 "조준기 vN", 초파리는 종류 이름이다. 영역 이름 옆의 지금 상태는 "버전 6", "v1", "규칙, 신경"으로 줄인다 (#80) |
 | episodes captured out of episodes run, on a lineage node | 포획 5/200 | 5/200 포획, 포획률 2.5% | 계보 노드의 수치 줄에만 쓴다. 문장에서는 "200개 가운데 5개" (#80) |
+| whether a run was recorded during training or replays a trained model | 기록 | 종류, 타입, 모드 | 실험 목록의 칸과 실행 패널의 줄. 값은 "학습"(학습하는 동안 checkpoint마다 기록한 실행) 또는 "평가"(학습을 마친 모델을 다시 돌린 실행). 사이드바에서는 둘이 섞인 묶음의 소제목이다. 기준선과 관찰 기록에는 나오지 않는다 (#94) |
+| row in which an evaluated model was trained | 모델 실험 B, 모델 #51 실험 B | 학습 실험 B, 출처 B | 평가 실행의 조준기 칸에 붙는 줄. 모델을 학습한 실행이 올라와 있을 때만 나온다. 다른 issue에서 학습했으면 issue 번호가 앞에 오고, 그 issue의 조합이 하나뿐이면 "모델 #35"다. 발사만 학습한 모델의 "조준을 맡은 모델" 줄도 같은 방식으로 적는다 (#94) |
 | training seed | 학습 seed | 시드 | 알고리즘 설정의 `seed` |
 | seeds of recorded episodes | 에피소드 seed | 평가 시드 | 설명 파일의 `notes`에 적는다 |
 
@@ -67,7 +74,9 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 | `result: capture` | 포획 |
 | `result: timeout` | 시간 초과 |
 | `visible: 1` / `0` | 보임 / 안 보임 |
-| `captureProgress > 0` | 포획 중 |
+| `captureProgress > 0` (`firing` 이 없는 기록) | 포획 중 |
+| `firing: true` 이고 `0 < captureProgress < 1` | 맞는 중 |
+| `firing: true` 이고 `captureProgress = 1` | 명중 |
 | `firing: true` 이고 `captureProgress = 0` | 오발 |
 | `firing: true` / `false` | 쏘는 중 / 꺼짐 |
 | `alarmed: 1` / `0` | 비상시 / 평시 |
@@ -91,4 +100,7 @@ viewer 코드에서는 `viewer/src/data/labels.js`가 이 표를 따른다.
 - 2026-11-25: 계보 노드의 버전 표시와 수치 표기 추가 (#80)
 - 2026-11-25: 영역 이름을 사이드바의 구역 제목으로도 쓴다고 적음 (#81)
 - 2026-11-26: 돌리는 행동, 조준을 맡은 모델, 오발 벌점 추가. 쏘는 방식에 값 하나 추가 (#88)
+- 2026-11-26: 조합 추가. variation을 조합으로 바꿈 (#92)
+- 2026-11-26: 기록(학습, 평가)과 모델 실험 B 추가 (#94)
+- 2026-11-26: 맞는 중, 명중 추가. 레이저를 쏠 때만 켜는 기록의 상태에서 포획 중을 대신한다 (#95)
 - 2026-11-26: 스친 발, 벽에 맞은 발 추가 (#91)

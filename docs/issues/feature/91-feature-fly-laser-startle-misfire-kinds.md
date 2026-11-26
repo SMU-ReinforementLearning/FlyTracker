@@ -41,7 +41,9 @@ Environment version 7: a rule fly touched by the laser beam is startled and esca
 - [ ] PR merged; `AGENTS.md` pointer removed in the branch's last commit.
 
 ## Current State
-2026-11-26: issue registered and first commit made (9735310) after the user's go-ahead. Scope 1-4 implemented and tested (272 passed), gate document and measuring script written; the user reviewed the report of both and said "진행해. vast.ai에서 진행해", which approves these two commits, the gate as written and measuring on vast.ai. Review-free commits for the rest of the issue were asked about and not answered: later commits still go through the review gate, except the mechanical freeze of `gate/v1.csv` that the approved gate itself requires between the two measuring steps. The environment change is commit d3b95b2, the gate b967875, the frozen baseline 6e40c1c. Measured the same day on vast.ai (instance destroyed, none left): verdict **adopt** (`accel-pen-rule` faster than v1, P 1.000; capture 0.843 against 0.780). The verdict text and `gate/accel-pen-rule.csv` are written but NOT committed: they wait for the user's review. Full outputs (21 runs: episodes, shots, meta) are only in `runs/_ops91/dl/all/` (gitignored) until they are published. Reported to the user with the wall-shot counts (0.24 to 0.37 per episode; about 95% of misfires are grazes) and with the caveat that the rule aimer v0 captures more (0.960) than both learned aimers under version 7. Next: the user's review and the price of a wall shot; then README, viewer data, glossary, published runs, `published/issues/91.json`.
+2026-11-26: issue registered and first commit made (9735310) after the user's go-ahead. Scope 1-4 implemented and tested (272 passed), gate document and measuring script written; the user reviewed the report of both and said "진행해. vast.ai에서 진행해", which approves these two commits, the gate as written and measuring on vast.ai. Review-free commits for the rest of the issue were asked about and not answered: later commits still go through the review gate, except the mechanical freeze of `gate/v1.csv` that the approved gate itself requires between the two measuring steps. The environment change is commit d3b95b2, the gate b967875, the frozen baseline 6e40c1c. Measured the same day on vast.ai (instance destroyed, none left): verdict **adopt** (`accel-pen-rule` faster than v1, P 1.000; capture 0.843 against 0.780). Reported to the user with the wall-shot counts (0.24 to 0.37 per episode; about 95% of misfires are grazes) and with the caveat that the rule aimer v0 captures more (0.960) than both learned aimers under version 7. The user then approved everything up to the squash merge ("그래. 다 문서화하고 머지해"): verdict 4b46c3d, README / viewer data / glossary / published runs 1eb17b0, `origin/main` (#92, #94, #95) merged in, pointer removed last. Full per-episode outputs (21 runs: episodes, shots, meta) are only in `runs/_ops91/dl/all/` of this worktree (gitignored); do not delete the worktree's `runs/` in post-PR cleanup without copying them.
+
+Handed to the next issue (fire learning under version 7): a wall shot costs 1 s (main), with 0 s as control and 3 s beside it; the agent recommended training the aim again under version 7 as well, since the existing models never saw an escaping fly (the user has not decided this).
 
 Decisions already made by the user (2026-11-26): the fly reacts from the moment the beam touches it; version goes up to 7 and version 6 models stay loadable; the neural fly is changed only after talking to the teammate; the misfire penalty is kept, to be given to wall shots, with a zero-penalty condition as control, in the next issue; the price of a wall shot is set after seeing this issue's numbers.
 
@@ -142,6 +144,28 @@ This document, the registry row in `docs/issues/README.md`, the pointer line in 
 - No screenshot evidence was taken for the new lineage node and the issue page; `tests/test_viewer_lineage.py` covers the node's shape only.
 - The baseline table on seeds 10000-10199 in the README stays a version 6 table (not re-measured under version 7); the README says so.
 - The two counters are in `info` and in the episode summary, not in every frame; the viewer's readouts show the misfire total only.
+
+### Merge origin/main (#92, #94, #95) into the branch
+> why: main moved three times while this issue was measured; the PR has to merge cleanly
+#### Scope
+Merge commit; conflicts in `docs/issues/README.md` and `ui-text.glossary.md`.
+#### Changes
+- Both conflicts were both-sides-added rows; both sides kept (registry rows in number order; glossary rows and history lines of #91 next to those of #92, #94, #95).
+#### Verification
+- `uv run pytest -q`: 285 passed after the merge. `npm ci` and `npm run build` in `viewer/`: built.
+#### Notes
+- #95 draws shots and hits in the viewer; the runs published here were recorded before the merge and use only fields that already existed plus `grazes` / `wallShots` in the summary.
+
+### chore: 병합 전에 AGENTS.md에서 #91 줄 빼기 (#91)
+> why: the pointer has to leave in the branch's last commit; main cannot be edited after the merge
+#### Scope
+`AGENTS.md`, `docs/issues/README.md` (status done), this doc.
+#### Changes
+- Pointer line removed; registry row set to done; Status done.
+#### Verification
+- `git diff origin/main -- AGENTS.md`: no difference.
+#### Notes
+- None.
 
 ## Management Notes
 ### Follow-up Candidates

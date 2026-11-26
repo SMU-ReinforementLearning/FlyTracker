@@ -1,17 +1,17 @@
 import { useId, useMemo, useState } from 'react'
-import { compareExperiments, experimentOf, variationsOf } from '../../data/experiment.js'
+import { combinationsOf, compareExperiments, experimentOf } from '../../data/experiment.js'
 import { changeOf } from '../../data/history.js'
 import { issueName } from '../../data/lineage.js'
 import { byCreatedAt, compareGroup, lastCheckpoint, NO_ISSUE, steppedCheckpoints } from '../../data/runs.js'
-import { NO_RUNS, useConfigs, useIssueInfo } from '../../data/useIssueData.js'
+import { NO_RUNS, useConfigs, useIssueInfo, useOrigins } from '../../data/useIssueData.js'
+import { Combinations } from '../Combinations/Combinations.jsx'
 import { CurveChart } from '../CurveChart/CurveChart.jsx'
 import { METRICS, MetricSwitch } from '../RunPanel/RunPanel.jsx'
-import { Segmented } from '../Segmented/Segmented.jsx'
 import { Swatch } from '../Swatch/Swatch.jsx'
 import styles from './IssuePage.module.css'
 
 const SERIES_COLORS = 8 // assets/styles/variables.css 의 --color-series-1 … --color-series-8
-const ALL = 'all'
+const NO_COMBINATIONS = []
 
 const paragraphs = (value) => (Array.isArray(value) ? value : value ? [value] : []).filter(Boolean)
 
@@ -156,10 +156,13 @@ function Purpose({ issueKey, info, target, onOpenIssue }) {
   )
 }
 
-/** issue 하나가 어떤 실험인지 보여 준다. 실험 이유, variation, 초파리와 조준기, 환경, 학습 곡선 순서다. */
-export function IssuePage({ group, groups, onOpenIssue }) {
+/**
+ * issue 하나가 어떤 실험인지 보여 준다. 실험 이유, 조합 표, 초파리와 조준기, 환경, 학습 곡선 순서다.
+ * 조합 표에서 줄을 고르면 그 아래의 칸과 학습 곡선이 그 조합의 실행만 보여 준다. 고르지 않으면 실행 전체다.
+ */
+export function IssuePage({ group, groups, onOpenIssue, onSelectRun }) {
   const [metric, setMetric] = useState('rate')
-  const [variation, setVariation] = useState(ALL)
+  const [combination, setCombination] = useState(null)
   const m = METRICS[metric]
 
   // 색은 만든 순서로 준다. 실행이 새로 올라와도 앞선 실행의 색은 바뀌지 않는다.
@@ -168,9 +171,10 @@ export function IssuePage({ group, groups, onOpenIssue }) {
 
   const configs = useConfigs(runs)
   const info = useIssueInfo(group.key)
-  const variations = useMemo(() => (configs && info !== undefined ? variationsOf(runs, configs, info) : { label: null, items: [] }), [runs, configs, info])
-  const picked = variations.items.find((v) => v.key === variation) ?? null
-  const shownIds = useMemo(() => (picked ? new Set(picked.runIds) : null), [picked])
+  const origins = useOrigins(runs, configs)
+  const combinations = useMemo(() => (configs && info !== undefined && origins ? combinationsOf(runs, configs, info, origins) : NO_COMBINATIONS), [runs, configs, info, origins])
+  const picked = (combinations.length > 1 && combinations.find((c) => c.key === combination)) || null
+  const shownIds = useMemo(() => (picked ? new Set(picked.runs.map((r) => r.id)) : null), [picked])
 
   // 비교 대상은 설명 파일의 compare 가 정한다. 그 issue 의 실행 전체와 견준다.
   const target = info ? compareGroup(groups, group, info.compare) : null
@@ -206,8 +210,6 @@ export function IssuePage({ group, groups, onOpenIssue }) {
 
   if (!exp) return <div className={styles.page} />
 
-  const options = [{ value: ALL, label: '전체' }, ...variations.items.map((v) => ({ value: v.key, label: v.label }))]
-
   return (
     <div className={styles.page}>
       <div className={styles.column}>
@@ -216,11 +218,12 @@ export function IssuePage({ group, groups, onOpenIssue }) {
             <Purpose issueKey={group.key} info={info} target={target} onOpenIssue={onOpenIssue} />
           </Section>
         )}
-        {variations.items.length > 0 && (
-          <div className={styles.variationBar}>
-            <span className={styles.variationLabel}>{variations.label}</span>
-            <Segmented label={variations.label} options={options} value={picked ? picked.key : ALL} onChange={setVariation} className={styles.variationSwitch} />
-          </div>
+        {combinations.length > 0 && (
+          <Section title="실험 목록">
+            <div className={styles.card}>
+              <Combinations rows={combinations} runs={runs} selected={picked?.key ?? null} onSelect={setCombination} onOpenRun={onSelectRun} />
+            </div>
+          </Section>
         )}
         {(exp.fly.cards.length > 0 || exp.aimer.cards.length > 0) && (
           <div className={styles.pair}>

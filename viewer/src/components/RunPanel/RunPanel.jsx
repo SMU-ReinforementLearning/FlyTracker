@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { percent, seconds, signed, tagLabel } from '../../data/labels.js'
-import { rateOf, steppedCheckpoints } from '../../data/runs.js'
+import { byCreatedAt, rateOf, steppedCheckpoints } from '../../data/runs.js'
+import { useCombinations } from '../../data/useIssueData.js'
 import { togglePlay } from '../../playback/clock.js'
+import { recordLabel } from '../../data/experiment.js'
+import { CombinationCell } from '../Combinations/Combinations.jsx'
 import { CurveChart } from '../CurveChart/CurveChart.jsx'
 import { ListRow, RowList } from '../ListRow/ListRow.jsx'
 import { Outcome } from '../Outcome/Outcome.jsx'
@@ -153,7 +156,41 @@ function EpisodeList({ grid, sel, onSelect }) {
   )
 }
 
-export function RunPanel({ run, grid, sel, onSelect }) {
+/**
+ * 이 실행의 조합. 초파리, 조준기, 환경을 늘 이 순서로 적는다. 칸의 내용은 issue 화면의 조합 표와 같다.
+ * 조합이 둘 이상인 issue 면 맨 위에 표에서 이 조합을 부르는 글자(A, B, C)도 적는다.
+ * group 은 이 실행이 든 issue 묶음이다. 같은 묶음의 다른 실행과 값이 다른 줄이 종류 아래에 나온다.
+ */
+function Combination({ run, group }) {
+  const runs = useMemo(() => [...group.runs].sort(byCreatedAt), [group.runs])
+  const combos = useCombinations(runs, group.key)
+  const combo = combos?.find((c) => c.runs.some((r) => r.id === run.id))
+  if (!combo) return null
+  const seed = combo.runs.find((r) => r.id === run.id).seed
+  const rows = [
+    ...(combos.length > 1 ? [['실험', { title: combo.letter, details: [] }]] : []), // issue 화면의 표에서 이 조합을 부르는 글자
+    ['초파리', combo.fly],
+    ['조준기', seed === null ? combo.aimer : { ...combo.aimer, details: [...combo.aimer.details, { label: '학습 seed', value: String(seed) }] }],
+    ['환경', combo.environment],
+    ...(combo.record ? [['기록', { title: recordLabel(combo.record), details: [] }]] : []), // 학습하는 동안 기록한 실행인지, 학습을 마친 모델을 다시 돌린 실행인지
+  ]
+  return (
+    <section aria-label="조합">
+      <dl className={styles.combo}>
+        {rows.map(([label, cell]) => (
+          <div key={label}>
+            <dt>{label}</dt>
+            <dd>
+              <CombinationCell cell={cell} />
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  )
+}
+
+export function RunPanel({ run, group, grid, sel, onSelect }) {
   const [metric, setMetric] = useState('rate')
   const m = METRICS[metric]
   const stepped = useMemo(() => steppedCheckpoints(run), [run])
@@ -172,6 +209,7 @@ export function RunPanel({ run, grid, sel, onSelect }) {
 
   return (
     <aside className={styles.panel} aria-label="실행 요약과 에피소드">
+      {group && <Combination run={run} group={group} />}
       {checkpoint && !['free-flight', 'tracking-observation'].includes(run.algo) && <Stats checkpoint={checkpoint} />}
       {stepped.length >= 2 && (
         <section className={styles.section} aria-label="학습 곡선">

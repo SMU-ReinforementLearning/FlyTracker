@@ -348,18 +348,52 @@ function stableJson(v) {
 }
 
 /**
- * 학습 seed 를 뺀 config. 이 값이 같은 실행끼리 한 variation 이다. 학습 seed 만 다른 실행은 같은 설정을 되풀이한 것이다.
+ * 학습 seed 를 뺀 config. 이 값이 같은 실행끼리 한 조합이다. 학습 seed 만 다른 실행은 같은 설정을 되풀이한 것이다.
  * 이미 학습한 모델을 다시 돌린 실행의 모델 id(algo.model)도 뺀다. 학습 seed 만 다른 모델은 id 만 다르다.
  */
 function signatureOf(cfg) {
   const { algo = {}, ...rest } = cfg
-  const { seed: _seed, model: _model, ...algoRest } = algo
+  const { seed: _seed, model: _model, aim: _aim, ...algoRest } = algo // 발사만 학습한 모델의 조준 모델(aim)도 학습 seed 마다 id 만 다르다
   return stableJson({ ...rest, algo: algoRest })
 }
 
+/**
+ * 실행이 어떤 기록인가. 학습한 쪽이 있는 실행만 가른다.
+ * 'training' 은 학습하는 동안 checkpoint 마다 기록한 실행이고, 'evaluation' 은 학습을 마친 모델을 불러 다시 돌린 실행이다(config.json 의 algo.model 에 그 모델의 실행 id 가 있다).
+ * 기준선이나 관찰 기록처럼 학습한 쪽이 없는 실행은 null 이다.
+ */
+export function recordKindOf(cfg) {
+  const algo = cfg?.algo ?? {}
+  if (!LEARNED.has(algo.name ?? cfg?.policy ?? cfg?.mode ?? null)) return null
+  return has(algo.model) ? 'evaluation' : 'training'
+}
+
+/**
+ * 실행이 가리키는 다른 실행. 평가 실행의 모델(algo.model)과 발사만 학습한 모델의 조준 모델(algo.aim)이다.
+ * 돌려주는 것: [{ label, id, side }]. label 은 조합 표에 적는 줄 이름이고 side 는 그 줄이 붙는 칸이다.
+ * algo.aim 은 '<실행 id>+rule-fire' 처럼 쏘는 방식이 뒤에 붙어 있어서 '+' 앞만 쓴다.
+ */
+function referencesOf(cfg) {
+  const algo = cfg?.algo ?? {}
+  if (!LEARNED.has(algo.name ?? cfg?.policy ?? cfg?.mode ?? null)) return []
+  const side = algo.side === 'fly' ? 'fly' : 'aimer'
+  return [
+    ...(has(algo.model) ? [{ label: '모델', id: String(algo.model), side }] : []),
+    ...(has(algo.aim) ? [{ label: '조준을 맡은 모델', id: String(algo.aim).split('+')[0], side }] : []),
+  ]
+}
+
+/** configs 의 실행들이 가리키는 실행 id. 다른 issue 에서 학습한 모델을 찾을 때 쓴다(useIssueData.js 의 useOrigins). */
+export const referencedRunIds = (configs) => [...new Set(configs.filter(Boolean).flatMap((c) => referencesOf(c).map((r) => r.id)))]
+
+const RECORD_NAME = { training: '학습', evaluation: '평가' }
+
+/** 기록의 종류를 화면에 적는 말. 가르지 않는 실행은 null 이다. */
+export const recordLabel = (kind) => RECORD_NAME[kind] ?? null
+
 const SIDE_NAME = { fly: '초파리', aimer: '조준기' }
 
-/** 화면에 나오는 값을 '자리 + 이름' key 로 편다. variation 끼리 무엇이 다른지 찾는 데 쓴다. */
+/** 화면에 나오는 값을 '자리 + 이름' key 로 편다. 조합끼리 무엇이 다른지 찾는 데 쓴다. */
 function shownValues(exp) {
   const out = new Map()
   for (const side of ['fly', 'aimer']) {
@@ -372,51 +406,105 @@ function shownValues(exp) {
   return out
 }
 
+const NONE = '없음'
+const REWARD_KEY = /^(fly|aimer) 보상\|/
+
+// 조합 표의 칸마다 그 칸에 드는 줄의 key 머리. 초파리와 조준기는 카드의 줄, 설정, 보상이고 환경은 환경 줄이다.
+const COLUMNS = [
+  { key: 'fly', title: 'fly|초파리', prefixes: ['fly|', 'fly 설정|', 'fly 보상|'] },
+  { key: 'aimer', title: 'aimer|조준기', prefixes: ['aimer|', 'aimer 설정|', 'aimer 보상|'] },
+  { key: 'environment', title: '환경|환경 버전', prefixes: ['환경|'] },
+]
+
 /**
- * issue 안의 variation. 학습 seed 만 다른 실행끼리 묶는다.
- * 돌려주는 것: { label, items: [{ key, label, parts, runIds }] }. label 은 variation 끼리 다른 항목의 이름이고,
- * 항목 label 은 그 값이다(예: '함께 보는 최근 관측' 과 '1개', '4개'). variation 이 하나뿐이면 items 는 빈 목록이다.
- * parts 는 같은 것을 이름과 값으로 나눈 목록이다([{ label, value }]). 사이드바가 variation 마다 무엇이 다른지 줄로 보여 주는 데 쓴다.
+ * issue 안의 조합. 학습 seed 만 다른 실행끼리 한 조합으로 묶고, 조합마다 초파리, 조준기, 환경을 늘 같은 칸에 적는다.
+ * 돌려주는 것: [{ key, letter, record, fly, aimer, environment, runs }]. 설정을 읽은 실행이 없으면 빈 목록이다.
+ * record 는 기록의 종류다(recordKindOf). 학습 실행과 평가 실행은 한 조합에 섞지 않는다. 학습 실행의 줄이 앞에 온다.
+ * 평가 실행의 줄은 보상 줄을 적지 않고, 모델을 학습한 실행이 같은 issue 에 있으면 '모델 실험 C' 처럼 그 줄의 글자를 적는다.
+ * 발사만 학습한 모델의 조준 모델도 같은 방식으로 '조준을 맡은 모델 실험 B' 로 적는다.
+ * origins 는 다른 issue 에 있는 학습 실행의 id 를 '#51 실험 B' 같은 글로 바꾸는 Map 이다. 없으면 다른 issue 의 모델은 적지 않는다.
+ * letter 는 표에서 그 줄을 부르는 글자다(A, B, C). 줄 순서대로 붙이므로 실행이 새로 올라오면 바뀔 수 있다.
+ * fly, aimer, environment 는 { title, details: [{ label, value }] } 이다. title 은 종류와 버전이고(규칙 초파리 v0, 학습한 조준기 v1, 버전 6),
+ * details 는 title 이 같은 조합끼리 값이 다른 줄이다(자극 켬과 끔, 돌리는 행동). 다른 조합과 같은 줄은 적지 않는다.
+ * 한쪽에만 있는 줄(자극을 껐을 때 사라지는 자극 길이)은 값이 서로 다른 줄이 따로 있으면 적지 않는다. 그 줄이 이미 둘을 가른다.
+ * runs 는 [{ id, seed }] 이고, seed 는 조합 안에서 실행을 가르는 학습 seed 다. 학습 seed 로 가를 수 없으면 null 이다. 가를 수 있으면 학습 seed 순서다.
+ * 순서는 학습 실행의 줄이 먼저이고, 그 안에서는 표의 칸 순서대로 초파리, 조준기, 환경의 글자 순서다. 같은 초파리의 줄이 모이고, 그 안에서 기준선이 학습한 조준기보다 앞에 온다.
+ * 규칙 초파리가 신경 초파리보다 앞이다. 어느 한쪽을 기준으로 삼지 않으려고 칸 순서를 그대로 따른다.
  */
-export function variationsOf(runs, configs, info) {
+export function combinationsOf(runs, configs, info, origins = null) {
   const groups = new Map()
   runs.forEach((run, i) => {
     const cfg = configs[i]
     if (!cfg) return
-    const sig = signatureOf(cfg)
-    if (!groups.has(sig)) groups.set(sig, { runs: [], configs: [] })
+    const record = recordKindOf(cfg)
+    const sig = `${record}|${signatureOf(cfg)}` // 학습 실행과 평가 실행은 설정이 같아도 다른 조합이다
+    if (!groups.has(sig)) groups.set(sig, { record, runs: [], configs: [] })
     groups.get(sig).runs.push(run)
     groups.get(sig).configs.push(cfg)
   })
   const list = [...groups.values()]
-  if (list.length < 2) return { label: null, items: [] }
   const shown = list.map((g) => shownValues(experimentOf(g.runs, g.configs, info)))
   const keys = [...new Set(shown.flatMap((m) => [...m.keys()]))]
-  const differs = (k) => new Set(shown.map((m) => m.get(k) ?? '없음')).size > 1
-  // 초파리나 조준기의 종류가 다르면 그것만으로 이름을 짓는다. 종류가 다르면 딸린 줄도 다 달라서, 모두 적으면 이름이 너무 길다.
-  const titles = ['fly|초파리', 'aimer|조준기'].filter(differs)
-  const differing = titles.length ? titles : keys.filter(differs)
-  const nameOf = (i, ks) => ks.map((k) => shown[i].get(k) ?? '없음').join(', ')
-  // 종류가 같은 variation 이 둘 이상이면(신경 초파리의 자극 켬과 끔) 이름이 겹친다. 겹친 것끼리 다른 줄을 '이름 값' 으로 덧붙인다.
-  const extraOf = (i) => {
-    const same = list.map((_, j) => j).filter((j) => nameOf(j, differing) === nameOf(i, differing))
-    if (!titles.length || same.length < 2) return []
-    const k = keys.find((key) => !titles.includes(key) && new Set(same.map((j) => shown[j].get(key) ?? '없음')).size > 1)
-    return k ? [k] : []
+  // 줄이 없는 것과 값이 '없음'인 것(추적 보조 없음)은 다르다. 없는 줄은 undefined 로 두고, 적을 때만 '없음'으로 바꾼다.
+  const valueOf = (i, k) => shown[i].get(k)
+
+  const cellOf = (i, col) => {
+    const same = list.map((_, j) => j).filter((j) => valueOf(j, col.title) === valueOf(i, col.title))
+    // 모델 id 는 학습 seed 처럼 조합 안의 실행을 가르는 값이라 뺀다(signatureOf)
+    // 평가 실행의 보상 값은 모델을 학습한 보상이 아니라 다시 돌린 환경의 값이다. 모델의 조건처럼 읽히므로 평가 줄에는 적지 않는다
+    const shownHere = (k) => !(list[i].record === 'evaluation' && REWARD_KEY.test(k))
+    const mine = keys.filter((k) => k !== col.title && k !== 'aimer|모델' && k !== 'fly|모델' && k !== 'aimer|조준을 맡은 모델' && shownHere(k) && col.prefixes.some((p) => k.startsWith(p)))
+    const real = (k) => new Set(same.map((j) => valueOf(j, k)).filter((v) => v !== undefined))
+    const differing = mine.filter((k) => new Set(same.map((j) => valueOf(j, k))).size > 1)
+    const valued = differing.filter((k) => real(k).size > 1)
+    const details = (valued.length ? valued : differing).map((k) => ({ label: k.split('|')[1], value: valueOf(i, k) ?? NONE }))
+    const title = col.key === 'environment' ? `버전 ${valueOf(i, col.title)}` : (valueOf(i, col.title) ?? NONE)
+    return { title, details }
   }
-  const partOf = (i, k) => ({ label: k.split('|')[1], value: shown[i].get(k) ?? '없음' })
-  const items = list.map((g, i) => {
-    const extra = extraOf(i)
-    return {
-      key: g.runs[0].id,
-      label: differing.length ? [nameOf(i, differing), ...extra.map((k) => `${partOf(i, k).label} ${partOf(i, k).value}`)].join(', ') : `설정 ${i + 1}`,
-      parts: [...differing, ...extra].map((k) => partOf(i, k)),
-      runIds: g.runs.map((r) => r.id),
-    }
+
+  const rows = list.map((g, i) => {
+    const seeds = g.configs.map((c) => c.algo?.seed ?? null)
+    const named = g.runs.length > 1 && seeds.every((s) => s !== null) && new Set(seeds).size === g.runs.length
+    const cells = Object.fromEntries(COLUMNS.map((col) => [col.key, cellOf(i, col)]))
+    const refs = g.configs.map(referencesOf)
+    const members = g.runs.map((r, k) => ({ id: r.id, seed: named ? seeds[k] : null }))
+    if (named) members.sort((a, b) => a.seed - b.seed) // 같은 초에 시작한 학습은 만든 때로는 순서가 정해지지 않는다
+    return { key: g.runs[0].id, record: g.record, ...cells, runs: members, refs }
   })
-  items.sort((a, b) => a.label.localeCompare(b.label, 'ko', { numeric: true }))
-  return { label: differing.length ? differing.map((k) => k.split('|')[1]).join(', ') : '설정', items }
+  const order = (row) => [row.fly, row.aimer, row.environment].map(cellText).join(' | ')
+  const rank = (row) => (row.record === 'training' ? 0 : 1)
+  rows.sort((a, b) => rank(a) - rank(b) || order(a).localeCompare(order(b), 'ko', { numeric: true }))
+  const lettered = rows.map((row, i) => ({ ...row, letter: letterOf(i) }))
+  // 가리키는 실행이 같은 issue 의 학습 실행이면 그 줄의 글자를, 다른 issue 의 학습 실행이면 origins 가 준 글을 적는다
+  const whereOf = (id) => {
+    const own = lettered.find((r) => r.record === 'training' && r.runs.some((run) => run.id === id))
+    return own ? `실험 ${own.letter}` : (origins?.get(id) ?? null)
+  }
+  return lettered.map(({ refs, ...row }) => {
+    let out = row
+    for (const label of [...new Set(refs.flat().map((r) => r.label))]) {
+      const mine = refs.map((list) => list.find((r) => r.label === label))
+      const where = mine.map((r) => (r ? whereOf(r.id) : null))
+      if (!where[0] || where.some((w) => w !== where[0])) continue // 실행들이 한 줄에서 왔을 때만 적는다
+      const side = mine[0].side
+      out = { ...out, [side]: { ...out[side], details: [...out[side].details, { label, value: where[0] }] } }
+    }
+    return out
+  })
 }
+
+/** 표에서 줄을 부르는 글자. 0 은 A, 25 는 Z, 26 은 AA 다. 숫자는 학습 seed 나 버전과 헷갈려서 쓰지 않는다. */
+function letterOf(i) {
+  let s = ''
+  for (let n = i; n >= 0; n = Math.floor(n / 26) - 1) s = String.fromCharCode(65 + (n % 26)) + s
+  return s
+}
+
+/** 조합 안에서 실행을 부르는 이름. 학습 seed 로 가를 수 있으면 '학습 seed 0', 아니면 null 이다. */
+export const seedLabel = (seed) => (seed === null || seed === undefined ? null : `학습 seed ${seed}`)
+
+/** 조합의 칸 하나를 한 줄 글로. '신경 초파리, 자극 켬' 처럼 종류 뒤에 다른 줄을 쉼표로 잇는다. */
+export const cellText = (cell) => [cell.title, ...cell.details.map((d) => `${d.label} ${d.value}`)].join(', ')
 
 /** 지금 실험(exp)을 비교 대상(prev)과 견준다. prev 가 없으면 exp 를 그대로 돌려준다. */
 export function compareExperiments(exp, prev) {

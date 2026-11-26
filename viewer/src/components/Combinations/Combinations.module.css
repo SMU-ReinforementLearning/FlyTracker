@@ -1,0 +1,150 @@
+/* 조합 표: 줄 하나가 조합 하나. 초파리, 조준기, 환경, 실행 칸이 늘 같은 자리에 있다 */
+
+/* 좁은 화면에서는 표 안에서만 옆으로 넘긴다 */
+.scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-md);
+  text-align: left;
+}
+
+.table th {
+  padding: 0 var(--space-3) var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 1.1rem var(--space-3);
+  border-top: 1px solid var(--color-separator);
+  vertical-align: top;
+}
+
+/* 표의 양 끝은 카드의 글 시작 선에 맞춘다. 고른 줄의 바탕은 그 선 밖으로 조금 나간다 */
+.table th:first-child,
+.table td:first-child {
+  padding-left: var(--space-2);
+}
+
+.table th:last-child,
+.table td:last-child {
+  padding-right: var(--space-2);
+}
+
+/* 종류와 버전은 한 줄에 둔다. 좁은 화면에서 '버전 6' 이 두 줄로 갈리지 않게 한다 */
+/* 줄을 부르는 글자. 맨 앞 칸에 굵게 둔다. 고른 줄은 강조색이 된다 */
+.table tbody th.letter {
+  width: 1%;
+  padding: 1.1rem var(--space-3) 1.1rem var(--space-2);
+  border-top: 1px solid var(--color-separator);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  vertical-align: top;
+}
+
+.selectable[aria-selected='true'] th.letter {
+  color: var(--color-accent);
+}
+
+.kind {
+  display: block;
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0.4rem 0 0;
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.details div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-2);
+}
+
+.details dt {
+  color: var(--color-text-tertiary);
+}
+
+.details dd {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* 기록의 종류(학습, 평가). 종류와 버전의 윗줄과 같은 굵기로 둔다 */
+.table td.record {
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+/* 고를 수 있는 줄 */
+.selectable {
+  cursor: pointer;
+}
+
+.selectable:hover {
+  background: var(--color-fill);
+}
+
+.selectable:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+/* 고른 줄. 왼쪽 끝의 강조색 띠와 옅은 바탕으로 알린다 */
+.selectable[aria-selected='true'] {
+  background: var(--color-fill-strong);
+  box-shadow: inset 0.3rem 0 0 var(--color-accent);
+}
+
+/* 실행 버튼들 */
+.runs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+}
+
+.run {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: 0.3rem 0.9rem;
+  border: 0;
+  border-radius: 99rem;
+  background: var(--color-fill-strong);
+  color: var(--color-accent);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.run:hover {
+  text-decoration: underline;
+}
+
+.count {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+/* media query 의 rem 은 html 글자 크기를 따르지 않아 px 로 쓴다 */
+@media (max-width: 760px) {
+  .table {
+    min-width: 56rem;
+  }
+}

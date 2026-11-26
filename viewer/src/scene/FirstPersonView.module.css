@@ -41,6 +41,29 @@
     linear-gradient(var(--c), var(--c)) right center / 1.2rem 1px no-repeat;
 }
 
+/* 쏘는 동안 화면 가운데에 켜지는 빔의 점. 실제 빔은 화소 하나보다 작아서 빛으로 키워 그린다 */
+.shot {
+  --c: #30d158;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.8rem;
+  height: 0.8rem;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--c);
+  box-shadow: 0 0 1.4rem 0.5rem color-mix(in srgb, var(--c) 65%, transparent);
+  pointer-events: none;
+}
+
+.shot[data-state='off'] {
+  display: none;
+}
+
+.shot[data-state='miss'] {
+  --c: #ff453a;
+}
+
 /* iPhone 카메라의 초점 사각형. 변 가운데의 짧은 눈금까지 같은 모양이다. 선 굵기 1.5px 는 테두리라서 px 로 둔다. */
 .focus {
   --c: #ffd60a;
@@ -100,6 +123,13 @@
 
 .beam[data-capture='true'] {
   --c: #30d158;
+}
+
+/* 쏘는 동안에는 원을 채운다. 쏘지 않을 때의 테두리만 있는 원과 한눈에 갈린다 */
+.beam[data-shot='true'] {
+  border-width: 2px;
+  background: color-mix(in srgb, var(--c) 35%, transparent);
+  box-shadow: 0 0 1.6rem color-mix(in srgb, var(--c) 60%, transparent);
 }
 
 .zoomLabel {
