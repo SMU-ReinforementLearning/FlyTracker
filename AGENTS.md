@@ -62,7 +62,6 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `88-feature-aimer-accel-action-sac-fire` — `docs/issues/feature/88-feature-aimer-accel-action-sac-fire.md` — 조준기 행동을 각가속도로 바꾸고 SAC로 조준과 발사 학습하기
 
 ## Environment (repo slot)
 
