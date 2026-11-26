@@ -41,6 +41,8 @@ Train SAC aimers that steer alone with angular-acceleration actions instead of a
 ## Current State
 2026-11-26 03:30 KST. Training finished, results downloaded and verified, instance destroyed (nothing is running or billing). Verdicts are in `gate.md`: one of five adopted (`accel-pen-rule`: 2.611 s, 589/600, 0.47 misfires per episode; v0 4.894 s). `accel-rule` passes on time but is rejected by the capture exclusion (0.965 < 0.97); `rate-rule` and both fire-learning conditions are rejected. Korean results: `conditions.md`, section "결과". Nothing pushed.
 
+Stage 2 (2026-11-26, the user: proceed with the staged fire learning as proposed): code and `gate-fire.md` written, tests 236 passed, not committed yet (review gate) and no training started. Next: commit code and gate, train 4 conditions x 3 seeds x 500,000 steps (`--aim runs/g88/accel-pen-rule-s<k>/<run>`), evaluate as in stage 1, write the verdict into `gate-fire.md`.
+
 Left, waiting for the user (screen text and a decision are involved):
 - Scope 7 remainder: published runs (`published/issues/88.json`), README training options, viewer rows (`history.js`, `lineage.js`, the control row on the card).
 - Whether to gate `accel-pen-rule` against v1 (descriptively 0.41 s faster, P = 1.000; not a pre-registered comparison).
@@ -132,8 +134,35 @@ Management doc, registry row, `AGENTS.md` pointer.
 - No cold-reader pass on `conditions.md`. Viewer, README and published runs are left for the user's review because they add screen text.
 - Cost: instance ran 2026-11-25 13:00 UTC to 17:49 UTC at about 0.20 USD per hour, about 1 USD, within the 10 USD cap (figure from the hourly rate, not from the invoice).
 
+### feat: 조준을 고정하고 발사만 학습하는 옵션 넣기 (#88)
+> why: the user approved the staged fire-learning proposal (2026-11-26); stage 1 showed that fire learned together with the aim collapses to never firing
+#### Scope
+`flytracker/wrappers.py`, `players.py`, `scripts/train.py`, `tests/test_control.py`. `ENV_VERSION` stays 6.
+#### Changes
+- `wrappers.FireOnly` / `fire_decision` / `make_env(aim=, fire_prior=)`: a fixed aim player steers, the policy outputs one fire value; with `fire_prior="rule"` the rule's verdict is added as ±0.5, so value 0 fires as the rule.
+- `players.FireOnlyPlayer`; `load_opponent` rebuilds it when the run's `algo.aim` is set, loading the aim model from the run's own `aim/` folder.
+- `train.py --aim <run> --fire-prior none|rule`: copies the aim run's `model.zip` and `config.json` into `<run>/aim/` so a fire run is self-contained.
+#### Verification
+- `uv run pytest -q`: 236 passed (5 new: the decision table, rule prior with value 0 plays exactly as the aim player, `FireOnlyPlayer` reproduces the training wrapper with frame stack 2 for both priors, refusals).
+- Smoke: `train.py --steps 3000 --aim <accel-pen-rule-s0> --frame-stack 4 --reward misfire=1.0` with each prior trains, saves, and loads through #72's `measure_aimers.py` (5 seeds: 5/5 both; numbers recorded in `gate-fire.md` as seen, not candidates).
+#### Notes
+- The aim is a player inside the wrapper, not a frozen part of one network: simplest, and the aim provably does not change.
+- The default environment and stage 1's models are untouched (their tests still pass).
+
+### docs: 발사 학습 단계의 판정 기준을 학습 전에 적기 (#88)
+> why: the comparison rules have to exist before any stage-2 candidate is measured
+#### Scope
+`docs/issues/feature/88-feature-aimer-accel-action-sac-fire/gate-fire.md`, this doc.
+#### Changes
+- Gate: four candidates (`fire-m1`, `fire-m5`, `fire-prior-m1`, `fire-prior-m5`), aim fixed to `accel-pen-rule-s<k>` for training seed k, frame stack 4, 500,000 steps, time against `accel-pen-rule` with rule fire (frozen `gate/accel-pen-rule.csv`, sha256 `9996b2a3...`), P >= 0.90; exclusions for capture below 0.97, a training seed below 0.50 against its own aim model, misfires above the baseline's 0.472; a declared "fewer misfires at equal time" case goes to the user.
+#### Verification
+- sha256 of the baseline and per-model files read with `sha256sum` and matching `gate/bootstrap-output.md`. No stage-2 training run had started.
+#### Notes
+- Misfire weight 5.0 is the agent's choice (reason in the gate); 1.0 comes from stage 1. The user confirmed the pair 1.0 / 5.0 before training (2026-11-26).
+- The user's permissions for this stage (2026-11-26): commit on this branch without the review gate when the tests pass, no push, PR or merge; one vast.ai instance within 5 USD, destroyed after the results are downloaded and verified.
+
 ## Management Notes
-### Proposal: staged fire learning (not started; the user decides)
+### Proposal: staged fire learning (approved by the user 2026-11-26; gate in `gate-fire.md`)
 - Start from an `accel-pen-rule` model with the steering frozen (or a low learning rate) and learn only the fire decision; the aim then already holds the beam inside the radius, so a shot can succeed from the first episode.
 - Do not start the fire output from scratch: begin from the rule's behaviour (imitate `wants_fire` first, or let the rule fire with some probability during early training), because the collapse seen here happens when every early shot is a miss.
 - Give the fire decision what the rule lacks: recent aim error (frame stack or the error's rate), so it can predict whether the next 0.15 s will hold. #85: a shot on entering the radius hits 59 %, after dwelling 0.16 s 89 %.

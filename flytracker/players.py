@@ -24,7 +24,7 @@ import numpy as np
 from .baseline import RuleAimer
 from .aimer import ACTION_DIM
 from .env import ENV_VERSION, OBS, EnvConfig
-from .wrappers import CONTROLS, DISCRETE_ACTIONS, FIRES, accel_gain, accel_to_rate
+from .wrappers import CONTROLS, DISCRETE_ACTIONS, FIRE_PRIORS, FIRES, accel_gain, accel_to_rate, fire_decision
 
 SIDES = ("aimer", "fly")
 RULE_SPECS = {"aimer": "baseline", "fly": "rule"}
@@ -97,6 +97,31 @@ class PolicyPlayer:
         return a
 
 
+class FireOnlyPlayer:
+    """조준은 고정한 조준기 player 가 하고 쏠지만 정책이 정하는 조준기 (wrappers.FireOnly 로 학습한 모델)."""
+
+    def __init__(self, policy, aim: PolicyPlayer, frame_stack: int = 1, prior: str = "none"):
+        self.policy, self.aim, self.frame_stack, self.prior = policy, aim, frame_stack, prior
+        self._stack: deque | None = None
+
+    def reset(self) -> None:
+        self._stack = None
+        self.aim.reset()
+
+    def act(self, obs) -> np.ndarray:
+        x = np.asarray(obs, dtype=np.float32)
+        if self.frame_stack > 1:
+            if self._stack is None:
+                self._stack = deque([x] * self.frame_stack, maxlen=self.frame_stack)
+            else:
+                self._stack.append(x)
+            x = np.stack(self._stack)
+        value, _ = self.policy.predict(x, deterministic=True)
+        a = np.asarray(self.aim.act(obs), dtype=float)
+        a[2] = 1.0 if fire_decision(np.asarray(value).reshape(-1)[0], a[2] > 0.0, self.prior) else -1.0
+        return a
+
+
 @dataclass
 class Opponent:
     player: PolicyPlayer | None  # 규칙 초파리는 None
@@ -155,6 +180,18 @@ def load_opponent(spec: str, side: str, config: EnvConfig) -> Opponent:
     if name not in classes:
         raise ValueError(f"{spec}: 알 수 없는 알고리즘 {name!r}")
     model = classes[name].load(model_path, device="cpu")
+    label = run_dir.name if model_path.name == "model.zip" else f"{run_dir.name}/{model_path.stem}"
+    if algo.get("aim"):  # 발사만 학습한 모델. 조준 모델은 실행 폴더의 aim/ 에 복사해 둔다 (scripts/train.py --aim)
+        if side != "aimer" or name_is_discrete(algo):
+            raise ValueError(f"{spec}: 발사만 학습한 모델은 조준기 쪽 연속 행동 모델이어야 한다")
+        prior = algo.get("firePrior", "none")
+        if prior not in FIRE_PRIORS:
+            raise ValueError(f"{spec}: 알 수 없는 fire prior {prior!r}")
+        aim = load_opponent(str(run_dir / "aim"), "aimer", config)
+        if aim.fire != "rule":
+            raise ValueError(f"{spec}: 조준 모델은 쏘는 것을 규칙에 맡긴 모델이어야 한다")
+        player = FireOnlyPlayer(model, aim.player, frame_stack=int(algo.get("frameStack", 1)), prior=prior)
+        return Opponent(player, label, version, fire="policy")
     assist = float(algo.get("assist", 0.0))
     player = PolicyPlayer(
         model,
@@ -165,7 +202,6 @@ def load_opponent(spec: str, side: str, config: EnvConfig) -> Opponent:
         rule_fire=rule_fire,
         accel_gain=accel_gain(config) if control == "accel" else None,
     )
-    label = run_dir.name if model_path.name == "model.zip" else f"{run_dir.name}/{model_path.stem}"
     if rule_fire:
         label += "+rule-fire"  # 표에서 발사까지 학습한 모델과 구별한다
     return Opponent(player, label, version, fire="rule" if rule_fire else "policy")

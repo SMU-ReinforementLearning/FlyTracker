@@ -7,8 +7,8 @@ import pytest
 
 from flytracker import EnvConfig, make_env
 from flytracker.env import OBS, OBS_DIM, FlyChaseEnv, RewardWeights
-from flytracker.players import PolicyPlayer, baseline_player
-from flytracker.wrappers import AccelControl, RuleFire, accel_gain, accel_to_rate
+from flytracker.players import FireOnlyPlayer, PolicyPlayer, baseline_player
+from flytracker.wrappers import AccelControl, RuleFire, accel_gain, accel_to_rate, fire_decision
 
 
 class Scripted:
@@ -131,6 +131,62 @@ def test_misfire_penalty_is_charged_once_in_the_step_the_shot_goes_off_target():
     for (r0, m), (r1, _) in zip(free, charged):
         assert r0 - r1 == pytest.approx(0.5 * (m - seen))
         seen = m
+
+
+def test_fire_decision_adds_the_rule_only_with_the_prior():
+    assert fire_decision(0.1, False, "none") and not fire_decision(-0.1, True, "none")
+    assert fire_decision(0.0, True, "rule") and not fire_decision(0.0, False, "rule")  # 값 0 이면 규칙 그대로
+    assert not fire_decision(-0.6, True, "rule") and fire_decision(0.6, False, "rule")  # 참기, 더 쏘기
+    assert fire_decision(-0.4, True, "rule") and not fire_decision(0.4, False, "rule")
+
+
+def test_fire_only_with_the_rule_prior_and_zero_value_plays_as_the_aim_player():
+    cfg = replace(EnvConfig(), start_facing_fly=True)
+    env = make_env(cfg, aim=baseline_player(cfg), fire_prior="rule")
+    assert env.action_space.shape == (1,) and env.observation_space.shape == (OBS_DIM,)
+    plain, player = FlyChaseEnv(cfg), baseline_player(cfg)
+    env.reset(seed=1)
+    obs, _ = plain.reset(seed=1)
+    player.reset()
+    for _ in range(200):
+        _, r_w, term_w, trunc_w, _ = env.step(np.zeros(1))
+        obs, r_p, term_p, trunc_p, _ = plain.step(player.act(obs))
+        assert r_w == pytest.approx(r_p) and (term_w, trunc_w) == (term_p, trunc_p)
+        if term_w or trunc_w:
+            break
+    assert plain.shots == env.unwrapped.shots > 0
+
+
+@pytest.mark.parametrize("prior", ["none", "rule"])
+def test_fire_only_player_reproduces_the_training_wrapper(prior):
+    cfg = replace(EnvConfig(), start_facing_fly=True)
+    values = np.random.default_rng(1).uniform(-1, 1, size=(80, 1))
+    wrapped = make_env(cfg, frame_stack=2, aim=baseline_player(cfg), fire_prior=prior)
+    assert wrapped.observation_space.shape == (2, OBS_DIM)
+    wrapped.reset(seed=4)
+    plain = FlyChaseEnv(cfg)
+    obs, _ = plain.reset(seed=4)
+    policy = Scripted(values)
+    player = FireOnlyPlayer(policy, baseline_player(cfg), frame_stack=2, prior=prior)
+    player.reset()
+    for v in values:
+        _, r_w, term_w, trunc_w, _ = wrapped.step(v)
+        obs, r_p, term_p, trunc_p, _ = plain.step(player.act(obs))
+        assert r_w == pytest.approx(r_p) and (term_w, trunc_w) == (term_p, trunc_p)
+        if term_w or trunc_w:
+            break
+    assert policy.seen[0].shape == (2, OBS_DIM)
+    assert plain.shots == wrapped.unwrapped.shots > 0
+
+
+def test_fire_only_refuses_other_controls():
+    cfg = EnvConfig()
+    with pytest.raises(ValueError):
+        make_env(cfg, aim=baseline_player(cfg), control="accel")
+    with pytest.raises(ValueError):
+        make_env(cfg, aim=baseline_player(cfg), fire_prior="always")
+    with pytest.raises(ValueError):
+        make_env(cfg, fire_prior="rule")
 
 
 def test_default_reward_has_no_misfire_term():

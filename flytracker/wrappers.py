@@ -155,6 +155,51 @@ class RuleFire(gym.Wrapper):
         return obs[self._keep], reward, terminated, truncated, info
 
 
+FIRE_PRIORS = ("none", "rule")  # 발사만 학습할 때 정책의 값에 규칙의 판단을 더할지
+FIRE_PRIOR_BIAS = 0.5  # 규칙이 쏘라고 하면 +, 아니면 − 로 더하는 크기
+
+
+def fire_decision(value: float, rule_wants: bool, prior: str) -> bool:
+    """발사만 학습하는 정책의 값 하나로 쏠지를 정한다. 0 을 넘으면 쏜다.
+
+    prior 가 'rule' 이면 규칙의 판단을 ±FIRE_PRIOR_BIAS 로 더한 뒤에 본다. 정책의 값이 0 이면 규칙과 똑같이 쏘고,
+    −0.5 아래면 규칙이 쏘라고 해도 참고, +0.5 를 넘으면 규칙이 말려도 쏜다.
+    """
+    v = float(value)
+    if prior == "rule":
+        v += FIRE_PRIOR_BIAS if rule_wants else -FIRE_PRIOR_BIAS
+    return v > 0.0
+
+
+class FireOnly(gym.Wrapper):
+    """조준은 고정한 조준기 player(aim)가 하고, 정책은 쏠지만 정한다. 행동은 값 하나다.
+
+    aim 은 쏘는 것을 규칙에 맡긴 player 다 (players.load_opponent 로 불러온 algo.fire 가 "rule" 인 모델).
+    aim 이 낸 행동의 fire 칸이 규칙의 판단이고, 이것을 정책의 값으로 바꿔 넣는다 (fire_decision).
+    정책의 관측은 환경의 관측 그대로다 (shot 포함).
+    """
+
+    def __init__(self, env: gym.Env, aim, prior: str = "none"):
+        super().__init__(env)
+        if prior not in FIRE_PRIORS:
+            raise ValueError(f"fire prior must be one of {FIRE_PRIORS}, got {prior!r}")
+        self.aim, self.prior = aim, prior
+        self.action_space = spaces.Box(-1.0, 1.0, shape=(1,), dtype=np.float32)
+        self._obs = None
+
+    def reset(self, **kwargs):
+        self.aim.reset()
+        self._obs, info = self.env.reset(**kwargs)
+        return self._obs, info
+
+    def step(self, action):
+        a = np.asarray(self.aim.act(self._obs), dtype=float)
+        a[2] = 1.0 if fire_decision(np.asarray(action).reshape(-1)[0], a[2] > 0.0, self.prior) else -1.0
+        out = self.env.step(a)
+        self._obs = out[0]
+        return out
+
+
 def make_env(
     config: EnvConfig | None = None,
     action_mode: str = "continuous",
@@ -163,6 +208,8 @@ def make_env(
     assist: float = 0.0,
     control: str = "rate",
     fire: str = "policy",
+    aim=None,
+    fire_prior: str = "none",
 ) -> gym.Env:
     """조준기 쪽 환경. action_mode 는 'continuous' 또는 'discrete'. frame_stack 이 2 이상이면 최근 관측을 쌓는다.
 
@@ -170,7 +217,16 @@ def make_env(
     assist 가 0 보다 크면 정책의 행동에 기준선의 추적을 더한다(TrackingAssist). 연속 행동에서만 쓴다.
     control 이 'accel' 이면 정책의 돌리는 행동을 각가속도로 받는다(AccelControl). 연속 행동에서만 쓴다.
     fire 가 'rule' 이면 쏠지를 기준선의 규칙이 정하고 정책은 돌리는 두 값만 낸다(RuleFire). 연속 행동에서만 쓴다.
+    aim 을 주면 조준은 그 player 가 하고 정책은 쏠지만 정한다(FireOnly). fire_prior 는 그때만 쓴다.
+    aim 이 스스로 조종하므로 assist, control, fire 는 기본값이어야 한다.
     """
+    if aim is not None:
+        if action_mode != "continuous" or assist > 0 or control != "rate" or fire != "policy":
+            raise ValueError("aim needs action_mode 'continuous' and default assist, control and fire")
+        env = FireOnly(FlyChaseEnv(config, fly=fly), aim, fire_prior)
+        return gym.wrappers.FrameStackObservation(env, frame_stack) if frame_stack > 1 else env
+    if fire_prior != "none":
+        raise ValueError("fire_prior needs aim")
     if control not in CONTROLS:
         raise ValueError(f"control must be one of {CONTROLS}, got {control!r}")
     if fire not in FIRES:
