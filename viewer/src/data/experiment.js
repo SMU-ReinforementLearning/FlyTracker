@@ -348,7 +348,7 @@ function stableJson(v) {
 }
 
 /**
- * 학습 seed 를 뺀 config. 이 값이 같은 실행끼리 한 variation 이다. 학습 seed 만 다른 실행은 같은 설정을 되풀이한 것이다.
+ * 학습 seed 를 뺀 config. 이 값이 같은 실행끼리 한 조합이다. 학습 seed 만 다른 실행은 같은 설정을 되풀이한 것이다.
  * 이미 학습한 모델을 다시 돌린 실행의 모델 id(algo.model)도 뺀다. 학습 seed 만 다른 모델은 id 만 다르다.
  */
 function signatureOf(cfg) {
@@ -359,7 +359,7 @@ function signatureOf(cfg) {
 
 const SIDE_NAME = { fly: '초파리', aimer: '조준기' }
 
-/** 화면에 나오는 값을 '자리 + 이름' key 로 편다. variation 끼리 무엇이 다른지 찾는 데 쓴다. */
+/** 화면에 나오는 값을 '자리 + 이름' key 로 편다. 조합끼리 무엇이 다른지 찾는 데 쓴다. */
 function shownValues(exp) {
   const out = new Map()
   for (const side of ['fly', 'aimer']) {
@@ -372,13 +372,27 @@ function shownValues(exp) {
   return out
 }
 
+const NONE = '없음'
+
+// 조합 표의 칸마다 그 칸에 드는 줄의 key 머리. 초파리와 조준기는 카드의 줄, 설정, 보상이고 환경은 환경 줄이다.
+const COLUMNS = [
+  { key: 'fly', title: 'fly|초파리', prefixes: ['fly|', 'fly 설정|', 'fly 보상|'] },
+  { key: 'aimer', title: 'aimer|조준기', prefixes: ['aimer|', 'aimer 설정|', 'aimer 보상|'] },
+  { key: 'environment', title: '환경|환경 버전', prefixes: ['환경|'] },
+]
+
 /**
- * issue 안의 variation. 학습 seed 만 다른 실행끼리 묶는다.
- * 돌려주는 것: { label, items: [{ key, label, parts, runIds }] }. label 은 variation 끼리 다른 항목의 이름이고,
- * 항목 label 은 그 값이다(예: '함께 보는 최근 관측' 과 '1개', '4개'). variation 이 하나뿐이면 items 는 빈 목록이다.
- * parts 는 같은 것을 이름과 값으로 나눈 목록이다([{ label, value }]). 사이드바가 variation 마다 무엇이 다른지 줄로 보여 주는 데 쓴다.
+ * issue 안의 조합. 학습 seed 만 다른 실행끼리 한 조합으로 묶고, 조합마다 초파리, 조준기, 환경을 늘 같은 칸에 적는다.
+ * 돌려주는 것: [{ key, letter, fly, aimer, environment, runs }]. 설정을 읽은 실행이 없으면 빈 목록이다.
+ * letter 는 표에서 그 줄을 부르는 글자다(A, B, C). 줄 순서대로 붙이므로 실행이 새로 올라오면 바뀔 수 있다.
+ * fly, aimer, environment 는 { title, details: [{ label, value }] } 이다. title 은 종류와 버전이고(규칙 초파리 v0, 학습한 조준기 v1, 버전 6),
+ * details 는 title 이 같은 조합끼리 값이 다른 줄이다(자극 켬과 끔, 돌리는 행동). 다른 조합과 같은 줄은 적지 않는다.
+ * 한쪽에만 있는 줄(자극을 껐을 때 사라지는 자극 길이)은 값이 서로 다른 줄이 따로 있으면 적지 않는다. 그 줄이 이미 둘을 가른다.
+ * runs 는 [{ id, seed }] 이고, seed 는 조합 안에서 실행을 가르는 학습 seed 다. 학습 seed 로 가를 수 없으면 null 이다.
+ * 순서는 표의 칸 순서대로 초파리, 조준기, 환경의 글자 순서다. 같은 초파리의 줄이 모이고, 그 안에서 기준선이 학습한 조준기보다 앞에 온다.
+ * 규칙 초파리가 신경 초파리보다 앞이다. 어느 한쪽을 기준으로 삼지 않으려고 칸 순서를 그대로 따른다.
  */
-export function variationsOf(runs, configs, info) {
+export function combinationsOf(runs, configs, info) {
   const groups = new Map()
   runs.forEach((run, i) => {
     const cfg = configs[i]
@@ -389,34 +403,46 @@ export function variationsOf(runs, configs, info) {
     groups.get(sig).configs.push(cfg)
   })
   const list = [...groups.values()]
-  if (list.length < 2) return { label: null, items: [] }
   const shown = list.map((g) => shownValues(experimentOf(g.runs, g.configs, info)))
   const keys = [...new Set(shown.flatMap((m) => [...m.keys()]))]
-  const differs = (k) => new Set(shown.map((m) => m.get(k) ?? '없음')).size > 1
-  // 초파리나 조준기의 종류가 다르면 그것만으로 이름을 짓는다. 종류가 다르면 딸린 줄도 다 달라서, 모두 적으면 이름이 너무 길다.
-  const titles = ['fly|초파리', 'aimer|조준기'].filter(differs)
-  const differing = titles.length ? titles : keys.filter(differs)
-  const nameOf = (i, ks) => ks.map((k) => shown[i].get(k) ?? '없음').join(', ')
-  // 종류가 같은 variation 이 둘 이상이면(신경 초파리의 자극 켬과 끔) 이름이 겹친다. 겹친 것끼리 다른 줄을 '이름 값' 으로 덧붙인다.
-  const extraOf = (i) => {
-    const same = list.map((_, j) => j).filter((j) => nameOf(j, differing) === nameOf(i, differing))
-    if (!titles.length || same.length < 2) return []
-    const k = keys.find((key) => !titles.includes(key) && new Set(same.map((j) => shown[j].get(key) ?? '없음')).size > 1)
-    return k ? [k] : []
+  // 줄이 없는 것과 값이 '없음'인 것(추적 보조 없음)은 다르다. 없는 줄은 undefined 로 두고, 적을 때만 '없음'으로 바꾼다.
+  const valueOf = (i, k) => shown[i].get(k)
+
+  const cellOf = (i, col) => {
+    const same = list.map((_, j) => j).filter((j) => valueOf(j, col.title) === valueOf(i, col.title))
+    // 모델 id 는 학습 seed 처럼 조합 안의 실행을 가르는 값이라 뺀다(signatureOf)
+    const mine = keys.filter((k) => k !== col.title && k !== 'aimer|모델' && k !== 'fly|모델' && col.prefixes.some((p) => k.startsWith(p)))
+    const real = (k) => new Set(same.map((j) => valueOf(j, k)).filter((v) => v !== undefined))
+    const differing = mine.filter((k) => new Set(same.map((j) => valueOf(j, k))).size > 1)
+    const valued = differing.filter((k) => real(k).size > 1)
+    const details = (valued.length ? valued : differing).map((k) => ({ label: k.split('|')[1], value: valueOf(i, k) ?? NONE }))
+    const title = col.key === 'environment' ? `버전 ${valueOf(i, col.title)}` : (valueOf(i, col.title) ?? NONE)
+    return { title, details }
   }
-  const partOf = (i, k) => ({ label: k.split('|')[1], value: shown[i].get(k) ?? '없음' })
-  const items = list.map((g, i) => {
-    const extra = extraOf(i)
-    return {
-      key: g.runs[0].id,
-      label: differing.length ? [nameOf(i, differing), ...extra.map((k) => `${partOf(i, k).label} ${partOf(i, k).value}`)].join(', ') : `설정 ${i + 1}`,
-      parts: [...differing, ...extra].map((k) => partOf(i, k)),
-      runIds: g.runs.map((r) => r.id),
-    }
+
+  const rows = list.map((g, i) => {
+    const seeds = g.configs.map((c) => c.algo?.seed ?? null)
+    const named = g.runs.length > 1 && seeds.every((s) => s !== null) && new Set(seeds).size === g.runs.length
+    const cells = Object.fromEntries(COLUMNS.map((col) => [col.key, cellOf(i, col)]))
+    return { key: g.runs[0].id, ...cells, runs: g.runs.map((r, k) => ({ id: r.id, seed: named ? seeds[k] : null })) }
   })
-  items.sort((a, b) => a.label.localeCompare(b.label, 'ko', { numeric: true }))
-  return { label: differing.length ? differing.map((k) => k.split('|')[1]).join(', ') : '설정', items }
+  const order = (row) => [row.fly, row.aimer, row.environment].map(cellText).join(' | ')
+  rows.sort((a, b) => order(a).localeCompare(order(b), 'ko', { numeric: true }))
+  return rows.map((row, i) => ({ ...row, letter: letterOf(i) }))
 }
+
+/** 표에서 줄을 부르는 글자. 0 은 A, 25 는 Z, 26 은 AA 다. 숫자는 학습 seed 나 버전과 헷갈려서 쓰지 않는다. */
+function letterOf(i) {
+  let s = ''
+  for (let n = i; n >= 0; n = Math.floor(n / 26) - 1) s = String.fromCharCode(65 + (n % 26)) + s
+  return s
+}
+
+/** 조합 안에서 실행을 부르는 이름. 학습 seed 로 가를 수 있으면 '학습 seed 0', 아니면 null 이다. */
+export const seedLabel = (seed) => (seed === null || seed === undefined ? null : `학습 seed ${seed}`)
+
+/** 조합의 칸 하나를 한 줄 글로. '신경 초파리, 자극 켬' 처럼 종류 뒤에 다른 줄을 쉼표로 잇는다. */
+export const cellText = (cell) => [cell.title, ...cell.details.map((d) => `${d.label} ${d.value}`)].join(', ')
 
 /** 지금 실험(exp)을 비교 대상(prev)과 견준다. prev 가 없으면 exp 를 그대로 돌려준다. */
 export function compareExperiments(exp, prev) {

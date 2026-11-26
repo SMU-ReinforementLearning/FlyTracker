@@ -1,4 +1,4 @@
-/* 사이드바: 검색, 영역 구역, issue 묶음, 실행 줄 */
+/* 사이드바: 검색, 영역 구역, issue 묶음, 실행 줄(조준기, 초파리, 환경) */
 
 .sidebar {
   background: var(--color-bg-sidebar);
@@ -66,44 +66,19 @@
   font-weight: var(--font-weight-semibold);
 }
 
-/* issue 묶음 */
+/* issue 묶음. 이름 줄이 묶음을 펼치고 접는다 */
 
 .group + .group {
   margin-top: 1rem;
 }
 
-.groupHead {
-  display: flex;
-  align-items: center;
-}
-
-.disclosure {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 2rem;
-  height: 2.6rem;
-  padding: 0;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: none;
-  color: var(--color-text-tertiary);
-}
-
-.disclosure svg {
-  transition: transform 0.15s;
-}
-
-.disclosure[aria-expanded='true'] svg {
-  transform: rotate(90deg);
-}
-
 .groupName {
-  flex: 1;
+  width: 100%;
   min-width: 0;
   display: flex;
+  align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 0.6rem;
+  padding: 0.5rem 0.6rem 0.5rem 0.4rem;
   border: 0;
   border-radius: var(--radius-sm);
   background: none;
@@ -114,14 +89,30 @@
   cursor: default;
 }
 
-.groupName:hover,
-.disclosure:hover {
+.groupName:hover {
   background: var(--color-fill);
 }
 
 .groupName[aria-current='true'] {
   background: var(--color-fill-strong);
   color: var(--color-text-primary);
+}
+
+/* 펼쳤는지 알리는 화살표. 이름 줄 안에 있고 따로 눌리지 않는다 */
+.chevron {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.4rem;
+  color: var(--color-text-tertiary);
+}
+
+.chevron svg {
+  transition: transform 0.15s;
+}
+
+.groupName[aria-expanded='true'] .chevron svg {
+  transform: rotate(90deg);
 }
 
 .groupNum {
@@ -134,42 +125,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-/* variation: 무엇이 다른지 적은 줄과 그 설정으로 돌린 실행들 */
-
-.variation + .variation {
-  margin-top: 1rem;
-}
-
-.parts {
-  padding-left: 0;
-}
-
-.parts {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  margin: 0;
-  padding: 0.3rem 1rem 0.4rem 2.6rem;
-  font-size: var(--font-size-xs);
-}
-
-.part {
-  display: flex;
-  gap: var(--space-2);
-}
-
-.part dt {
-  flex: none;
-  color: var(--color-text-tertiary);
-}
-
-.part dd {
-  margin: 0;
-  min-width: 0;
-  color: var(--color-text-secondary);
-  font-weight: var(--font-weight-medium);
 }
 
 /* 실행 줄. 줄 모양은 ListRow 가 맡고, 여기서는 들여쓰기와 줄 안의 배치만 정한다. */
@@ -192,17 +147,19 @@
   text-overflow: ellipsis;
 }
 
+/* 조합을 부르는 글자. 뒤따르는 학습 seed 와 조금 띄운다 */
+.letter {
+  display: inline-block;
+  min-width: 1.4rem;
+  margin-right: 0.6rem;
+  font-weight: var(--font-weight-semibold);
+}
+
 .rate {
   flex: none;
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
-}
-
-.meta {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .spark path {

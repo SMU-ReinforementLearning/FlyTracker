@@ -1,4 +1,4 @@
-/* 실행 패널: 고른 checkpoint 의 수치, 학습 곡선, 에피소드 목록 */
+/* 실행 패널: 조합, 고른 checkpoint 의 수치, 학습 곡선, 에피소드 목록 */
 
 .panel {
   flex: none;
@@ -9,6 +9,35 @@
   padding: 1.8rem var(--space-4) var(--space-6);
   border-right: 1px solid var(--color-separator);
   overflow-y: auto;
+}
+
+/* 이 실행의 조합. 이름 칸은 좁게, 값 칸은 남은 폭을 쓴다. 줄 순서는 늘 초파리, 조준기, 환경이다 */
+.combo {
+  margin: 0;
+  font-size: var(--font-size-sm);
+}
+
+.combo > div {
+  display: grid;
+  grid-template-columns: 4.6rem minmax(0, 1fr);
+  column-gap: var(--space-2);
+  align-items: baseline;
+  padding: 0.7rem 0;
+}
+
+.combo > div + div {
+  border-top: 1px solid var(--color-separator);
+}
+
+.combo > div > dt {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.combo > div > dd {
+  margin: 0;
+  min-width: 0;
+  word-break: keep-all;
 }
 
 .title {

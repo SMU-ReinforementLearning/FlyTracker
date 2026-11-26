@@ -1,6 +1,7 @@
-// issue 하나의 실행 설정과 설명 파일을 읽는 hook. issue 화면과 사이드바가 함께 쓴다.
-import { useEffect, useState } from 'react'
+// issue 하나의 실행 설정과 설명 파일을 읽는 hook. issue 화면, 사이드바, 실행 패널이 함께 쓴다.
+import { useEffect, useMemo, useState } from 'react'
 import { fetchConfig, fetchIssueInfo } from './api.js'
+import { combinationsOf } from './experiment.js'
 import { NO_ISSUE } from './runs.js'
 
 export const NO_RUNS = []
@@ -37,4 +38,14 @@ export function useIssueInfo(key) {
   }, [key, none])
   if (none) return null
   return state?.key === key ? state.info : undefined
+}
+
+/**
+ * issue 묶음의 조합(experiment.js 의 combinationsOf). runs 는 그 묶음의 실행이고 key 는 묶음의 key 다.
+ * 설정이나 설명 파일을 읽는 중에는 null 을 돌려준다. runs 는 다시 그릴 때마다 같은 배열이어야 한다(useConfigs).
+ */
+export function useCombinations(runs, key) {
+  const configs = useConfigs(runs)
+  const info = useIssueInfo(key)
+  return useMemo(() => (configs && info !== undefined ? combinationsOf(runs, configs, info) : null), [runs, configs, info])
 }
