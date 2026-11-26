@@ -62,6 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
+- `91-feature-fly-laser-startle-misfire-kinds` — `docs/issues/feature/91-feature-fly-laser-startle-misfire-kinds.md` — 레이저에 맞은 초파리가 놀라게 하고 오발을 종류별로 세기
 
 ## Environment (repo slot)
 
