@@ -93,6 +93,7 @@ Management doc, registry row, `AGENTS.md` pointer.
 - The sidebar and run panel were captured for #88 only; the stage-2 rows and the final 16-row table of #88 were checked by the printed combinations and the tests, not by a new screenshot.
 - Letters of #88 changed: the replay of `accel-pen-rule` was A and is J.
 - "평가" also names the episodes a training run records at each checkpoint (glossary: 평가 에피소드); told to the user, who kept the words.
+- Committed with the full pytest and the build re-run on the final tree (275 passed, 1 skipped; built).
 
 ### chore: #94 포인터를 지우고 완료로 표시하기 (#94)
 > why: the pointer line has to go in the branch's last commit; a protected branch cannot take that edit after the merge
