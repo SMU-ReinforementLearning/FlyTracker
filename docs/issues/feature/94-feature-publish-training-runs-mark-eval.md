@@ -74,6 +74,7 @@ Management doc, registry row, `AGENTS.md` pointer.
 #### Notes
 - The stage-2 runs were added after the user's "다른 이슈들도 다 이렇게 작업해놔"; their first choice had been the 15 stage-1 runs.
 - About 75 MB of JSON; the viewer build output was 184 MB with the first 15 runs (not measured before or after the 12 more).
+- Committed as 1,422 new files under `published/` (15 x 66 + 12 x 36) and the edit to `88.json`.
 
 ### feat: viewer에서 학습 실행과 평가 실행을 가르고 평가 줄에 모델을 학습한 줄 적기 (#94)
 > why: a replay of a final model and a run recorded during training looked the same, and a replay showed the reward weights of the replay environment as if the model had been trained with them
