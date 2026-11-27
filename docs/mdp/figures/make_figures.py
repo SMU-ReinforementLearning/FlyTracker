@@ -266,7 +266,7 @@ def fig02():
         r = math.radians(yaw)
         return np.array([math.sin(r), math.cos(r)])
 
-    for yaw, color, name in ((30, BLUE, "$q$"), (150, ORANGE, "$q'$"), (270, GREEN, "$q''$")):
+    for yaw, color, name in ((30, BLUE, "$s$"), (150, ORANGE, "$s'$"), (270, GREEN, "$s''$")):
         poly = [p0, p0 + 20 * d(yaw - 30), p0 + 20 * d(yaw + 30)]
         for n, dd in sq:
             poly = clip(poly, n, dd)
@@ -278,7 +278,7 @@ def fig02():
     ax.plot([2], [2], "o", color=INK, markersize=5, zorder=6)
     ax.text(1.78, 2.2, r"$p_0$", ha="center", va="center", fontsize=FS + 3)
     far = p0 + 1.75 * d(30)
-    ax.annotate(r"$\mathrm{View}(q)$", (far[0], far[1]), xytext=(5.0, 3.5), fontsize=FS + 2,
+    ax.annotate(r"$\mathrm{View}(s)$", (far[0], far[1]), xytext=(5.0, 3.5), fontsize=FS + 2,
                 arrowprops=dict(arrowstyle="-", color=GRAY, lw=0.7), ha="center", va="center")
     for (x, y), t in (((2, 4.28), "북"), ((4.28, 2), "동"), ((2, -0.28), "남"), ((-0.28, 2), "서")):
         ax.text(x, y, t, ha="center", va="center", fontsize=FS + 1)
@@ -305,16 +305,16 @@ def fig03():
     mid = math.radians(-10)
     tipq = p0 + 3.3 * np.array([math.cos(mid), math.sin(mid)])
     ax.plot([p0[0], tipq[0]], [p0[1], tipq[1]], color=INK, lw=0.8, linestyle="-.")
-    ax.text(tipq[0] + 0.18, tipq[1], r"$q$", ha="center", va="center", fontsize=FS + 3)
+    ax.text(tipq[0] + 0.18, tipq[1], r"$s$", ha="center", va="center", fontsize=FS + 3)
     ax.add_patch(Wedge(p0, 0.8, -32.5, 12.5, facecolor=POINT, alpha=0.55, edgecolor="none"))
     ax.add_patch(Circle(p0, 0.8, facecolor="none", edgecolor=INK, lw=0.9, linestyle="--"))
     ax.plot([p0[0]], [p0[1]], "o", color=INK, markersize=5, zorder=6)
     ax.text(1.72, 1.0, r"$p_0$", ha="center", va="center", fontsize=FS + 3)
     ax.text(1.55, 1.95, r"$D$", ha="center", va="center", fontsize=FS + 3)
     ax.text(0.5, 3.6, r"$\mathrm{Room}$", ha="center", va="center", fontsize=FS + 3)
-    ax.text(3.42, 0.42, r"$\mathrm{View}(q)$", ha="center", va="center", fontsize=FS + 2, color=BLUE)
+    ax.text(3.42, 0.42, r"$\mathrm{View}(s)$", ha="center", va="center", fontsize=FS + 2, color=BLUE)
     tip = p0 + 3.5 * dhi
-    ax.text(tip[0] + 0.1, tip[1] + 0.22, r"$\mathrm{Cone}(q)$", ha="center", va="center", fontsize=FS + 2)
+    ax.text(tip[0] + 0.1, tip[1] + 0.22, r"$\mathrm{Cone}(s)$", ha="center", va="center", fontsize=FS + 2)
     ax.set_xlim(-0.4, 6.0)
     ax.set_ylim(-1.1, 4.3)
     ax.set_aspect("equal")
