@@ -40,6 +40,7 @@ def setup() -> None:
         "font.size": FS,
         "mathtext.fontset": "cm",
         "svg.fonttype": "path",
+        "svg.hashsalt": "01-figures",
         "axes.unicode_minus": False,
         "figure.facecolor": "white",
         "savefig.facecolor": "white",
@@ -154,10 +155,9 @@ def motion_table(ax, outline=None, names=(), column=None, legend=(), title=None,
         pad = 0.07
         ax.add_patch(Rectangle((x + pad, y + pad), w - 2 * pad, h - 2 * pad,
                                facecolor="none", edgecolor=color, lw=2.0))
-    if top is not None:
-        c, text = top
+    for c, text in (top or ()):
         x, y, w, h = cell(-1, c)
-        ax.text(x + w / 2, ytop + 0.22, text, ha="center", va="bottom", fontsize=FS + 2, color=BLUE)
+        ax.text(x + w / 2, ytop + 0.2, text, ha="center", va="bottom", fontsize=FS, color=BLUE)
     if title:
         ax.text(COLS[-1] / 2, ytop + 0.8, title, ha="center", va="bottom", fontsize=FS + 1)
     for i, (kind, text) in enumerate(legend):
@@ -226,13 +226,23 @@ def fig01():
         for b in corners[i + 1:]:
             if np.sum(np.abs(a - b) > 0) == 1:
                 (x1, y1), (x2, y2) = pr(a), pr(b)
-                ax.plot([x1, x2], [y1, y2], color=GRAY, lw=0.8, zorder=1)
+                seen = False
+                for j in range(3):  # 이 모서리에 닿은 두 면 가운데 하나라도 앞을 보면 보이는 모서리
+                    if a[j] == b[j]:
+                        n = np.zeros(3)
+                        n[j] = 1.0 if a[j] == 4 else -1.0
+                        seen = seen or float(np.dot(n, fwd)) < 0
+                ax.plot([x1, x2], [y1, y2], color=GRAY, lw=0.9 if seen else 0.6,
+                        linestyle="-" if seen else (0, (3, 3)), zorder=1)
     faces = [f for f in faces if len(f) >= 3]
     faces.sort(key=lambda f: -float(np.dot(np.mean(f, axis=0), fwd)))
     for f in faces:
         ax.add_patch(Polygon([pr(v) for v in f], closed=True, facecolor=BLUE, alpha=0.22,
                              edgecolor=BLUE, lw=0.8, zorder=2))
     x0, y0 = pr(p0)
+    xf, yf = pr((2.0, 2.0, 0.0))
+    ax.plot([x0, xf], [y0, yf], color=INK, lw=0.7, linestyle=":", zorder=4)
+    ax.plot([xf], [yf], "x", color=INK, markersize=4, zorder=4)
     ax.plot([x0], [y0], "o", color=INK, markersize=5, zorder=5)
     ax.annotate(r"$p_0$", (x0, y0), xytext=(x0 - 0.55, y0 - 0.7), fontsize=FS + 3,
                 arrowprops=dict(arrowstyle="-", color=GRAY, lw=0.7), ha="center", va="center")
@@ -292,13 +302,17 @@ def fig03():
     for dv in (dlo, dhi):
         end = p0 + 3.5 * dv
         ax.plot([p0[0], end[0]], [p0[1], end[1]], color=INK, lw=0.9)
+    mid = math.radians(-10)
+    tipq = p0 + 3.3 * np.array([math.cos(mid), math.sin(mid)])
+    ax.plot([p0[0], tipq[0]], [p0[1], tipq[1]], color=INK, lw=0.8, linestyle="-.")
+    ax.text(tipq[0] + 0.18, tipq[1], r"$q$", ha="center", va="center", fontsize=FS + 3)
     ax.add_patch(Wedge(p0, 0.8, -32.5, 12.5, facecolor=POINT, alpha=0.55, edgecolor="none"))
     ax.add_patch(Circle(p0, 0.8, facecolor="none", edgecolor=INK, lw=0.9, linestyle="--"))
     ax.plot([p0[0]], [p0[1]], "o", color=INK, markersize=5, zorder=6)
     ax.text(1.72, 1.0, r"$p_0$", ha="center", va="center", fontsize=FS + 3)
     ax.text(1.55, 1.95, r"$D$", ha="center", va="center", fontsize=FS + 3)
     ax.text(0.5, 3.6, r"$\mathrm{Room}$", ha="center", va="center", fontsize=FS + 3)
-    ax.text(3.35, 0.85, r"$\mathrm{View}(q)$", ha="center", va="center", fontsize=FS + 2, color=BLUE)
+    ax.text(3.42, 0.42, r"$\mathrm{View}(q)$", ha="center", va="center", fontsize=FS + 2, color=BLUE)
     tip = p0 + 3.5 * dhi
     ax.text(tip[0] + 0.1, tip[1] + 0.22, r"$\mathrm{Cone}(q)$", ha="center", va="center", fontsize=FS + 2)
     ax.set_xlim(-0.4, 6.0)
@@ -313,7 +327,7 @@ THREE = (((30, 0), BLUE), ((150, 30), ORANGE), ((270, -30), GREEN))
 
 def fig04():
     fig, (a, b) = plt.subplots(1, 2, figsize=(WIDTH, 3.3), gridspec_kw={"width_ratios": [1, 1.45]})
-    R, ry, h0, h1, front = 1.0, 0.4, -1.0, 1.0, 210.0
+    R, ry, h0, h1, front = 1.0, 0.4, -1.0, 1.0, 90.0
     t = np.linspace(0, 2 * math.pi, 200)
     a.fill_between([-R, R], [h0, h0], [h1, h1], color="#F2F2F2", zorder=0)
     a.add_patch(Ellipse((0, h1), 2 * R, 2 * ry, facecolor="#FAFAFA", edgecolor=INK, lw=1.0, zorder=2))
@@ -328,14 +342,15 @@ def fig04():
 
     for (yaw, pitch), color in THREE:
         x, y, vis = on(yaw, pitch)
-        a.plot([x], [y], "o", markersize=8, markerfacecolor=color if vis else "white",
-               markeredgecolor=color, markeredgewidth=1.6, zorder=5)
+        a.plot([x], [y], "o", markersize=8, markerfacecolor=color, alpha=1.0 if vis else 0.35,
+               markeredgecolor=color, markeredgewidth=1.2, zorder=5)
     for yaw, name in ((0, "북"), (90, "동"), (180, "남"), (270, "서")):
         rel = math.radians(yaw - front)
-        a.text(0.62 * R * math.sin(rel), h1 - 0.62 * ry * math.cos(rel), name, ha="center", va="center", fontsize=FS)
+        a.text(0.66 * R * math.sin(rel), h1 - 0.5 * ry * math.cos(rel), name, ha="center", va="center", fontsize=FS)
+    a.plot([-R, -R], [-0.72, -0.46], linestyle="none", marker="^", markersize=6, color=INK, zorder=6)
     a.text(R + 0.4, h1 + 0.25, r"$\mathcal{S}$", ha="center", va="center", fontsize=FS + 5)
-    arrow(a, (-R - 0.3, h0), (-R - 0.3, h1), color=INK, lw=0.8)
-    a.text(-R - 0.42, 0, r"$s_{\mathrm{pitch}}$", ha="right", va="center", fontsize=FS + 1)
+    arrow(a, (-R - 0.38, h0), (-R - 0.38, h1), color=INK, lw=0.8)
+    a.text(-R - 0.5, 0, r"$s_{\mathrm{pitch}}$", ha="right", va="center", fontsize=FS + 1)
     arrow(a, (-0.55, h0 - 0.62), (0.55, h0 - 0.62), color=INK, lw=0.8, rad=0.25)
     a.text(0, h0 - 1.05, r"$s_{\mathrm{yaw}}$", ha="center", va="center", fontsize=FS + 1)
     a.set_xlim(-2.2, 1.7)
@@ -360,6 +375,7 @@ def fig04():
 def fig05():
     fig, ax = plt.subplots(figsize=(WIDTH, 3.9))
     motion_table(ax, outline={(r, 2): BLUE for r in range(4)}, names=range(4),
+                 top=[(2, r"$F=\{$동$\}$")],
                  legend=(("outline", "$F$ 안의 칸"), ("fill", "$S_t^{-1}(F)$")))
     return fig
 
@@ -397,6 +413,7 @@ def fig08():
     out = {(r, 2): BLUE for r in range(4)}
     out.update({(r, 3): BLUE for r in (0, 2, 4)})
     motion_table(ax, outline=out, names=(0, 2),
+                 top=[(2, r"$F_1=\{$동$\}$"), (3, r"$F_2=\{$남$\}$")],
                  legend=(("outline", "조건에 맞는 칸"), ("fill", r"$S_t^{-1}(F_1)\cap S_{t+u}^{-1}(F_2)$")))
     return fig
 
@@ -404,7 +421,7 @@ def fig08():
 def fig09():
     fig, (a, b) = plt.subplots(1, 2, figsize=(WIDTH, 2.6))
     motion_table(a, outline={(1, 2): POINT}, names=(1,), title="운동을 정했을 때")
-    motion_table(b, column=2, title="운동을 정하지 않았을 때", top=(2, r"$S_t$"))
+    motion_table(b, column=2, title="운동을 정하지 않았을 때", top=[(2, r"$S_t$")])
     a.set_ylim(b.get_ylim())
     fig.subplots_adjust(left=0.01, right=0.99, bottom=0.02, top=0.98, wspace=0.05)
     return fig
@@ -458,7 +475,7 @@ def fig11():
     arrow(ax, s, s2, color=POINT, lw=1.8, ms=12, z=5)
     ax.plot([s[0], s2[0]], [s[1], s2[1]], "o", color=POINT, markersize=5, zorder=6)
     ax.text(s[0] + 2, s[1] - 7, r"$s$", ha="center", va="center", fontsize=FS + 3)
-    ax.text(s2[0] + 1, s2[1] + 8, r"$s'$", ha="center", va="center", fontsize=FS + 3)
+    ax.text(s2[0] + 1, s2[1] + 16, r"$s'$", ha="center", va="center", fontsize=FS + 3)
     ax.text(18, -35, r"$F$", ha="center", va="center", fontsize=FS + 3)
     ax.text(140, -6, r"$T_u(F)$", ha="center", va="center", fontsize=FS + 3)
     fig.subplots_adjust(left=0.12, right=0.95, bottom=0.22, top=0.96)
@@ -507,7 +524,7 @@ def fig13():
     field(a, ex1, mark=(150.0, 0.0))
     field(b, ex2)
     b.axhline(20, color=INK, lw=0.8, linestyle=":")
-    b.text(352, 27, r"$a$", ha="right", va="center", fontsize=FS + 2)
+    b.text(368, 20, r"$a$", ha="left", va="center", fontsize=FS + 2, clip_on=False)
     a.set_title("Example 1", fontsize=FS + 1)
     b.set_title("Example 2", fontsize=FS + 1)
     b.set_ylabel("")
@@ -582,7 +599,7 @@ def main() -> None:
         args.png.mkdir(parents=True, exist_ok=True)
     for name, make in FIGURES:
         fig = make()
-        fig.savefig(HERE / f"{name}.svg")
+        fig.savefig(HERE / f"{name}.svg", metadata={"Date": None})
         if args.png:
             fig.savefig(args.png / f"{name}.png", dpi=100)
         plt.close(fig)
