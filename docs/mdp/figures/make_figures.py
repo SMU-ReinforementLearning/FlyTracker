@@ -1,6 +1,6 @@
-"""01-camera-markov-process.md의 그림 열네 장을 만든다.
+"""01-camera-markov-process.md의 그림 스무 장을 만든다.
 
-    python docs/mdp/figures/make_figures.py            # SVG 열네 장을 이 폴더에 쓴다
+    python docs/mdp/figures/make_figures.py            # SVG 스무 장을 이 폴더에 쓴다
     python docs/mdp/figures/make_figures.py --png DIR  # 확인용 PNG도 DIR에 쓴다
 
 그림의 내용과 값은 docs/mdp/01-figures.md를 따른다.
@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import math
+import re
 from pathlib import Path
 
 import matplotlib
@@ -18,8 +19,9 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import font_manager as fm
-from matplotlib.patches import (Circle, Ellipse, FancyArrowPatch,
-                                FancyBboxPatch, Polygon, Rectangle, Wedge)
+from matplotlib.patches import (Circle, Ellipse, FancyArrowPatch, FancyBboxPatch,
+                                PathPatch, Polygon, Rectangle, Wedge)
+from matplotlib.path import Path as MPath
 
 HERE = Path(__file__).resolve().parent
 
@@ -372,21 +374,7 @@ def fig04():
 
 # ---------- 그림 5 ~ 9: 운동의 표와 대응 ----------
 
-def fig05():
-    fig, ax = plt.subplots(figsize=(WIDTH, 3.9))
-    motion_table(ax, outline={(r, 2): BLUE for r in range(4)}, names=range(4),
-                 top=[(2, r"$F=\{$동$\}$")],
-                 legend=(("outline", "$F$ 안의 칸"), ("fill", "$S_t^{-1}(F)$")))
-    return fig
-
-
-def fig06():
-    fig, ax = plt.subplots(figsize=(WIDTH, 3.0))
-    motion_table(ax, outline={(0, 2): GRAY, (1, 2): GRAY, (0, 3): BLUE, (1, 3): BLUE}, names=(0, 1))
-    return fig
-
-
-def fig07():
+def fig09():
     fig, ax = plt.subplots(figsize=(WIDTH, 2.9))
     for x0 in (0.3, 4.7):
         ax.add_patch(FancyBboxPatch((x0, 0.3), 3.0, 2.4, boxstyle="round,pad=0.02,rounding_size=0.18",
@@ -408,59 +396,9 @@ def fig07():
     return fig
 
 
-def fig08():
-    fig, ax = plt.subplots(figsize=(WIDTH, 3.9))
-    out = {(r, 2): BLUE for r in range(4)}
-    out.update({(r, 3): BLUE for r in (0, 2, 4)})
-    motion_table(ax, outline=out, names=(0, 2),
-                 top=[(2, r"$F_1=\{$동$\}$"), (3, r"$F_2=\{$남$\}$")],
-                 legend=(("outline", "조건에 맞는 칸"), ("fill", r"$S_t^{-1}(F_1)\cap S_{t+u}^{-1}(F_2)$")))
-    return fig
-
-
-def fig09():
-    fig, (a, b) = plt.subplots(1, 2, figsize=(WIDTH, 2.6))
-    motion_table(a, outline={(1, 2): POINT}, names=(1,), title="운동을 정했을 때")
-    motion_table(b, column=2, title="운동을 정하지 않았을 때", top=[(2, r"$S_t$")])
-    a.set_ylim(b.get_ylim())
-    fig.subplots_adjust(left=0.01, right=0.99, bottom=0.02, top=0.98, wspace=0.05)
-    return fig
-
-
 # ---------- 그림 10 ~ 14: flow ----------
 
-def fig10():
-    fig, ax = plt.subplots(figsize=(WIDTH, 3.3))
-    L, M, Rr = 1.2, 3.6, 6.0
-    past = [(L, 2.25), (L, 0.95)]
-    nxt = [(Rr, 2.25), (Rr, 0.95)]
-    mid = (M, 1.6)
-    r = 0.2
-    for (x, y), ls in zip(past, ("-", "--")):
-        arrow(ax, (x + r, y), (M - r - 0.03, mid[1] + (0.07 if y > mid[1] else -0.07)), color=GRAY, lw=1.4, ms=12, ls=ls)
-        ax.add_patch(Circle((x, y), r, facecolor="white", edgecolor=GRAY, lw=1.4, zorder=4))
-    for (x, y) in nxt:
-        arrow(ax, (M + r, mid[1] + (0.07 if y > mid[1] else -0.07)), (x - r - 0.03, y), color=BLUE, lw=1.6, ms=12)
-        ax.add_patch(Circle((x, y), r, facecolor=BLUE, alpha=0.30, edgecolor="none", zorder=4))
-        ax.add_patch(Circle((x, y), r, facecolor="none", edgecolor=BLUE, lw=1.4, zorder=5))
-    ax.add_patch(Circle(mid, r, facecolor=POINT, edgecolor=POINT, lw=1.4, zorder=5))
-    ax.text(M, mid[1] + 0.42, r"$s$", ha="center", va="center", fontsize=FS + 4)
-    for x, t in ((L, "시각 $t$ 이전"), (M, "시각 $t$"), (Rr, "시각 $t+u$")):
-        ax.text(x, 3.0, t, ha="center", va="center", fontsize=FS + 1)
-    y = 0.1
-    ax.plot([0.5, 0.95], [y, y], color=GRAY, lw=1.4)
-    ax.plot([1.05, 1.5], [y, y], color=GRAY, lw=1.4, linestyle="--")
-    ax.text(1.65, y, "서로 다른 과거", ha="left", va="center", fontsize=FS)
-    ax.plot([3.75, 4.2], [y, y], color=BLUE, lw=1.6)
-    ax.text(4.35, y, "$u$초 뒤에 놓일 수 있는 state", ha="left", va="center", fontsize=FS)
-    ax.set_xlim(0.2, 7.6)
-    ax.set_ylim(-0.2, 3.3)
-    ax.set_aspect("equal")
-    ax.axis("off")
-    return fig
-
-
-def fig11():
+def fig15():
     fig, ax = plt.subplots(figsize=(WIDTH, 3.5))
     unrolled(ax)
     f0, f1 = (30.0, -50.0), (70.0, -20.0)
@@ -482,7 +420,7 @@ def fig11():
     return fig
 
 
-def fig12():
+def fig17():
     fig, ax = plt.subplots(figsize=(WIDTH, 3.5))
     unrolled(ax)
     s = (40.0, -50.0)
@@ -517,7 +455,7 @@ def field(ax, step, mark=None):
                 ha="center", va="center", fontsize=FS + 1, color=BLUE)
 
 
-def fig13():
+def fig18():
     fig, (a, b) = plt.subplots(1, 2, figsize=(WIDTH, 2.6))
     unrolled(a)
     unrolled(b)
@@ -532,7 +470,7 @@ def fig13():
     return fig
 
 
-def fig14():
+def fig19():
     fig = plt.figure(figsize=(WIDTH, 2.9))
     a = fig.add_axes([0.0, 0.02, 0.34, 0.96])
     m = fig.add_axes([0.33, 0.02, 0.2, 0.96])
@@ -579,13 +517,268 @@ def fig14():
     return fig
 
 
+# ---------- 공용: 시간선 그림 ----------
+
+HI = dict(color=BLUE, lw=2.0)
+LO = dict(color=GRAY, lw=1.5, alpha=0.6)
+PLAIN = dict(color=GRAY, lw=1.5)
+DASH = dict(color=GRAY, lw=1.5, linestyle="--")
+
+
+def bezier(d):
+    """SVG path의 M과 C만 읽어 matplotlib Path로 바꾼다."""
+    nums = [float(v) for v in re.findall(r"-?\d+(?:\.\d+)?", d)]
+    verts = [(nums[0], nums[1])]
+    codes = [MPath.MOVETO]
+    for i in range(2, len(nums), 6):
+        verts += [(nums[i], nums[i + 1]), (nums[i + 2], nums[i + 3]), (nums[i + 4], nums[i + 5])]
+        codes += [MPath.CURVE4] * 3
+    return MPath(verts, codes)
+
+
+def timeline(height, vlines=(), curves=(), gates=(), dots=(), texts=(), legend=(), titles=(), axis=None):
+    """3.7의 시간선 그림. 좌표는 가로 680, 세로 height이고 왼쪽 위가 원점이다.
+
+    vlines: (x, y0, y1, 아래 라벨, 라벨 y, 실선 여부)
+    curves: (path 문자열, 선 모양)          gates: (x, y0, y1)
+    dots:   (x, y, "hi" | "lo" | "point" | "start")
+    texts:  (x, y, 글자, ha, 크기 보탬)
+    legend: (x, y, [선 모양, ...], 글자)     titles: (x, y, 글자)
+    """
+    fig = plt.figure(figsize=(WIDTH, WIDTH * height / 680.0))
+    ax = fig.add_axes([0, 0, 1, 1])
+    ax.set_xlim(0, 680)
+    ax.set_ylim(height, 0)
+    ax.axis("off")
+    if axis is not None:
+        x, y0, y1 = axis
+        ax.plot([x, x], [y0, y1], color=INK, lw=1.0)
+    for x, y0, y1, label, ly, solid in vlines:
+        ax.plot([x, x], [y0, y1], color=GRAY, lw=0.8, linestyle="-" if solid else (0, (2, 3)), zorder=1)
+        if label:
+            ax.text(x, ly, label, ha="center", va="center", fontsize=FS)
+    for x, y0, y1 in gates:
+        ax.plot([x, x], [y0, y1], color=BLUE, lw=7, alpha=0.45, solid_capstyle="round", zorder=2)
+    for d, style in curves:
+        kw = dict(style)
+        kw["edgecolor"] = kw.pop("color")
+        ax.add_patch(PathPatch(bezier(d), fill=False, zorder=3, **kw))
+    for x, y, kind in dots:
+        color, size = {"hi": (BLUE, 6.5), "lo": (GRAY, 5.5), "point": (POINT, 7.0), "start": (GRAY, 4.0)}[kind]
+        ax.plot([x], [y], "o", color=color, markersize=size, zorder=5)
+    for x, y, text, ha, plus in texts:
+        ax.text(x, y, text, ha=ha, va="center", fontsize=FS + plus)
+    for x, y, text in titles:
+        ax.text(x, y, text, ha="center", va="center", fontsize=FS + 1)
+    for x, y, styles, text in legend:
+        for style in styles:
+            ax.plot([x, x + 30], [y, y], **style)
+            x += 36
+        ax.text(x + 2, y, text, ha="left", va="center", fontsize=FS)
+    return fig
+
+
+# ---------- 그림 5 ~ 14: 운동과 시각 t의 state ----------
+
+def fig05():
+    ends = (90, 160, 225)
+    starts = (70, 140, 215)
+    return timeline(
+        280,
+        vlines=[(130, 45, 240, "시각 $0$", 262, True), (470, 45, 240, "시각 $t$", 262, True)],
+        curves=[("M130 70 C 240 60, 340 120, 470 90", LO), ("M130 140 C 240 170, 340 120, 470 160", LO),
+                ("M130 215 C 240 230, 340 190, 470 225", LO)],
+        dots=[(130, y, "start") for y in starts] + [(470, y, "hi") for y in ends],
+        texts=[(118, y, f"운동 {i + 1}", "right", 0) for i, y in enumerate(starts)]
+        + [(484, y, name, "left", 3) for y, name in zip(ends, ("$s$", "$s'$", "$s''$"))]
+        + [(470, 30, r"$\mathcal{S}$", "center", 4)],
+    )
+
+
+def fig06():
+    starts = (70, 120, 175, 225)
+    return timeline(
+        300,
+        vlines=[(130, 45, 240, "시각 $0$", 262, False), (470, 45, 240, "시각 $t$", 262, False)],
+        gates=[(470, 70, 160)],
+        curves=[("M130 70 C 240 60, 340 110, 470 90", HI), ("M130 120 C 240 150, 340 110, 470 140", HI),
+                ("M130 175 C 240 190, 340 170, 470 195", LO), ("M130 225 C 240 235, 340 215, 470 232", LO)],
+        dots=[(470, 90, "hi"), (470, 140, "hi"), (470, 195, "lo"), (470, 232, "lo")],
+        texts=[(118, y, f"운동 {i + 1}", "right", 0) for i, y in enumerate(starts)]
+        + [(488, 115, "$F$", "left", 3), (470, 30, r"$\mathcal{S}$", "center", 4)],
+        legend=[(120, 284, [HI], "명제가 참인 운동"), (380, 284, [LO], "명제가 거짓인 운동")],
+    )
+
+
+def fig07():
+    fig, ax = plt.subplots(figsize=(WIDTH, 3.3))
+    for x0 in (0.3, 4.7):
+        ax.add_patch(FancyBboxPatch((x0, 0.3), 3.0, 2.4, boxstyle="round,pad=0.02,rounding_size=0.18",
+                                    facecolor="none", edgecolor=INK, lw=1.0))
+    ax.text(0.62, 2.38, r"$\Omega$", ha="center", va="center", fontsize=FS + 5)
+    ax.text(5.02, 2.38, r"$\mathcal{S}$", ha="center", va="center", fontsize=FS + 5)
+    left = [(2.55, 2.2), (2.55, 1.72), (2.55, 1.24), (2.55, 0.72)]
+    right = [(5.75, 2.0), (5.75, 1.45), (5.75, 0.78)]
+    ax.add_patch(FancyBboxPatch((1.25, 1.02), 1.55, 1.42, boxstyle="round,pad=0.02,rounding_size=0.15",
+                                facecolor=BLUE, alpha=SOFT, edgecolor="none"))
+    ax.add_patch(FancyBboxPatch((5.4, 1.2), 1.15, 1.05, boxstyle="round,pad=0.02,rounding_size=0.15",
+                                facecolor=BLUE, alpha=SOFT, edgecolor="none"))
+    ax.text(6.95, 1.72, "$F$", ha="center", va="center", fontsize=FS + 3)
+    for (x, y), j in zip(left, (0, 0, 1, 2)):
+        tx, ty = right[j]
+        dy = 0.05 if (x, y) == left[0] else (-0.05 if (x, y) == left[1] else 0.0)
+        arrow(ax, (x + 0.1, y), (tx - 0.12, ty + dy), color=GRAY, lw=0.8, ms=8)
+    for i, (x, y) in enumerate(left):
+        ax.plot([x], [y], "o", color=INK, markersize=5, zorder=5)
+        ax.text(x - 0.16, y, f"운동 {i + 1}", ha="right", va="center", fontsize=FS)
+    for (x, y), name in zip(right, ("$s$", "$s'$", "$s''$")):
+        ax.plot([x], [y], "o", color=INK, markersize=5, zorder=5)
+        ax.text(x + 0.18, y, name, ha="left", va="center", fontsize=FS + 3)
+    ax.add_patch(Rectangle((0.45, -0.22), 0.5, 0.26, facecolor=BLUE, alpha=SOFT, edgecolor="none"))
+    ax.text(1.1, -0.09, "진리집합", ha="left", va="center", fontsize=FS)
+    ax.set_xlim(0, 8)
+    ax.set_ylim(-0.45, 3)
+    ax.set_aspect("equal")
+    ax.axis("off")
+    return fig
+
+
+def fig08():
+    return timeline(
+        280,
+        vlines=[(300, 48, 240, "시각 $t$", 262, False), (480, 48, 240, "시각 $t+u$", 262, False)],
+        gates=[(480, 62, 118)],
+        curves=[("M120 80 C 190 80, 240 130, 300 140 C 360 150, 420 100, 480 90", HI),
+                ("M120 210 C 190 210, 240 150, 300 140 C 360 130, 420 190, 480 200", PLAIN)],
+        dots=[(480, 90, "hi"), (480, 200, "lo"), (300, 140, "point")],
+        texts=[(108, 80, "운동 1", "right", 0), (108, 210, "운동 2", "right", 0), (290, 122, "$s$", "right", 3),
+               (496, 88, "$F$", "left", 3), (300, 32, r"$\mathcal{S}$", "center", 4),
+               (480, 32, r"$\mathcal{S}$", "center", 4)],
+    )
+
+
+def fig10():
+    ys = {150: (80, 140, 215), 320: (110, 165, 205), 490: (85, 140, 220)}
+    return timeline(
+        276,
+        axis=(100, 48, 236),
+        vlines=[(150, 48, 236, "시각 $0$", 258, False), (320, 48, 236, "시각 $t$", 258, False),
+                (490, 48, 236, "시각 $t+u$", 258, False)],
+        curves=[("M150 80 C 220 70, 260 120, 320 110 C 380 100, 430 70, 490 85", LO),
+                ("M150 140 C 220 160, 260 150, 320 165 C 380 180, 430 150, 490 140", LO),
+                ("M150 215 C 220 220, 260 200, 320 205 C 380 210, 430 225, 490 220", LO)],
+        dots=[(x, y, "hi") for x, col in ys.items() for y in col],
+        texts=[(88, 142, r"$\mathcal{S}$", "right", 4), (150, 32, "$S_0$", "center", 3),
+               (320, 32, "$S_t$", "center", 3), (490, 32, "$S_{t+u}$", "center", 3)]
+        + [(504, y, f"운동 {i + 1}", "left", 0) for i, y in enumerate(ys[490])],
+    )
+
+
+def fig11():
+    return timeline(
+        304,
+        vlines=[(250, 62, 245, "시각 $t$", 266, False), (450, 62, 245, "시각 $t+u$", 266, False)],
+        gates=[(250, 70, 132), (450, 95, 155)],
+        curves=[("M110 70 C 160 70, 200 80, 250 85 C 320 92, 380 106, 450 110", HI),
+                ("M110 110 C 160 110, 200 114, 250 118 C 320 124, 380 196, 450 205", LO),
+                ("M110 160 C 160 162, 200 166, 250 170 C 320 176, 380 146, 450 140", LO),
+                ("M110 220 C 160 220, 200 216, 250 215 C 320 214, 380 226, 450 228", LO)],
+        dots=[(250, 85, "hi"), (250, 118, "hi"), (250, 170, "lo"), (250, 215, "lo"),
+              (450, 110, "hi"), (450, 205, "lo"), (450, 140, "hi"), (450, 228, "lo")],
+        texts=[(250, 46, "$F_1$", "center", 3), (466, 124, "$F_2$", "left", 3)],
+        legend=[(100, 288, [HI], r"$S_t^{-1}(F_1)\cap S_{t+u}^{-1}(F_2)$"), (400, 288, [LO], "그 밖의 운동")],
+    )
+
+
+def fig12():
+    return timeline(
+        290,
+        titles=[(180, 28, "운동을 정했을 때"), (500, 28, "운동을 정하지 않았을 때")],
+        vlines=[(230, 48, 226, "시각 $t$", 246, False), (550, 48, 226, "시각 $t$", 246, False)],
+        curves=[("M60 70 C 120 75, 170 60, 230 70 C 260 75, 290 78, 310 78", LO),
+                ("M60 210 C 120 205, 170 190, 230 195 C 260 197, 290 205, 310 210", LO),
+                ("M60 150 C 120 150, 170 110, 230 120 C 260 125, 290 140, 310 150", HI),
+                ("M380 225 C 450 228, 520 200, 630 215", LO),
+                ("M380 70 C 440 70, 500 120, 550 130 C 580 136, 610 172, 630 182", HI),
+                ("M380 140 C 440 140, 500 132, 550 130 C 580 129, 610 136, 630 138", HI),
+                ("M380 195 C 440 195, 500 140, 550 130 C 580 124, 610 98, 630 90", HI)],
+        dots=[(230, 120, "point"), (550, 130, "point")],
+        texts=[(240, 104, "$s$", "left", 3), (560, 110, "$s$", "left", 3)],
+        legend=[(60, 272, [HI], "정한 운동"), (380, 272, [HI], r"$S_t^{-1}(\{s\})$")],
+    )
+
+
+def fig13():
+    fig, (a, b) = plt.subplots(1, 2, figsize=(WIDTH, 3.5))
+    motion_table(a, column=2, outline={(1, 2): POINT}, title="한 칸과 한 열", top=[(2, r"$S_t$")])
+    motion_table(b, outline={(r, 2): BLUE for r in range(4)}, names=range(4), title="행들의 집합",
+                 top=[(2, r"$F=\{$동$\}$")],
+                 legend=(("outline", "$F$ 안의 칸"), ("fill", "$S_t^{-1}(F)$")))
+    a.set_ylim(b.get_ylim())
+    fig.subplots_adjust(left=0.01, right=0.99, bottom=0.02, top=0.98, wspace=0.05)
+    return fig
+
+
+PAST_LEGEND = [PLAIN, DASH]
+
+
+def fig14():
+    return timeline(
+        300,
+        vlines=[(300, 50, 232, "시각 $t$", 252, False), (460, 50, 232, "시각 $t+u$", 252, False)],
+        curves=[("M120 80 C 190 80, 240 130, 300 140", PLAIN), ("M120 210 C 190 210, 240 150, 300 140", DASH),
+                ("M300 140 C 350 140, 410 90, 460 82", HI), ("M300 140 C 350 142, 410 146, 460 145", HI),
+                ("M300 140 C 350 140, 410 195, 460 205", HI)],
+        dots=[(460, 82, "hi"), (460, 145, "hi"), (460, 205, "hi"), (300, 140, "point")],
+        texts=[(290, 122, "$s$", "right", 3)],
+        legend=[(110, 282, PAST_LEGEND, "서로 다른 과거"), (340, 282, [HI], "$u$초 뒤에 놓일 수 있는 state")],
+    )
+
+
+def fig16():
+    return timeline(
+        304,
+        vlines=[(250, 62, 245, "시각 $t$", 266, False), (450, 62, 245, "시각 $t+u$", 266, False)],
+        gates=[(250, 70, 132), (450, 92, 178)],
+        curves=[("M110 70 C 160 70, 200 80, 250 85 C 320 92, 380 98, 450 100", HI),
+                ("M110 110 C 160 110, 200 104, 250 102 C 320 100, 380 128, 450 135", HI),
+                ("M110 150 C 160 150, 200 128, 250 122 C 320 114, 380 160, 450 170", HI),
+                ("M110 220 C 160 220, 200 216, 250 215 C 320 214, 380 226, 450 228", LO)],
+        dots=[(250, 85, "hi"), (250, 102, "hi"), (250, 122, "hi"), (250, 215, "lo"),
+              (450, 100, "hi"), (450, 135, "hi"), (450, 170, "hi"), (450, 228, "lo")],
+        texts=[(250, 46, "$F$", "center", 3), (466, 135, "$T_u(F)$", "left", 3)],
+        legend=[(100, 288, [HI], "시각 $t$에 $F$ 안에 있는 운동"), (400, 288, [LO], "그 밖의 운동")],
+    )
+
+
+def fig20():
+    return timeline(
+        300,
+        titles=[(175, 28, "화살표가 하나일 때"), (500, 28, "화살표가 여럿일 때")],
+        vlines=[(180, 50, 232, "시각 $t$", 252, False), (290, 50, 232, "시각 $t+u$", 252, False),
+                (500, 50, 232, "시각 $t$", 252, False), (620, 50, 232, "시각 $t+u$", 252, False)],
+        curves=[("M60 80 C 110 80, 140 130, 180 140", PLAIN), ("M60 210 C 110 210, 140 150, 180 140", DASH),
+                ("M180 140 C 215 150, 255 110, 290 100", HI),
+                ("M380 80 C 430 80, 460 130, 500 140", PLAIN), ("M380 210 C 430 210, 460 150, 500 140", DASH),
+                ("M500 140 C 540 140, 580 90, 620 82", HI), ("M500 140 C 540 142, 580 146, 620 145", HI),
+                ("M500 140 C 540 140, 580 195, 620 205", HI)],
+        dots=[(290, 100, "hi"), (620, 82, "hi"), (620, 145, "hi"), (620, 205, "hi"),
+              (180, 140, "point"), (500, 140, "point")],
+        texts=[(172, 122, "$s$", "right", 3), (492, 122, "$s$", "right", 3), (300, 94, "$s'$", "left", 3),
+               (630, 76, "$s'$", "left", 3), (548, 96, r"$\mathcal{P}_{ss'}$", "center", 2)],
+        legend=[(110, 282, PAST_LEGEND, "서로 다른 과거"), (380, 282, [HI], "시각 $t$ 뒤의 운동")],
+    )
+
+
 FIGURES = [
     ("01-fig01-room-and-camera", fig01), ("01-fig02-views", fig02), ("01-fig03-uncut-tip", fig03),
-    ("01-fig04-state-space", fig04), ("01-fig05-motions-and-truth-set", fig05),
-    ("01-fig06-same-state-different-later", fig06), ("01-fig07-symbol-map", fig07),
-    ("01-fig08-two-times", fig08), ("01-fig09-cell-and-column", fig09),
-    ("01-fig10-past-independence", fig10), ("01-fig11-operator-and-arrow", fig11),
-    ("01-fig12-composition", fig12), ("01-fig13-examples", fig13), ("01-fig14-graph-and-flow", fig14),
+    ("01-fig04-state-space", fig04), ("01-fig05-motions-and-states", fig05), ("01-fig06-truth-set", fig06),
+    ("01-fig07-motions-to-states", fig07), ("01-fig08-same-state-different-later", fig08),
+    ("01-fig09-symbol-map", fig09), ("01-fig10-state-at-each-time", fig10), ("01-fig11-two-times", fig11),
+    ("01-fig12-one-state-and-event", fig12), ("01-fig13-table", fig13),
+    ("01-fig14-past-independence", fig14), ("01-fig15-operator-and-arrow", fig15),
+    ("01-fig16-two-gates", fig16), ("01-fig17-composition", fig17), ("01-fig18-examples", fig18),
+    ("01-fig19-graph-and-flow", fig19), ("01-fig20-one-or-many", fig20),
 ]
 
 
