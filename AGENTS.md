@@ -62,7 +62,7 @@
      Details live in the doc's "Current State" block, never here.
      Remove the line as the last commit on the branch before merge — a protected
      branch cannot be edited afterwards (git-rules.md, post-PR cleanup gate). -->
-- `101-feature-sac-aim-fire-env7` — `docs/issues/feature/101-feature-sac-aim-fire-env7.md` — 환경 버전 7에서 SAC로 조준과 발사 학습하기
+- (none)
 
 ## Environment (repo slot)
 

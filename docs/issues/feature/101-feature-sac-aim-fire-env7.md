@@ -183,6 +183,17 @@ This document, the registry row in `docs/issues/README.md`, the pointer line in 
 - The causal reading (no captures during training, so no precision) is not tested; the fine-tuning run is its test.
 - UI evidence not captured for the lineage node.
 
+### chore: 끝난 작업의 pointer 지우기 (#101)
+> why: the pointer line leaves `AGENTS.md` in the branch's last commit, before the PR
+#### Scope
+`AGENTS.md`, this doc.
+#### Changes
+- Recent Active Context: the #101 line replaced by `- (none)`.
+#### Verification
+- Docs commit before it: f3021f8.
+#### Notes
+- Push, PR and squash merge follow, approved by the user on 2026-11-27.
+
 ## Management Notes
 ### Follow-up Candidates
 - The neural fly's reaction to the beam (teammate).
