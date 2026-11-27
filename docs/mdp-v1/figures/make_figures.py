@@ -1,9 +1,9 @@
 """01-camera-markov-process.md의 그림 스무 장을 만든다.
 
-    python docs/mdp/figures/make_figures.py            # SVG 스무 장을 이 폴더에 쓴다
-    python docs/mdp/figures/make_figures.py --png DIR  # 확인용 PNG도 DIR에 쓴다
+    python docs/mdp-v1/figures/make_figures.py            # SVG 스무 장을 이 폴더에 쓴다
+    python docs/mdp-v1/figures/make_figures.py --png DIR  # 확인용 PNG도 DIR에 쓴다
 
-그림의 내용과 값은 docs/mdp/01-figures.md를 따른다.
+그림의 내용과 값은 docs/mdp-v1/01-figures.md를 따른다.
 """
 
 from __future__ import annotations

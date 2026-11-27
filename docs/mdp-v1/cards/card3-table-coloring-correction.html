@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>표의 색칠 기준 정정</title>
+<!--
+  카드 3. 카드 2의 표를 고친 것. 조건에 쓰인 칸에는 테두리를 치고, 골라진 운동은 이름 칸만 칠합니다.
+  2026-11-27 대화에서 채팅 카드로 보여 준 것을 그대로 떠 둔 파일입니다.
+  <body> 안의 내용은 그때의 카드 원문이고 한 글자도 고치지 않았습니다.
+  이 <head>의 스타일은 채팅 화면이 대신 주던 색과 글자 모양을 채운 것입니다.
+  수식은 인터넷에서 KaTeX를 불러와 그립니다.
+-->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+:root{--text-primary:#1f1f1e;--text-secondary:#6b6a65;--border-strong:#b8b6ad;--bg-accent:#e1f5ee;--text-accent:#0f6e56;--p:#1f1f1e;--s:#6b6a65}
+body{font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;max-width:760px;margin:32px auto;padding:0 16px;background:#fff;color:var(--text-primary)}
+h3{font-size:20px;font-weight:600}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+svg text{font-family:inherit}
+svg .t{font-size:14px;fill:var(--p)}
+svg .ts{font-size:12px;fill:var(--s)}
+svg .th{font-size:14px;font-weight:600;fill:var(--p)}
+svg .box{fill:#f5f4ef;stroke:var(--border-strong)}
+svg rect.c-teal,svg .c-teal rect{fill:#e1f5ee;stroke:#0f6e56}
+svg .c-teal text{fill:#085041}
+svg .arr{stroke:var(--s);stroke-width:1.5;fill:none}
+</style>
+</head>
+<body>
+<h2 class="sr-only">표 두 개. 왼쪽은 시각 t1 칸이 동인 칸에 테두리를 치고 그 운동의 이름을 칠했다. 오른쪽은 시각 t1 칸이 동이고 시각 t2 칸이 남인 두 조건을 모두 만족하는 운동의 이름만 칠했다.</h2>
+<style>
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:8px 0}
+.mt{border-collapse:collapse;font-size:14px;width:100%}
+.mt th,.mt td{border:0.5px solid var(--border-strong);padding:6px 4px;text-align:center;color:var(--text-primary);font-weight:400}
+.mt th{color:var(--text-secondary)}
+.mt .sel{background:var(--bg-accent);color:var(--text-accent)}
+.mt .hit{outline:2px solid var(--text-accent);outline-offset:-3px}
+.tc{font-size:13px;color:var(--text-secondary);text-align:center;margin-top:8px}
+.tx{color:var(--text-primary);text-align:center;font-size:13px}
+.lg{display:flex;gap:24px;justify-content:center;font-size:13px;color:var(--text-secondary);padding:4px 0 8px;flex-wrap:wrap}
+.sw{display:inline-block;width:14px;height:14px;vertical-align:-2px;margin-right:6px;border-radius:3px}
+</style>
+<div class="lg"><span><span class="sw" style="outline:2px solid var(--text-accent);outline-offset:-2px"></span>조건을 만족하는 칸</span><span><span class="sw" style="background:var(--bg-accent)"></span>event에 속하는 운동</span></div>
+<div class="g2" id="g2"></div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script>
+var rows=[['ω₁','북','동','남'],['ω₂','북','동','동'],['ω₃','동','동','남'],['ω₄','동','동','동'],['ω₅','동','남','남']];
+var head=['운동','시각 0','시각 t₁','시각 t₂'];
+var a=function(row){return row[2]==='동';};
+var b=function(row){return row[3]==='남';};
+var views=[
+{cap:'시각 t₁ 칸만 보고 운동을 고른다',tex:'S_{t_1}^{-1}(\\{\\text{동}\\})=\\{\\omega_1,\\omega_2,\\omega_3,\\omega_4\\}',hit:function(row,c){return c===2&&a(row);},sel:function(row){return a(row);}},
+{cap:'두 시각의 조건을 모두 만족하는 운동',tex:'\\begin{aligned}&S_{t_1}^{-1}(\\{\\text{동}\\})\\cap S_{t_2}^{-1}(\\{\\text{남}\\})\\\\&=\\{\\omega_1,\\omega_3\\}\\end{aligned}',hit:function(row,c){return (c===2&&a(row))||(c===3&&b(row));},sel:function(row){return a(row)&&b(row);}}
+];
+var g=document.getElementById('g2');
+views.forEach(function(v){
+var d=document.createElement('div');
+var t='<table class="mt"><tr>'+head.map(function(x){return '<th>'+x+'</th>';}).join('')+'</tr>';
+rows.forEach(function(row){t+='<tr>'+row.map(function(x,c){var k=c===0?(v.sel(row)?'sel':''):(v.hit(row,c)?'hit':'');return '<td'+(k?' class="'+k+'"':'')+'>'+x+'</td>';}).join('')+'</tr>';});
+t+='</table><div class="tc">'+v.cap+'</div><div class="tx"></div>';
+d.innerHTML=t;g.appendChild(d);
+var e=d.querySelector('.tx');
+try{katex.render(v.tex,e,{displayMode:true,throwOnError:false});}catch(x){e.textContent=v.tex;}
+});
+</script>
+</body>
+</html>

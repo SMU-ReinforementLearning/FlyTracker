@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>통상적 인식과의 연결, 팀원용 설명</title>
+<!--
+  카드 2. '통상적 인식과의 연결'과 '팀원용 설명' 절. 그림 7부터 12. 이 카드의 표(그림 8, 11)는 행을 통째로 칠한 옛 방식이고, 고친 방식은 카드 3에 있습니다.
+  2026-11-27 대화에서 채팅 카드로 보여 준 것을 그대로 떠 둔 파일입니다.
+  <body> 안의 내용은 그때의 카드 원문이고 한 글자도 고치지 않았습니다.
+  이 <head>의 스타일은 채팅 화면이 대신 주던 색과 글자 모양을 채운 것입니다.
+  수식은 인터넷에서 KaTeX를 불러와 그립니다.
+-->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+:root{--text-primary:#1f1f1e;--text-secondary:#6b6a65;--border-strong:#b8b6ad;--bg-accent:#e1f5ee;--text-accent:#0f6e56;--p:#1f1f1e;--s:#6b6a65}
+body{font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;max-width:760px;margin:32px auto;padding:0 16px;background:#fff;color:var(--text-primary)}
+h3{font-size:20px;font-weight:600}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+svg text{font-family:inherit}
+svg .t{font-size:14px;fill:var(--p)}
+svg .ts{font-size:12px;fill:var(--s)}
+svg .th{font-size:14px;font-weight:600;fill:var(--p)}
+svg .box{fill:#f5f4ef;stroke:var(--border-strong)}
+svg rect.c-teal,svg .c-teal rect{fill:#e1f5ee;stroke:#0f6e56}
+svg .c-teal text{fill:#085041}
+svg .arr{stroke:var(--s);stroke-width:1.5;fill:none}
+</style>
+</head>
+<body>
+<h2 class="sr-only">통상적 인식과의 연결, 그리고 팀원용 설명을 글, 수식, 그림 여섯 장으로 적는다.</h2>
+<style>
+.d p{font-size:16px;line-height:1.7;color:var(--text-primary);margin:0 0 12px}
+.d h3{margin:20px 0 12px}
+.d .cap{font-size:13px;line-height:1.6;color:var(--text-secondary);margin:0 0 20px;padding-left:10px;border-left:2px solid var(--border-strong)}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:8px 0}
+.mt{border-collapse:collapse;font-size:13px;width:100%}
+.mt th,.mt td{border:0.5px solid var(--border-strong);padding:4px 2px;text-align:center;color:var(--text-primary);font-weight:400}
+.mt th{color:var(--text-secondary)}
+.mt .h{background:var(--bg-accent);color:var(--text-accent)}
+.tc{font-size:13px;color:var(--text-secondary);text-align:center;margin-top:8px}
+.tx{color:var(--text-primary);text-align:center;font-size:14px}
+</style>
+<div class="d" id="d2">
+<h3>통상적 인식과의 연결</h3>
+<p>통상적 인식에서 state는 시스템이 지금 놓인 상태 하나이고, $\mathcal S$의 원소를 가리킵니다.</p>
+<p>이 인식이 정확히 맞는 자리는 운동이 하나로 특정된 경우입니다. 운동 $\omega$를 정하면 표현의 값 $S_t(\omega)$는 $\mathcal S$의 원소 하나이고, 01의 trajectory $s(t)$가 이것입니다.</p>
+<p>이 인식이 닿지 않는 자리는 운동을 특정하지 않고 하는 말입니다. "state $s$에서 다른 state로 갈 확률"이나 "현재 state를 알면 과거는 필요 없다"는 운동 하나에 관한 말이 아닙니다. 시각 $t$의 state가 $s$인 운동 전체, 곧 event $S_t^{-1}(\{s\})$에 관한 말입니다.</p>
+<p>$\mathcal S$의 원소에는 시각이 붙어 있지 않아서 "시각 $t$의 $s$"와 "시각 $t+u$의 $s$"를 가르지 못합니다. $S_t$와 $S_{t+u}$는 value space가 같은 서로 다른 대응이므로 이것을 가릅니다.</p>
+<svg width="100%" viewBox="0 0 680 290" role="img"><title>하나의 state와 event</title><desc>왼쪽은 운동 하나가 강조되고 시각 t의 state가 한 점으로 찍혀 있다. 오른쪽은 시각 t에 점 s를 지나는 운동 세 개가 모두 강조되어 있다.</desc>
+<text class="th" x="180" y="30" text-anchor="middle">운동을 하나 정했을 때</text><text class="th" x="500" y="30" text-anchor="middle">운동을 정하지 않았을 때</text>
+<line x1="230" y1="48" x2="230" y2="226" stroke="var(--s)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<path d="M60 70 C 120 75, 170 60, 230 70 C 260 75, 290 78, 310 78" fill="none" stroke="#888780" stroke-width="1.5" opacity="0.5"/>
+<path d="M60 210 C 120 205, 170 190, 230 195 C 260 197, 290 205, 310 210" fill="none" stroke="#888780" stroke-width="1.5" opacity="0.5"/>
+<path d="M60 150 C 120 150, 170 110, 230 120 C 260 125, 290 140, 310 150" fill="none" stroke="#1D9E75" stroke-width="2"/>
+<circle cx="230" cy="120" r="4.5" fill="var(--p)"/><text class="th" x="238" y="108">Sₜ(ω)</text>
+<text class="ts" x="230" y="246" text-anchor="middle">시각 t</text>
+<line x1="60" y1="270" x2="90" y2="270" stroke="#1D9E75" stroke-width="2"/><text class="ts" x="98" y="274">정한 운동 ω</text>
+<line x1="550" y1="48" x2="550" y2="226" stroke="var(--s)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<path d="M380 225 C 450 228, 520 200, 630 215" fill="none" stroke="#888780" stroke-width="1.5" opacity="0.5"/>
+<path d="M380 70 C 440 70, 500 120, 550 130 C 580 136, 610 172, 630 182" fill="none" stroke="#1D9E75" stroke-width="2"/>
+<path d="M380 140 C 440 140, 500 132, 550 130 C 580 129, 610 136, 630 138" fill="none" stroke="#1D9E75" stroke-width="2"/>
+<path d="M380 195 C 440 195, 500 140, 550 130 C 580 124, 610 98, 630 90" fill="none" stroke="#1D9E75" stroke-width="2"/>
+<circle cx="550" cy="130" r="4.5" fill="var(--p)"/><text class="th" x="558" y="112">s</text>
+<text class="ts" x="550" y="246" text-anchor="middle">시각 t</text>
+<line x1="380" y1="270" x2="410" y2="270" stroke="#1D9E75" stroke-width="2"/><text class="ts" x="418" y="274">Sₜ⁻¹({s})에 속하는 운동</text>
+</svg>
+<div class="cap">그림 7. 왼쪽은 운동 $\omega$를 정한 경우이고, 시각 $t$의 state는 점 하나입니다. 오른쪽은 운동을 정하지 않은 경우이고, "state가 $s$"는 시각 $t$에 $s$를 지나는 운동 전체를 가리킵니다.</div>
+<p>그러므로 둘은 맞고 틀린 관계가 아니라 범위가 다른 관계입니다. 그림 8의 표가 둘을 나란히 놓습니다. 통상적 인식의 state는 한 칸이고, $S_t$는 한 열이며, event는 행들의 집합입니다.</p>
+<div class="g3" id="ta"></div>
+<div class="cap">그림 8. 행은 가능한 운동, 열은 시각, 칸은 state입니다. 같은 표에서 왼쪽부터 한 칸, 한 열, 행들의 집합을 칠했습니다.</div>
+<h3>팀원용 설명</h3>
+<p>카메라가 어떻게 움직일지는 하나로 정해져 있지 않습니다. 출발 방향이 주어지지 않았기 때문입니다. 그래서 일어날 수 있는 운동을 모두 모아 집합 $\Omega$로 둡니다. $\Omega$의 원소 $\omega$ 하나가 처음부터 끝까지의 운동 하나입니다.</p>
+<p>운동 $\omega$가 시각 $t$에 놓인 state를 $S_t(\omega)$로 적습니다. 그림 9에서 곡선 하나가 운동 하나이고, 시각 $t$의 축에 찍힌 점이 그 운동의 state입니다.</p>
+<p>$$S_t:\Omega\to\mathcal S,\qquad \omega\ \longmapsto\ S_t(\omega)$$</p>
+<svg width="100%" viewBox="0 0 680 280" role="img"><title>가능한 운동과 시각 t의 state</title><desc>세 운동 곡선이 시각 0에서 시각 t로 이어지고, 시각 t의 축 위 점이 각 운동의 state이다.</desc>
+<text class="ts" x="300" y="26" text-anchor="middle">가능한 운동 ω (Ω의 원소)</text><text class="th" x="470" y="34" text-anchor="middle">𝒮</text>
+<line x1="130" y1="45" x2="130" y2="240" stroke="var(--s)" stroke-width="0.5"/><line x1="470" y1="45" x2="470" y2="240" stroke="var(--s)" stroke-width="1"/>
+<path d="M130 70 C 240 60, 340 120, 470 90" fill="none" stroke="#888780" stroke-width="1.5"/>
+<path d="M130 140 C 240 170, 340 120, 470 160" fill="none" stroke="#888780" stroke-width="1.5"/>
+<path d="M130 215 C 240 230, 340 190, 470 225" fill="none" stroke="#888780" stroke-width="1.5"/>
+<circle cx="130" cy="70" r="3" fill="#888780"/><circle cx="130" cy="140" r="3" fill="#888780"/><circle cx="130" cy="215" r="3" fill="#888780"/>
+<circle cx="470" cy="90" r="4.5" fill="#1D9E75"/><circle cx="470" cy="160" r="4.5" fill="#1D9E75"/><circle cx="470" cy="225" r="4.5" fill="#1D9E75"/>
+<text class="t" x="118" y="75" text-anchor="end">ω₁</text><text class="t" x="118" y="145" text-anchor="end">ω₂</text><text class="t" x="118" y="220" text-anchor="end">ω₃</text>
+<text class="t" x="484" y="95">Sₜ(ω₁)</text><text class="t" x="484" y="165">Sₜ(ω₂)</text><text class="t" x="484" y="230">Sₜ(ω₃)</text>
+<text class="ts" x="130" y="262" text-anchor="middle">시각 0</text><text class="ts" x="470" y="262" text-anchor="middle">시각 t</text>
+</svg>
+<div class="cap">그림 9. 곡선 하나가 운동 하나입니다. 시각 $t$의 축에 찍힌 점이 $S_t(\omega)$이고, 그 축 전체가 $\mathcal S$입니다.</div>
+<p>$\mathcal S$는 state 전체의 집합이고, $S_t$는 운동을 받아 state를 내는 function입니다. 수업에서 random state라고 부른 것이 이 $S_t$입니다. $\mathcal S$는 하나이지만 $S_t$는 시각마다 하나씩 있습니다.</p>
+<p>event는 운동들의 집합입니다. "시각 $t$에 카메라가 구역 $F$를 보고 있다"는 event는 그런 운동을 모두 모은 것입니다. 그림 10에서 구역 $F$를 지나는 곡선들이 이 event입니다.</p>
+<p>$$S_t^{-1}(F)=\{\omega\in\Omega:\ S_t(\omega)\in F\}$$</p>
+<svg width="100%" viewBox="0 0 680 300" role="img"><title>event는 운동들의 집합</title><desc>네 운동 곡선 가운데 시각 t에 구역 F 안에 놓이는 두 곡선이 강조되어 있다.</desc>
+<text class="th" x="470" y="34" text-anchor="middle">𝒮</text>
+<line x1="130" y1="45" x2="130" y2="240" stroke="var(--s)" stroke-width="0.5"/><line x1="470" y1="45" x2="470" y2="240" stroke="var(--s)" stroke-width="1"/>
+<line x1="470" y1="70" x2="470" y2="160" stroke="#1D9E75" stroke-width="7" stroke-linecap="round" opacity="0.45"/>
+<path d="M130 70 C 240 60, 340 110, 470 90" fill="none" stroke="#1D9E75" stroke-width="2"/>
+<path d="M130 120 C 240 150, 340 110, 470 140" fill="none" stroke="#1D9E75" stroke-width="2"/>
+<path d="M130 175 C 240 190, 340 170, 470 195" fill="none" stroke="#888780" stroke-width="1.5" opacity="0.6"/>
+<path d="M130 225 C 240 235, 340 215, 470 232" fill="none" stroke="#888780" stroke-width="1.5" opacity="0.6"/>
+<circle cx="470" cy="90" r="4.5" fill="#1D9E75"/><circle cx="470" cy="140" r="4.5" fill="#1D9E75"/><circle cx="470" cy="195" r="3.5" fill="#888780"/><circle cx="470" cy="232" r="3.5" fill="#888780"/>
+<text class="t" x="118" y="75" text-anchor="end">ω₁</text><text class="t" x="118" y="125" text-anchor="end">ω₂</text><text class="t" x="118" y="180" text-anchor="end">ω₃</text><text class="t" x="118" y="230" text-anchor="end">ω₄</text>
+<text class="th" x="488" y="120">F</text>
+<text class="ts" x="130" y="262" text-anchor="middle">시각 0</text><text class="ts" x="470" y="262" text-anchor="middle">시각 t</text>
+<line x1="120" y1="284" x2="150" y2="284" stroke="#1D9E75" stroke-width="2"/><text class="ts" x="158" y="288">Sₜ⁻¹(F)에 속하는 운동</text>
+<line x1="380" y1="284" x2="410" y2="284" stroke="#888780" stroke-width="1.5" opacity="0.6"/><text class="ts" x="418" y="288">속하지 않는 운동</text>
+</svg>
+<div class="cap">그림 10. 시각 $t$의 축 위에 구역 $F$를 문처럼 세웠습니다. 그 문을 지나는 굵은 곡선들이 event $S_t^{-1}(F)$입니다.</div>
+<p>확률은 event에 매기는 수입니다. "$S_t=s$일 확률"은 state $s$에 매긴 수가 아니라, 시각 $t$에 $s$에 놓이는 운동들에 매긴 수입니다. 두 시각에 걸친 event는 교집합으로 적습니다.</p>
+<p>$$S_t^{-1}(F_1)\cap S_{t+u}^{-1}(F_2)$$</p>
+<p>그림 11은 같은 내용을 표로 적은 것입니다. 행은 운동, 열은 시각, 칸은 state이고, 보기 쉽게 시각 셋과 방향 구역만 골랐습니다. 흔히 "지금의 state"라고 부르는 것은 한 칸이고, $S_{t_1}$은 한 열 전체이며, event는 행들의 집합입니다. rollout을 모은 배열로 치면 <code>states[i][t]</code>가 한 칸이고 <code>states[:, t]</code>가 한 열입니다.</p>
+<div class="g3" id="tb"></div>
+<div class="cap">그림 11. 그림 8과 같은 표입니다. 셋째 표에서 칠한 네 행은 시각 $t_1$에 동쪽을 보는 운동들입니다.</div>
+<p>Markov property는 열과 열 사이의 관계입니다. 시각 $t$의 state가 같은 운동들만 모으면, 그 뒤의 운동은 그 앞의 운동과 무관합니다. 그림 11에서 시각 $t_1$에 동쪽인 네 행을 보면, 시각 0에 북쪽이었든 동쪽이었든 시각 $t_2$의 갈래가 같습니다.</p>
+<p>문서 01에서는 그 뒤가 하나로 정해집니다. 그림 12의 왼쪽이고, $\Phi_u$는 01의 flow입니다.</p>
+<p>$$S_{t+u}=\Phi_u(S_t)$$</p>
+<p>수업의 MP에서는 그 뒤가 여러 갈래이고, 갈래마다의 확률이 과거와 무관합니다. 그림 12의 오른쪽입니다.</p>
+<p>$$P\big[S_{t+u}\in F\ \big|\ S_t=s,\ \text{과거}\big]=P\big[S_{t+u}\in F\ \big|\ S_t=s\big]$$</p>
+<svg width="100%" viewBox="0 0 680 300" role="img"><title>Markov property의 두 경우</title><desc>왼쪽은 시각 t의 state s 뒤가 곡선 하나로 이어지고, 오른쪽은 같은 점에서 세 갈래로 퍼진다.</desc>
+<text class="th" x="200" y="30" text-anchor="middle">전이가 하나로 정해질 때</text><text class="th" x="520" y="30" text-anchor="middle">전이가 확률로 주어질 때</text>
+<line x1="180" y1="50" x2="180" y2="232" stroke="var(--s)" stroke-width="0.5" stroke-dasharray="3 3"/><line x1="290" y1="50" x2="290" y2="232" stroke="var(--s)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<path d="M60 80 C 110 80, 140 130, 180 140" fill="none" stroke="#888780" stroke-width="1.5"/>
+<path d="M60 210 C 110 210, 140 150, 180 140" fill="none" stroke="#888780" stroke-width="1.5" stroke-dasharray="5 4"/>
+<path d="M180 140 C 215 150, 255 110, 290 100" fill="none" stroke="#1D9E75" stroke-width="2"/>
+<circle cx="180" cy="140" r="4.5" fill="var(--p)"/><circle cx="290" cy="100" r="4.5" fill="#1D9E75"/>
+<text class="th" x="188" y="126">s</text><text class="t" x="298" y="96">Φᵤ(s)</text>
+<text class="ts" x="110" y="252" text-anchor="middle">과거</text><text class="ts" x="180" y="252" text-anchor="middle">시각 t</text><text class="ts" x="290" y="252" text-anchor="middle">시각 t+u</text>
+<line x1="500" y1="50" x2="500" y2="232" stroke="var(--s)" stroke-width="0.5" stroke-dasharray="3 3"/><line x1="620" y1="50" x2="620" y2="232" stroke="var(--s)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<line x1="620" y1="70" x2="620" y2="155" stroke="#1D9E75" stroke-width="7" stroke-linecap="round" opacity="0.45"/>
+<path d="M380 80 C 430 80, 460 130, 500 140" fill="none" stroke="#888780" stroke-width="1.5"/>
+<path d="M380 210 C 430 210, 460 150, 500 140" fill="none" stroke="#888780" stroke-width="1.5" stroke-dasharray="5 4"/>
+<path d="M500 140 C 540 140, 580 90, 620 82" fill="none" stroke="#1D9E75" stroke-width="2"/>
+<path d="M500 140 C 540 142, 580 146, 620 145" fill="none" stroke="#1D9E75" stroke-width="2"/>
+<path d="M500 140 C 540 140, 580 195, 620 205" fill="none" stroke="#1D9E75" stroke-width="2"/>
+<circle cx="500" cy="140" r="4.5" fill="var(--p)"/><circle cx="620" cy="82" r="4" fill="#1D9E75"/><circle cx="620" cy="145" r="4" fill="#1D9E75"/><circle cx="620" cy="205" r="4" fill="#1D9E75"/>
+<text class="th" x="508" y="126">s</text><text class="th" x="634" y="118">F</text>
+<text class="ts" x="420" y="252" text-anchor="middle">과거</text><text class="ts" x="500" y="252" text-anchor="middle">시각 t</text><text class="ts" x="620" y="252" text-anchor="middle">시각 t+u</text>
+<line x1="130" y1="282" x2="156" y2="282" stroke="#888780" stroke-width="1.5"/><line x1="162" y1="282" x2="188" y2="282" stroke="#888780" stroke-width="1.5" stroke-dasharray="5 4"/><text class="ts" x="196" y="286">서로 다른 과거</text>
+<line x1="400" y1="282" x2="430" y2="282" stroke="#1D9E75" stroke-width="2"/><text class="ts" x="438" y="286">시각 t 뒤의 운동</text>
+</svg>
+<div class="cap">그림 12. 과거가 다른 두 운동이 시각 $t$에 같은 state $s$에 놓였습니다. 왼쪽은 그 뒤가 하나로 정해지는 경우이고, 오른쪽은 여러 갈래로 퍼지되 갈래의 확률이 과거와 무관한 경우입니다.</div>
+<p>01은 이 확률이 0과 1뿐인 경우입니다. 그래서 MP $\langle\mathcal S,\mathcal P\rangle$에서 $\mathcal S$는 값이 놓이는 집합이고, $\mathcal P$는 state 하나의 성질이 아니라 $S_t$와 그 뒤의 $S_{t+u}$를 잇는 규칙입니다.</p>
+</div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script>
+var rows=[['ω₁','북','동','남'],['ω₂','북','동','동'],['ω₃','동','동','남'],['ω₄','동','동','동'],['ω₅','동','남','남']];
+var head=['운동','시각 0','시각 t₁','시각 t₂'];
+var views=[
+{cap:'한 칸: 하나의 state',tex:'$$S_{t_1}(\\omega_2)$$',hc:-1,h:function(r,c){return r===1&&c===2;}},
+{cap:'한 열: random variable',tex:'$$S_{t_1}$$',hc:2,h:function(r,c){return c===2;}},
+{cap:'행들의 집합: event',tex:'$$S_{t_1}^{-1}(\\{\\text{동}\\})$$',hc:-1,h:function(r,c){return r<4;}}
+];
+['ta','tb'].forEach(function(id){
+var g=document.getElementById(id);
+views.forEach(function(v){
+var d=document.createElement('div');
+var t='<table class="mt"><tr>'+head.map(function(x,c){return '<th'+(v.hc===c?' class="h"':'')+'>'+x+'</th>';}).join('')+'</tr>';
+rows.forEach(function(row,r){t+='<tr>'+row.map(function(x,c){return '<td'+(v.h(r,c)?' class="h"':'')+'>'+x+'</td>';}).join('')+'</tr>';});
+t+='</table><div class="tc">'+v.cap+'</div><div class="tx">'+v.tex+'</div>';
+d.innerHTML=t;g.appendChild(d);
+});
+});
+renderMathInElement(document.getElementById('d2'),{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});
+</script>
+</body>
+</html>
