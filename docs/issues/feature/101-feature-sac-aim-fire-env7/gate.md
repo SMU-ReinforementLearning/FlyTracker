@@ -14,7 +14,7 @@ The training settings and both gates below were proposed by the agent and approv
 ## Baselines
 
 - Gate A: aimer v2 under version 7. Predictions file: #91's `docs/issues/feature/91-feature-fly-laser-startle-misfire-kinds/gate/accel-pen-rule.csv`, frozen, sha256 `1a7fbb9333bc644dcba973219a478cef387e0b8d242f707a42fbb4ae526ea567`. Not regenerated.
-- Gate B: `v7-rule` of this issue, `gate/v7-rule.csv` with the score columns — measured first and frozen by sha256 here before any fire condition is measured: `(filled when measured)`
+- Gate B: `v7-rule` of this issue, `gate/v7-rule.csv` with the score columns — measured first and frozen by sha256 here before any fire condition is measured: `c51d1ddbac79b57946dc7eb3cfd312f869eb8b65231b98becc83aa75e0675396` (measured 2026-11-27 00:26 UTC on the training instance, before any fire condition was measured)
 - Truth file: `gate/truth.csv` (capture 1, every other column 0, ids 20000-20199) — sha256 `eb8cdd78c937e285a4a0f589e05c385a5a903a446334c3e8631ab49b7ce76c57`
 
 ## Candidates

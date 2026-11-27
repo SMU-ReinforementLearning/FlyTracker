@@ -60,7 +60,11 @@ Decided by the user (2026-11-26): fire learning continues under an environment w
 
 Answered at the first review (2026-11-26, "커밋해도 돼. 조준도 버젼 7에서 다시 학습해"): the first commit is approved, and the aim is trained again under version 7 (`v7-rule` stays in the plan). Items 2-4 below were shown in the same report and not answered; they are still open, and no instance is rented before item 4 is.
 
-2026-11-27: the user approved everything open ("다 승인. commit하고 vast.ai에서 학습 시작해"). Commits: f1fea2e (seed), 61890d2 (`wall_shot` reward term), then the gate. The training bundle is built from the gate commit; training of the 12 runs starts on vast.ai right after it. Later commits (results, verdicts) go through the review gate again. vast.ai helper scripts are to be adapted from `C:\Users\neighbor\Documents\Code\Github\FlyTracker-88\runs\_ops\` (training) and `FlyTracker-91\runs\_ops91\` (measuring).
+2026-11-27: the user approved everything open ("다 승인. commit하고 vast.ai에서 학습 시작해"). Commits: f1fea2e (seed), 61890d2 (`wall_shot` reward term), then the gate. The training bundle is built from the gate commit; training of the 12 runs starts on vast.ai right after it. Later commits (results, verdicts) go through the review gate again.
+
+RUNNING since 2026-11-26 15:30 UTC (2026-11-27 00:30 KST): vast.ai instance **62712329** (36 cores, about $0.11/h) trains the 12 runs from the bundle of commit b1b5aef; setup tests 59 passed, torch 2.15.0+cpu, sb3 2.9.2, gymnasium 1.4.0, numpy 2.4.6. It bills until destroyed. On the instance: `/root/ft/state/` (markers `TRAINING_STARTED`, then `RESULTS_READY` or `FAILED`), `/root/ft/logs/<name>-s<k>.log`, models in `/root/ft/runs/g101/`; when done it packs `/root/runs-g101.tgz`, `/root/state-logs.tgz`, `/root/manifest.sha256`. Local helpers in this worktree's `runs/_ops101/` (gitignored): `steps.sh` (progress), `rsh.sh '<cmd>'`, `wait_ready.sh`, `ssh_target.txt`, `instance_id.txt`. Not written yet: the fetch script (model on `FlyTracker-88/runs/_ops2/fetch.sh`: verify sha256 and 12 `model.zip`, then destroy) and the measuring steps (gate order: `v7-rule` first, freeze `gate/v7-rule.csv` with the score columns in a commit, verdict A, then the fire conditions). One instance (62710745) was destroyed before this one: it stayed `loading` for 8 minutes with no status message. vast.ai helper scripts are to be adapted from `C:\Users\neighbor\Documents\Code\Github\FlyTracker-88\runs\_ops\` (training) and `FlyTracker-91\runs\_ops91\` (measuring).
+
+2026-11-27 00:24 UTC: all 12 runs finished (`RESULTS_READY`, about 8 h 55 min). The helper scripts now exist in `runs/_ops101/`: `poll.sh`, `measure.sh pA|pB`, `remote_measure.sh`, `boot.sh A|B`, `fetch.sh`. `v7-rule` was measured first (`measure.sh pA`) and `gate/v7-rule.csv` is frozen by sha256 in the gate. The background waiter was killed by the harness for low memory; polling went on in the foreground. Next, in the gate's order: `boot.sh A`, `measure.sh pB`, `boot.sh B`, wait for the neural phases, `fetch.sh` (destroys the instance), verdicts (uncommitted, for review).
 
 Open:
 1. (answered: yes, train the aim again.)
@@ -114,6 +118,19 @@ This document, the registry row in `docs/issues/README.md`, the pointer line in 
 - `score.py truth`: 200 rows, sha256 in the gate. `score.py` on #91's `accel-pen-rule.csv`: time 4.851, wall shots 0.252, `score_w1` 5.103, `score_w3` 5.606.
 #### Notes
 - Reward conversion (1 s = 0.5), Gate B's baseline (`v7-rule`, not v2) and the cost (12 runs on vast.ai) were the agent's proposals; the user approved all of them, both commits and the start of training on 2026-11-27 ("다 승인. commit하고 vast.ai에서 학습 시작해").
+
+### docs: 발사 조건을 재기 전에 v7-rule 측정값을 고정하기 (#101)
+> why: the gate orders Gate B's baseline to be measured and frozen by sha256 in a commit before any fire condition is measured
+#### Scope
+`gate/v7-rule.csv`, `gate/models/v7-rule-s{0,1,2}.csv`, the sha256 line in `gate.md`, this doc.
+#### Changes
+- `v7-rule` (3 models, 200 episodes each, seeds 20000-20199, rule fly, env version 7) measured on the training instance with #91's `measure_v7.py`; `score.py` added the score columns.
+- sha256 of `gate/v7-rule.csv`: c51d1ddbac79b57946dc7eb3cfd312f869eb8b65231b98becc83aa75e0675396.
+#### Verification
+- Measured values (not a verdict): pooled capture 0.478, time 7.485 s, misfires 6.648 (grazes 5.963, wall shots 0.610), `score_w1` 8.095. Per model: s0 0.690 / 6.131 s, s1 0.420 / 7.891 s, s2 0.325 / 8.433 s.
+- The local copies' sha256 equal the instance's `state/pA_GATE_SHA256`.
+#### Notes
+- Mechanical commit made without a review while the user is asleep, as the approved gate orders it (same precedent as #91's freeze). No fire condition had been measured at this point. Verdicts are not in this commit.
 
 ## Management Notes
 ### Follow-up Candidates
