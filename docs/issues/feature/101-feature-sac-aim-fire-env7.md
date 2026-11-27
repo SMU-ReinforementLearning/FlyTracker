@@ -66,6 +66,16 @@ RUNNING since 2026-11-26 15:30 UTC (2026-11-27 00:30 KST): vast.ai instance **62
 
 2026-11-27 00:24 UTC: all 12 runs finished (`RESULTS_READY`, about 8 h 55 min). The helper scripts now exist in `runs/_ops101/`: `poll.sh`, `measure.sh pA|pB`, `remote_measure.sh`, `boot.sh A|B`, `fetch.sh`. `v7-rule` was measured first (`measure.sh pA`) and `gate/v7-rule.csv` is frozen by sha256 in the gate. The background waiter was killed by the harness for low memory; polling went on in the foreground. Next, in the gate's order: `boot.sh A`, `measure.sh pB`, `boot.sh B`, wait for the neural phases, `fetch.sh` (destroys the instance), verdicts (uncommitted, for review).
 
+2026-11-27 (after the review): the user approved the verdict commit and asked to measure first why `v7-rule` is worse than v2 ("commit해. v7-rule이 왜 v2보다 못한지 원인부터 재봐"). The second stage stays unstarted until that diagnosis is reported. The "uncommitted" line below is superseded by the verdict commit.
+
+2026-11-27 01:00 UTC — MEASURED, INSTANCE DESTROYED, VERDICTS WRITTEN. Both gates are **reject** (details and tables in `gate.md`, `## Verdict`):
+- Gate A: `v7-rule` 7.485 s / capture 0.478 against aimer v2 4.851 s / 0.843, P 0.000. v2 stays, no aimer v3.
+- Gate B: `v7-fire-w1` never fires (0.07 shots per episode, capture 0.000, `score_w1` 10.063 against 8.095), P 0.000. `v7-fire-w3` the same; `v7-fire-w0` fires into the wall (10.7 wall shots per episode, capture 0.003).
+- The second-stage trigger fires (Gate B failed, shots per episode < 0.5). NOT started: it waits for the user (cost, `gate-fire.md` first). Its fixed aim would be the weak `v7-rule`.
+- Uncommitted in this worktree: the verdict in `gate.md`, the three fire gate CSVs and their per-model files under `gate/`, this doc. They wait for the user's review. Push, PR and merge are not granted.
+- Fetched and verified (sha256, 12 `model.zip`, gate CSVs equal the repo copies): models in `runs/g101/`, archives and full measurement outputs in `runs/_download101/` (`measure/out/rule-*`, `neural-*`), both gitignored — do not remove this worktree. Instance 62712329 destroyed at about 00:57 UTC (`vastai show instances`: none); rented about 9.5 h at about $0.11/h, roughly $1.
+- Not done, after the review: README, `history.js`, glossary, published runs and `published/issues/101.json`, lineage (no new aimer), pointer removal, PR.
+
 Open:
 1. (answered: yes, train the aim again.)
 2. Reward conversion 1 s = 0.5 (time penalty only). While the fly is visible near the beam the reward actually falls by about 0.5 to 1.0 per second, so 0.5 is the low end.
@@ -131,6 +141,18 @@ This document, the registry row in `docs/issues/README.md`, the pointer line in 
 - The local copies' sha256 equal the instance's `state/pA_GATE_SHA256`.
 #### Notes
 - Mechanical commit made without a review while the user is asleep, as the approved gate orders it (same precedent as #91's freeze). No fire condition had been measured at this point. Verdicts are not in this commit.
+
+### docs: 환경 버전 7 조준·발사 학습의 측정값과 판정 적기 (#101)
+> why: the 12 runs are measured; the gate needs its verdict. The user reviewed the report and approved the commit on 2026-11-27 ("commit해. v7-rule이 왜 v2보다 못한지 원인부터 재봐")
+#### Scope
+`gate.md` (`## Verdict`), `gate/v7-fire-w{0,1,3}.csv`, `gate/models/v7-fire-*.csv`, this doc.
+#### Changes
+- Verdict A reject, verdict B reject, the table at the three prices, the second-stage trigger (fires, not started), neural-fly numbers, caveats.
+#### Verification
+- `boot.sh A`, `boot.sh B`: every gated P(better) is 0.000; outputs pasted into the verdict. Capture exclusion fires in both gates.
+- `fetch.sh`: sha256 of the three archives OK, 12 models, 12 rule and 24 neural outputs, gate CSVs identical to the repo copies; instance destroyed.
+#### Notes
+- Gate B's baseline `v7-rule` is itself much worse than v2. Why training under version 7 gives a worse aimer than the same recipe under version 6 is not measured.
 
 ## Management Notes
 ### Follow-up Candidates
