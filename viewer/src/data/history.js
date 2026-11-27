@@ -29,6 +29,7 @@ const ISSUES = {
   72: { title: 'SAC 조준기를 환경 버전 6에 세우고 조준기 v1로 정하기', author: 'lhk0721', merged: '2026-11-18', env: 6 },
   88: { title: '조준기 행동을 각가속도로 바꾸고 SAC로 조준과 발사 학습하기', author: 'lhk0721', merged: '2026-11-26', env: 6 },
   91: { title: '레이저에 맞은 초파리가 놀라게 하고 오발을 종류별로 세기', author: 'lhk0721', merged: '2026-11-26', env: 7 },
+  101: { title: '환경 버전 7에서 SAC로 조준과 발사 학습하기', author: 'lhk0721', merged: '2026-11-27', env: 7 },
 }
 
 const FIRST = '환경을 처음 만들 때 넣은 값이다. 이 값으로 정한 이유는 기록에 없다.'
@@ -134,6 +135,7 @@ const HISTORY = {
   'env.reward.action_change': [[1, FIRST]],
   'env.reward.capture': [[1, FIRST]],
   'env.reward.misfire': [[88, '쏘는 것까지 학습할 때 오발을 줄이려고 넣었다. 기본값은 0이라 주지 않으면 보상이 그대로다.']],
+  'env.reward.wall_shot': [[101, '오발 가운데 벽에 맞은 발에만 벌점을 주려고 넣었다. 벽에 맞은 발은 초파리가 아닌 것만 맞혀서, 안전과 손상 때문에 줄이려는 발이다. 기본값은 0이라 주지 않으면 보상이 그대로다.']],
   'env.fly_reward.time': [[34, '학습한 초파리의 보상은 조준기 보상의 부호를 뒤집은 값에서 시작한다.']],
   'env.fly_reward.beam': [[49, '조준기 보상이 바뀐 것에 맞춰, 초파리 보상도 그 부호를 뒤집은 값으로 유지했다.']],
   'env.fly_reward.angle': [

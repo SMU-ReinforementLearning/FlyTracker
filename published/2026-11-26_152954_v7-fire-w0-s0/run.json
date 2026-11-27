@@ -1,0 +1,1 @@
+{"id":"2026-11-26_152954_v7-fire-w0-s0","name":"v7-fire-w0-s0","createdAt":"2026-11-26T15:29:54","algo":"sac","actionMode":"continuous","notes":"issue #101 gate condition v7-fire-w0, training seed 0","episodeCount":63,"issue":{"number":101,"title":"환경 버전 7에서 SAC로 조준과 발사 학습하기","url":"https://github.com/SMU-ReinforementLearning/FlyTracker/issues/101"},"author":"lhk0721"}

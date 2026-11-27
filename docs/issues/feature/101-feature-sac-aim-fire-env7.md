@@ -44,13 +44,13 @@ PLAN — every item below is a proposal until the user confirms it at the first 
 - Changing the capture radius (1.25 mm) or the shot length (0.15 s).
 
 ## Done Criteria
-- [ ] The user confirmed the plan (conditions, reward conversion, gates) at the first review.
-- [ ] `wall_shot` reward term implemented and tested; default rewards unchanged.
-- [ ] Gate document complete above "Verdict" and committed before any model of this issue is measured.
-- [ ] 12 runs trained (and the fallback runs if its rule fires); training curves kept.
-- [ ] Gates A and B measured; verdicts written; trade-off table reported to the user.
-- [ ] README, viewer data, published runs and `published/issues/101.json` updated.
-- [ ] `uv run pytest -q` and the viewer build pass.
+- [x] The user confirmed the plan (conditions, reward conversion, gates) at the first review.
+- [x] `wall_shot` reward term implemented and tested; default rewards unchanged.
+- [x] Gate document complete above "Verdict" and committed before any model of this issue is measured.
+- [x] 12 runs trained; training curves kept (in the worktree's `runs/g101/`, gitignored). The fallback stage's rule fired but the stage was not run: after the diagnosis the user chose to fine-tune v2 instead, in a follow-up issue.
+- [x] Gates A and B measured; verdicts written; trade-off table reported to the user.
+- [x] README, viewer data, published runs and `published/issues/101.json` updated.
+- [x] `uv run pytest -q` and the viewer build pass.
 - [ ] PR merged; `AGENTS.md` pointer removed in the branch's last commit.
 
 ## Current State
@@ -67,6 +67,18 @@ RUNNING since 2026-11-26 15:30 UTC (2026-11-27 00:30 KST): vast.ai instance **62
 2026-11-27 00:24 UTC: all 12 runs finished (`RESULTS_READY`, about 8 h 55 min). The helper scripts now exist in `runs/_ops101/`: `poll.sh`, `measure.sh pA|pB`, `remote_measure.sh`, `boot.sh A|B`, `fetch.sh`. `v7-rule` was measured first (`measure.sh pA`) and `gate/v7-rule.csv` is frozen by sha256 in the gate. The background waiter was killed by the harness for low memory; polling went on in the foreground. Next, in the gate's order: `boot.sh A`, `measure.sh pB`, `boot.sh B`, wait for the neural phases, `fetch.sh` (destroys the instance), verdicts (uncommitted, for review).
 
 2026-11-27 (after the review): the user approved the verdict commit and asked to measure first why `v7-rule` is worse than v2 ("commit해. v7-rule이 왜 v2보다 못한지 원인부터 재봐"). The second stage stays unstarted until that diagnosis is reported. The "uncommitted" line below is superseded by the verdict commit.
+
+DIAGNOSIS DONE, NOT COMMITTED (waits for review): `docs/issues/feature/101-feature-sac-aim-fire-env7/diagnosis.md` and `diagnosis/` (four scripts). Finding: under version 7 the training episodes almost never ended in a capture (episode length 489-500 of 500 throughout; v2's fell to about 150), so `v7-rule` learned from the dense terms only and is imprecise: worse than v2 also with the beam reaction off (0.843 / 4.649 s against 0.982 / 2.611 s), and with sampled actions it captures 0.072 against v2's 0.742. The causal link is a reading, not tested. The user noted that the startle is an intended difficulty and is no ground for rejecting anything by itself; the note is written on that footing. Outputs in `runs/_diag101/` (gitignored). A background run of the sampled measurement was killed by the harness for low memory and redone in the foreground at the user's request. Next decision is the user's: how to train under version 7 so that captures are experienced (warm start from v2 is the agent's proposal), and whether the fire-only stage uses v2 as the fixed aim.
+
+2026-11-27: the user called the finding a good presentation topic and asked to document it ("이거 정말 좋은 발표 주제가 될 것 같아. 문서화해놔"). Written in Korean for people (precedent: #73's `sac-concepts.md`): `docs/issues/feature/101-feature-sac-aim-fire-env7/hard-env-from-scratch.md` — conclusion, the two environments and aimers, the three measurements, the episode-length table, the reading, the bicycle analogy the user liked, confirmed versus interpretation, the fine-tuning experiment (not run), a presentation outline. `ko-writing` `check.py` run; headings fixed. NOT COMMITTED, together with the diagnosis. The user also pointed out that fine-tuning the aim was already a listed option (#88 follow-up (b), #91); `scripts/train.py` cannot continue from a model yet.
+
+2026-11-27, CLOSING: the user approved commit, push, PR and merge of this branch and the next experiment ("머지까지 하고 다음 실험 진행해"). This issue ends with both gates rejected and the diagnosis documented; the fine-tuning of v2 under version 7 continues in a new issue. The `--init-from` change to `scripts/train.py` is NOT in this branch: it is kept as `runs/_ops101/init-from.patch` (gitignored, in this worktree) for the new issue. This worktree must stay: `runs/g101/` (models), `runs/_download101/`, `runs/_diag101/`. Notes below that say "not committed" are superseded.
+
+2026-11-27, later: the user put documentation first ("먼저 지금까지 결론 재현 가능하게 결과까지 다 문서화해놔. publish도 해놓고"). Done and NOT COMMITTED (waits for the review): README (`wall_shot` option, new section "환경 버전 7에서 처음부터 한 학습" with results, diagnosis and the commands to train, measure, gate and diagnose), `published/` (the 12 training runs, 63 MB, and `published/issues/101.json`), `viewer/src/data/history.js` (issue 101, `env.reward.wall_shot`), `lineage.js` (node 101, no new aimer version), glossary ("벽에 맞은 발 벌점"), `diagnosis.md`, `diagnosis/`, `hard-env-from-scratch.md`. `history.js` carries `merged: '2026-11-27'` — correct it if the merge lands on another day. `scripts/train.py --init-from` is written in the working tree but untested and belongs to the next commit (fine-tuning), not to the documentation commit. No screenshots of the new lineage node yet (check on the PR preview).
+
+2026-11-27: the user ordered the fine-tuning ("v2를 fine-tuning 하는 거로 학습 진행해봐"). Plan (the agent's proposal of 500,000 steps and 3 seeds was on the table and not objected to): (1) `scripts/train.py --init-from <run>`: load the model, keep training in the new environment, record `algo.initFrom` (run name and model sha256, no path); (2) `gate-finetune.md` written before training: `v7-ft` (v2 model of the same seed, fine-tuned under version 7, `--control accel --fire rule --reward action_change=1.0`, SAC, 500,000 steps) against aimer v2 on `time`, same seeds, threshold and exclusions as Gate A; (3) train the 3 runs on vast.ai, measure, verdict. This replaces the pre-declared second stage for now (fire-only on `v7-rule`), which stays unstarted. The commits for (1) and (2) and the pending diagnosis documents go through the review gate before the instance is rented.
+
+Diagnosis plan (no training, local, scripts in `diagnosis/`): (1) config diff of v2 and `v7-rule` runs — done: only `envVersion` 6 -> 7 (`fly.evade_laser`) differs, plus recorded defaults; (2) per-model tracking and shot statistics from the outputs already on disk (`runs/_download101/measure/out/rule-v7-rule-s*`, #91's `rule-cand-s*` for v2); (3) both aimers measured again with `evade_laser` off, to separate "worse tracker" from "worse against the startle"; (4) evaluation episodes recorded during training (`episodes.json`) for both. Verdict commit: 396e0fe.
 
 2026-11-27 01:00 UTC — MEASURED, INSTANCE DESTROYED, VERDICTS WRITTEN. Both gates are **reject** (details and tables in `gate.md`, `## Verdict`):
 - Gate A: `v7-rule` 7.485 s / capture 0.478 against aimer v2 4.851 s / 0.843, P 0.000. v2 stays, no aimer v3.
@@ -153,6 +165,23 @@ This document, the registry row in `docs/issues/README.md`, the pointer line in 
 - `fetch.sh`: sha256 of the three archives OK, 12 models, 12 rule and 24 neural outputs, gate CSVs identical to the repo copies; instance destroyed.
 #### Notes
 - Gate B's baseline `v7-rule` is itself much worse than v2. Why training under version 7 gives a worse aimer than the same recipe under version 6 is not measured.
+
+### docs: 환경 버전 7 학습의 결과와 원인 진단을 문서화하고 실행 올리기 (#101)
+> why: the user asked for everything so far to be documented reproducibly, results included, and published; approved together with push, PR and merge on 2026-11-27 ("머지까지 하고 다음 실험 진행해")
+#### Scope
+`README.md`, `published/2026-11-26_15*_v7-*` (12 runs), `published/issues/101.json`, `viewer/src/data/history.js`, `viewer/src/data/lineage.js`, `ui-text.glossary.md`, `diagnosis.md`, `diagnosis/` (4 scripts), `hard-env-from-scratch.md`, this doc. Not `scripts/train.py`.
+#### Changes
+- Diagnosis of why `v7-rule` is worse than v2: config diff, training curves, measurement with the beam reaction off, measurement with sampled actions, shot statistics. Finding and limits in `diagnosis.md`; a plain-Korean version for a presentation in `hard-env-from-scratch.md`.
+- README: results table of the four conditions, both verdicts, the diagnosis table, commands to reproduce training, measuring, the gate bootstrap and the diagnosis.
+- Published the 12 training runs (eval episodes every 50,000 steps) and the issue page text.
+- Viewer data: issue 101 in the history table, the reason for `wall_shot`, lineage node 101 under #91 (no aimer version). Glossary term.
+#### Verification
+- `pytest -q`: 288 passed (includes the published-run checks). `npm run build` in `viewer/`: built.
+- Diagnosis numbers: `runs/_diag101/` outputs; the sampled measurement of `v7-rule` s2 run twice with identical `gate.csv`.
+- `ko-writing` `check.py` on `hard-env-from-scratch.md`: no banned pattern, endings uniform, headings fixed.
+#### Notes
+- The causal reading (no captures during training, so no precision) is not tested; the fine-tuning run is its test.
+- UI evidence not captured for the lineage node.
 
 ## Management Notes
 ### Follow-up Candidates
