@@ -407,13 +407,8 @@ def fig15():
     ax.add_patch(Rectangle(g0, g1[0] - g0[0], g1[1] - g0[1], facecolor=BLUE, alpha=SOFT, edgecolor="none"))
     ax.add_patch(Rectangle(g0, g1[0] - g0[0], g1[1] - g0[1], facecolor="none", edgecolor=BLUE, lw=1.3))
     for c in ((30, -50), (70, -50), (30, -20), (70, -20)):
-        arrow(ax, c, ex2(c, 1.5), color=GRAY, lw=0.8, ms=8)
-    s = (50.0, -35.0)
-    s2 = ex2(s, 1.5)
-    arrow(ax, s, s2, color=POINT, lw=1.8, ms=12, z=5)
-    ax.plot([s[0], s2[0]], [s[1], s2[1]], "o", color=POINT, markersize=5, zorder=6)
-    ax.text(s[0] + 2, s[1] - 7, r"$s$", ha="center", va="center", fontsize=FS + 3)
-    ax.text(s2[0] + 1, s2[1] + 16, r"$s'$", ha="center", va="center", fontsize=FS + 3)
+        d = ex2(c, 1.5)
+        ax.plot([c[0], d[0]], [c[1], d[1]], color=GRAY, lw=0.8, linestyle=(0, (2, 3)), zorder=3)
     ax.text(18, -35, r"$F$", ha="center", va="center", fontsize=FS + 3)
     ax.text(140, -6, r"$T_u(F)$", ha="center", va="center", fontsize=FS + 3)
     fig.subplots_adjust(left=0.12, right=0.95, bottom=0.22, top=0.96)
@@ -421,23 +416,20 @@ def fig15():
 
 
 def fig17():
-    fig, ax = plt.subplots(figsize=(WIDTH, 3.5))
-    unrolled(ax)
-    s = (40.0, -50.0)
-    s1 = ex2(s, 2)
-    s2 = ex2(s1, 3)
-    arrow(ax, s, s2, color=POINT, lw=1.6, ms=12, z=3)
-    arrow(ax, s, s1, color=BLUE, lw=1.8, ms=12, z=4)
-    arrow(ax, s1, s2, color=BLUE, lw=1.8, ms=12, z=4)
-    ax.plot([s[0], s1[0], s2[0]], [s[1], s1[1], s2[1]], "o", color=INK, markersize=5, zorder=6)
-    ax.text(s[0] - 8, s[1], r"$s$", ha="center", va="center", fontsize=FS + 3)
-    ax.text(s1[0] - 4, s1[1] + 11, r"$s'$", ha="center", va="center", fontsize=FS + 3)
-    ax.text(s2[0] + 9, s2[1] + 2, r"$s''$", ha="center", va="center", fontsize=FS + 3)
-    ax.text(60, -22, r"$t$", ha="center", va="center", fontsize=FS + 3, color=BLUE)
-    ax.text(140, 14, r"$u$", ha="center", va="center", fontsize=FS + 3, color=BLUE)
-    ax.text(130, -32, r"$t+u$", ha="center", va="center", fontsize=FS + 3, color=POINT)
-    fig.subplots_adjust(left=0.12, right=0.95, bottom=0.22, top=0.96)
-    return fig
+    ys = {170: (106, 120, 134), 340: (92, 120, 148), 510: (74, 122, 166)}
+    return timeline(
+        236,
+        axis=(90, 40, 190),
+        vlines=[(170, 40, 190, "시각 $0$", 214, False), (340, 40, 190, "시각 $t$", 214, False),
+                (510, 40, 190, "시각 $t+u$", 214, False)],
+        gates=[(170, 98, 142), (340, 84, 156), (510, 64, 176)],
+        curves=[("M110 104 C 140 104, 150 106, 170 106 C 230 106, 290 92, 340 92 C 400 92, 460 74, 510 74 C 540 74, 565 73, 590 72", HI),
+                ("M110 122 C 140 122, 150 120, 170 120 C 230 120, 290 120, 340 120 C 400 120, 460 122, 510 122 C 540 122, 565 123, 590 123", HI),
+                ("M110 138 C 140 136, 150 134, 170 134 C 230 134, 290 148, 340 148 C 400 148, 460 166, 510 166 C 540 166, 565 167, 590 168", HI)],
+        dots=[(x, y, "hi") for x, col in ys.items() for y in col],
+        texts=[(78, 115, r"$\mathcal{S}$", "right", 4), (182, 84, "$F$", "left", 3),
+               (352, 70, "$T_t(F)$", "left", 3), (522, 50, "$T_{t+u}(F)$", "left", 3)],
+    )
 
 
 GRID = [(15.0 + 45.0 * i, y) for y in (-48.0, -24.0, 0.0, 24.0, 48.0) for i in range(8)]
@@ -658,19 +650,24 @@ def fig08():
 
 
 def fig10():
-    ys = {150: (80, 140, 215), 320: (110, 165, 205), 490: (85, 140, 220)}
+    left = {110: (69, 114, 169), 180: (92, 132, 162), 250: (73, 114, 173)}
+    right = {420: (69, 114, 169), 500: (92, 132, 162), 580: (73, 114, 173)}
     return timeline(
-        276,
-        axis=(100, 48, 236),
-        vlines=[(150, 48, 236, "시각 $0$", 258, False), (320, 48, 236, "시각 $t$", 258, False),
-                (490, 48, 236, "시각 $t+u$", 258, False)],
-        curves=[("M150 80 C 220 70, 260 120, 320 110 C 380 100, 430 70, 490 85", LO),
-                ("M150 140 C 220 160, 260 150, 320 165 C 380 180, 430 150, 490 140", LO),
-                ("M150 215 C 220 220, 260 200, 320 205 C 380 210, 430 225, 490 220", LO)],
-        dots=[(x, y, "hi") for x, col in ys.items() for y in col],
-        texts=[(88, 142, r"$\mathcal{S}$", "right", 4), (150, 32, "$S_0$", "center", 3),
-               (320, 32, "$S_t$", "center", 3), (490, 32, "$S_{t+u}$", "center", 3)]
-        + [(504, y, f"운동 {i + 1}", "left", 0) for i, y in enumerate(ys[490])],
+        232,
+        titles=[(180, 20, "이산 시간"), (500, 20, "연속 시간")],
+        vlines=[(64, 54, 190, "", 0, True), (376, 54, 190, "", 0, True),
+                (110, 54, 190, "시각 $0$", 210, False), (180, 54, 190, "시각 $1$", 210, False),
+                (250, 54, 190, "시각 $2$", 210, False), (420, 54, 190, "시각 $0$", 210, False),
+                (500, 54, 190, "시각 $t$", 210, False), (580, 54, 190, "시각 $t+u$", 210, False)],
+        curves=[("M420 69 C 453 62, 472 99, 500 92 C 528 84, 552 62, 580 73", LO),
+                ("M420 114 C 453 129, 472 121, 500 132 C 528 143, 552 121, 580 114", LO),
+                ("M420 169 C 453 173, 472 158, 500 162 C 528 166, 552 177, 580 173", LO)],
+        dots=[(x, y, "hi") for col in (left, right) for x, c in col.items() for y in c],
+        texts=[(54, 122, r"$\mathcal{S}$", "right", 4), (366, 122, r"$\mathcal{S}$", "right", 4),
+               (110, 42, "$S_0$", "center", 3), (180, 42, "$S_1$", "center", 3), (250, 42, "$S_2$", "center", 3),
+               (420, 42, "$S_0$", "center", 3), (500, 42, "$S_t$", "center", 3), (580, 42, "$S_{t+u}$", "center", 3)]
+        + [(262, y, f"운동 {i + 1}", "left", 0) for i, y in enumerate(left[250])]
+        + [(592, y, f"운동 {i + 1}", "left", 0) for i, y in enumerate(right[580])],
     )
 
 
@@ -724,14 +721,20 @@ PAST_LEGEND = [PLAIN, DASH]
 
 def fig14():
     return timeline(
-        300,
-        vlines=[(300, 50, 232, "시각 $t$", 252, False), (460, 50, 232, "시각 $t+u$", 252, False)],
-        curves=[("M120 80 C 190 80, 240 130, 300 140", PLAIN), ("M120 210 C 190 210, 240 150, 300 140", DASH),
-                ("M300 140 C 350 140, 410 90, 460 82", HI), ("M300 140 C 350 142, 410 146, 460 145", HI),
-                ("M300 140 C 350 140, 410 195, 460 205", HI)],
-        dots=[(460, 82, "hi"), (460, 145, "hi"), (460, 205, "hi"), (300, 140, "point")],
-        texts=[(290, 122, "$s$", "right", 3)],
-        legend=[(110, 282, PAST_LEGEND, "서로 다른 과거"), (340, 282, [HI], "$u$초 뒤에 놓일 수 있는 state")],
+        276,
+        titles=[(175, 22, "전제 2가 성립하는 경우"), (515, 22, "성립하지 않는 경우")],
+        vlines=[(180, 46, 200, "시각 $t$", 220, False), (270, 46, 200, "시각 $t+u$", 220, False),
+                (520, 46, 200, "시각 $t$", 220, False), (610, 46, 200, "시각 $t+u$", 220, False)],
+        curves=[("M80 170 C 113 155, 147 140, 180 125", PLAIN), ("M80 80 C 113 95, 147 110, 180 125", DASH),
+                ("M180 125 C 210 111.5, 240 98, 270 84.5", HI), ("M180 125 C 210 138.5, 240 152, 270 165.5", HI),
+                ("M420 170 C 453 155, 487 140, 520 125", PLAIN), ("M420 80 C 453 95, 487 110, 520 125", DASH),
+                ("M520 125 C 550 111.5, 580 98, 610 84.5", PLAIN), ("M520 125 C 550 138.5, 580 152, 610 165.5", DASH)],
+        dots=[(270, 84.5, "hi"), (270, 165.5, "hi"), (610, 84.5, "lo"), (610, 165.5, "lo"),
+              (180, 125, "point"), (520, 125, "point")],
+        texts=[(180, 104, "$s$", "center", 3), (520, 104, "$s$", "center", 3),
+               (424, 190, "운동 1", "left", 0), (424, 64, "운동 2", "left", 0),
+               (620, 84, "운동 1만", "left", 0), (620, 166, "운동 2만", "left", 0)],
+        legend=[(110, 256, PAST_LEGEND, "서로 다른 과거"), (340, 256, [HI], "$u$초 뒤에 놓일 수 있는 state")],
     )
 
 
