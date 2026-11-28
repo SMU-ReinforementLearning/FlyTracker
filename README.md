@@ -281,7 +281,7 @@ uv run python scripts/train.py --algo sac --assist 0.2
 uv run python scripts/train.py --algo sac --control accel --fire rule --reward action_change=1.0
 ```
 
-`--aim 실행 폴더`를 주면 조준은 그 폴더의 모델이 하고, agent는 쏠지만 학습한다. 조준 모델은 `--fire rule`로 학습한 것이어야 하고, 새 실행 폴더의 `aim/`에 복사된다. agent는 값 하나를 내고 0보다 크면 쏜다. `--fire-prior rule`을 함께 주면 기준선의 규칙이 쏘라고 할 때 +0.5, 아닐 때 −0.5를 그 값에 더한 뒤 0과 견준다. 그래서 값이 0이면 규칙과 똑같이 쏜다. 오발 한 발마다 빼는 벌점은 `--reward misfire=값`으로 주고 기본은 0이다.
+`--aim 실행 폴더`를 주면 조준은 그 폴더의 모델이 하고, agent는 쏠지만 학습한다. 조준 모델은 `--fire rule`로 학습한 것이어야 하고, 새 실행 폴더의 `aim/`에 복사된다. agent는 값 하나를 내고 0보다 크면 쏜다. `--fire-prior rule`을 함께 주면 기준선의 규칙이 쏘라고 할 때 +0.5, 아닐 때 −0.5를 그 값에 더한 뒤 0과 견준다. 그래서 값이 0이면 규칙과 똑같이 쏜다. 오발 한 발마다 빼는 벌점은 `--reward misfire=값`으로 주고 기본은 0이다. 벽에 맞은 발에만 벌점을 주려면 `--reward wall_shot=값`을 쓴다(#101). 벽에 맞은 발로 끝난 발마다 그 발이 끝나는 step에 한 번 빼고, 기본은 0이다. 스친 발에는 주지 않는다.
 
 ```sh
 uv run python scripts/train.py --algo sac --aim runs/<조준기 실행 id> --fire-prior rule --frame-stack 4 --reward misfire=1.0
@@ -416,6 +416,64 @@ uv run python scripts/record_match.py runs/2026-11-15_151701_sac-beam-assist-s0 
 ```sh
 uv run python docs/issues/feature/91-feature-fly-laser-startle-misfire-kinds/measure_v7.py baseline --out out/v0
 uv run python docs/issues/feature/91-feature-fly-laser-startle-misfire-kinds/measure_v7.py runs/2026-11-25_131050_accel-pen-rule-s0 --out out/v2-s0
+```
+
+### 환경 버전 7에서 처음부터 한 학습
+
+환경 버전 7에서 조준기를 처음부터 다시 학습했다(#101). 네 조건을 SAC로 학습 seed 0, 1, 2에 1,000,000 step씩 학습했다. 네 조건 모두 각가속도 행동에 행동 변화 벌점 1.0이다.
+
+| 조건 | 쏠지를 정하는 것 | 벽에 맞은 발 벌점 |
+|---|---|---|
+| `v7-rule` | 기준선의 규칙 | 없음 |
+| `v7-fire-w0` | 정책 | 0 |
+| `v7-fire-w1` | 정책 | 0.5 (1초 손해에 해당) |
+| `v7-fire-w3` | 정책 | 1.5 (3초 손해에 해당) |
+
+`v7-rule`은 v2와 학습 설정이 같고 학습한 환경만 버전 7이다. 벌점 0.5를 1초로 본 것은 시간 벌점이 1초에 0.5이기 때문이다.
+
+규칙 초파리 상대로 seed 20000부터 에피소드 200개에서 2026-11-27에 쟀다. 값은 모델 셋의 평균이고, 평균 시간은 놓친 에피소드를 10초로 쳐서 냈다. v2 행은 #91에서 잰 값이다.
+
+| 조건 | 포획 | 평균 시간 | 에피소드마다 쏜 발 | 스친 발 | 벽에 맞은 발 |
+|---|---|---|---|---|---|
+| v2 | 600개 중 506개 | 4.85초 | 7.06발 | 5.93발 | 0.25발 |
+| `v7-rule` | 600개 중 287개 | 7.49초 | 7.14발 | 5.96발 | 0.61발 |
+| `v7-fire-w0` | 600개 중 2개 | 9.99초 | 12.29발 | 1.47발 | 10.69발 |
+| `v7-fire-w1` | 600개 중 0개 | 10.00초 | 0.07발 | 0.00발 | 0.06발 |
+| `v7-fire-w3` | 600개 중 0개 | 10.00초 | 0.03발 | 0.00발 | 0.02발 |
+
+학습 전에 적어 둔 판정은 둘이고 둘 다 넘지 못했다. `v7-rule`이 v2보다 빠를 확률은 0.000이어서 조준기 v2를 그대로 둔다. `v7-fire-w1`이 `v7-rule`보다 나을 확률도 0.000이어서 쏘는 것은 기준선의 규칙에 그대로 맡긴다. 쏘는 것까지 학습한 조건은 벌점이 없으면 벽에 대고 쏘고, 벌점이 있으면 쏘지 않는다.
+
+`v7-rule`이 v2보다 못한 까닭을 학습 없이 쟀다. 값은 모델 셋의 평균이다.
+
+| 잰 것 | v2 | `v7-rule` |
+|---|---|---|
+| 학습 마지막 5분의 1 구간의 에피소드 길이 (최대 500 step) | 140~178 | 489~496 |
+| 빔에 놀라는 반응을 끈 초파리: 포획률, 평균 시간 | 98.2%, 2.61초 | 84.3%, 4.65초 |
+| 환경 버전 7, 행동을 학습 때처럼 뽑음: 포획률, 평균 시간 | 74.2%, 5.82초 | 7.2%, 9.69초 |
+
+`v7-rule`은 학습하는 동안 포획을 거의 겪지 못했다. 포획한 에피소드는 500 step보다 짧게 끝나는데, `v7-rule`의 에피소드 길이는 끝까지 500 근처였다. 버전 6에서 학습한 v2는 200,000 step을 지나며 포획이 늘었다. `v7-rule`은 놀라지 않는 초파리를 상대로도 v2보다 못하므로, 조준 자체가 덜 정밀하다. 포획을 겪지 못해서 정밀해지지 못했다는 것은 이 측정에 들어맞는 해석이고, 따로 실험해 확인하지는 않았다. 쉬운 말로 푼 설명은 [어려운 환경에서 처음부터 한 학습](docs/issues/feature/101-feature-sac-aim-fire-env7/hard-env-from-scratch.md)에 있다.
+
+신경 초파리 상대로 잰 값, 모델별 값, 판정 기준은 [판정 문서](docs/issues/feature/101-feature-sac-aim-fire-env7/gate.md)에, 원인을 잰 방법과 값은 [진단 문서](docs/issues/feature/101-feature-sac-aim-fire-env7/diagnosis.md)에 있다. 학습과 측정을 다시 할 때는 아래 명령을 쓴다. 학습 명령의 `--seed`를 0, 1, 2로 바꿔 조건마다 세 번 돌린다. 모델 파일은 저장소에 없다.
+
+```sh
+# 학습 (조건마다 seed 0, 1, 2)
+uv run python scripts/train.py --algo sac --steps 1000000 --eval-every 50000 --control accel --seed 0 --name v7-rule-s0 --fire rule --reward action_change=1.0
+uv run python scripts/train.py --algo sac --steps 1000000 --eval-every 50000 --control accel --seed 0 --name v7-fire-w0-s0 --reward action_change=1.0 wall_shot=0
+uv run python scripts/train.py --algo sac --steps 1000000 --eval-every 50000 --control accel --seed 0 --name v7-fire-w1-s0 --reward action_change=1.0 wall_shot=0.5
+uv run python scripts/train.py --algo sac --steps 1000000 --eval-every 50000 --control accel --seed 0 --name v7-fire-w3-s0 --reward action_change=1.0 wall_shot=1.5
+
+# 측정 (모델마다), 모델 셋의 평균, 판정에 쓰는 점수 열
+uv run python docs/issues/feature/91-feature-fly-laser-startle-misfire-kinds/measure_v7.py runs/<실행 id> --out out/v7-rule-s0
+uv run python docs/issues/feature/91-feature-fly-laser-startle-misfire-kinds/measure_v7.py mean out/v7-rule-s0/gate.csv out/v7-rule-s1/gate.csv out/v7-rule-s2/gate.csv --out out/mean-v7-rule.csv
+uv run python docs/issues/feature/101-feature-sac-aim-fire-env7/score.py out/mean-v7-rule.csv --out out/v7-rule.csv
+
+# 판정 (paired bootstrap)
+uv run python .claude/skills/experiment-gate/scripts/paired_bootstrap.py --truth docs/issues/feature/101-feature-sac-aim-fire-env7/gate/truth.csv --a docs/issues/feature/91-feature-fly-laser-startle-misfire-kinds/gate/accel-pen-rule.csv --b out/v7-rule.csv --targets time --metric mae --lower-is-better --resamples 10000 --seed 42 --threshold 0.90
+
+# 원인 진단
+uv run python docs/issues/feature/101-feature-sac-aim-fire-env7/diagnosis/measure_noevade.py runs/<실행 id> --out out/noevade-v7-rule-s0
+uv run python docs/issues/feature/101-feature-sac-aim-fire-env7/diagnosis/measure_stochastic.py runs/<실행 id> --out out/stoch-v7-rule-s0
+uv run python docs/issues/feature/101-feature-sac-aim-fire-env7/diagnosis/curves.py v7-rule-s0=runs/<실행 id>
 ```
 
 ### 대전표

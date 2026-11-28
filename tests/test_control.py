@@ -189,6 +189,26 @@ def test_fire_only_refuses_other_controls():
         make_env(cfg, fire_prior="rule")
 
 
+def test_wall_shot_penalty_is_charged_once_in_the_step_the_shot_ends():
+    def rewards(weight):
+        env = FlyChaseEnv(replace(EnvConfig(), reward=replace(RewardWeights(), wall_shot=weight)))
+        env.reset(seed=5)
+        out = []
+        for _ in range(20):  # 초파리를 보지 않고 쏜다. 빔이 한 번도 닿지 않는다
+            _, r, *_ = env.step(np.array([0.0, 0.0, 1.0]))
+            out.append((r, env.wall_shots, env.grazes, env.misfires))
+        return out
+
+    free, charged = rewards(0.0), rewards(0.5)
+    assert [x[1:] for x in free] == [x[1:] for x in charged]
+    assert free[0][1] == 0 and free[0][3] == 1  # 오발은 바로 세지만 벽에 맞은 발은 그 발이 끝날 때 센다
+    assert free[-1][1] >= 2 and free[-1][2] == 0
+    seen = 0
+    for (r0, walls, _, _), (r1, *_) in zip(free, charged):
+        assert r0 - r1 == pytest.approx(0.5 * (walls - seen))
+        seen = walls
+
+
 def test_default_reward_has_no_misfire_term():
-    assert RewardWeights().misfire == 0.0
+    assert RewardWeights().misfire == 0.0 and RewardWeights().wall_shot == 0.0
     assert isinstance(AccelControl(FlyChaseEnv()), AccelControl) and isinstance(RuleFire(FlyChaseEnv()), RuleFire)
