@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>01 수정안 (시안)</title>
+<!--
+  카드 4. 01 "카메라의 state space와 flow"의 수정안을 한 장으로 모은 것.
+  2026-11-28, 세션 "01의 1차 수정"에서 사용자와 정한 데까지를 담았다.
+  시안이다. 정리본, 팀원용 정리본, 그림 지침, 그림 파일은 아직 고치지 않았다.
+  기준은 branch claude/heuristic-benz-abe89a 의 commit 8d21691 이다.
+  이 <head>의 스타일은 채팅 화면이 대신 주던 색과 글자 모양을 채운 것이다.
+  수식은 인터넷에서 KaTeX를 불러와 그린다. 파일 미리보기가 아니라 브라우저로 연다.
+-->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+:root{--text-primary:#1f1f1e;--text-secondary:#6b6a65;--border:#d8d6cd;--border-strong:#b8b6ad;--text-accent:#0f6e56;--p:#1f1f1e;--s:#6b6a65}
+body{font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;max-width:760px;margin:32px auto;padding:0 16px;background:#fff;color:var(--text-primary)}
+h3{font-size:20px;font-weight:600}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+svg text{font-family:inherit}
+svg .t{font-size:14px;fill:var(--p)}
+svg .ts{font-size:12px;fill:var(--s)}
+svg .th{font-size:14px;font-weight:600;fill:var(--p)}
+svg .c-teal rect{fill:#e1f5ee;stroke:#0f6e56}
+svg .c-teal text{fill:#085041}
+svg .c-purple rect{fill:#eeedfe;stroke:#534ab7}
+svg .c-purple text{fill:#3c3489}
+svg .arr{stroke:var(--s);stroke-width:1.5;fill:none}
+.d p{font-size:16px;line-height:1.7;color:var(--text-primary);margin:0 0 12px}
+.d h3{margin:28px 0 12px}
+.d .cap{font-size:13px;line-height:1.6;color:var(--text-secondary);margin:0 0 20px;padding-left:10px;border-left:2px solid var(--border-strong)}
+.d .chg{border-left:3px solid var(--text-accent);padding-left:12px;margin:0 0 12px}
+.d .chg p:last-child{margin-bottom:0}
+.d .skip{font-size:13px;color:var(--text-secondary)}
+.d .tag{font-size:12px;color:var(--text-accent);margin:14px 0 4px}
+.d .lab{font-weight:600}
+.d svg{margin:4px 0}
+.d li{font-size:16px;line-height:1.7;color:var(--text-primary);margin-bottom:6px}
+.d table{border-collapse:collapse;width:100%;font-size:14px;line-height:1.6;margin:0 0 16px}
+.d td,.d th{border-bottom:1px solid var(--border);padding:6px 8px;text-align:left;vertical-align:top;color:var(--text-primary);font-weight:400}
+.d th{color:var(--text-secondary)}
+</style>
+</head>
+<body>
+<h2 class="sr-only">01 카메라의 state space와 flow의 수정안을 한 장으로 모은 카드. 1절의 한 문단, 3절의 두 곳, 다시 쓴 5절, 따라 바뀌는 곳의 표, 열린 항목이 들어 있다.</h2>
+<div class="d" id="c4">
+
+<h3>01 수정안 (시안)</h3>
+<p>01 "카메라의 state space와 flow"의 1차 완성본(commit <code>8d21691</code>)에 넣으려는 수정을 한 장에 모았습니다. 시안입니다. 정리본, 팀원용 정리본, 그림 지침, 그림 파일은 아직 고치지 않았습니다.</p>
+<p class="skip">왼쪽에 색 줄이 선 곳이 바뀌거나 새로 드는 곳입니다. 색 줄이 없는 글은 지금 문서의 문장입니다. 그림은 카드에 맞게 간략히 옮긴 것이고, 실제 그림은 그림 지침을 고친 뒤 따로 그립니다.</p>
+
+<table>
+<tr><th>자리</th><th>무엇이 바뀌는가</th></tr>
+<tr><td>1절</td><td>전제 2가 가정임을 밝히는 문단이 듭니다.</td></tr>
+<tr><td>3절</td><td>"보장은 없습니다" 문단에 근거를 밝히고, 그림 10을 두 칸으로 다시 그립니다.</td></tr>
+<tr><td>5절</td><td>flow의 조건이 셋에서 둘로 줄고, 화살표 표기와 $T_0(F)=F$가 빠집니다. 조건 2가 깨지는 경우가 들어가고, Theorem 2에 가정을 적고 증명을 $T_u$만으로 다시 씁니다. 그림 14, 15, 17을 다시 그립니다.</td></tr>
+<tr><td>6절, 7절, 팀원용</td><td>위에 맞춰 표와 문장을 고칩니다.</td></tr>
+</table>
+
+<h3>1절. 전제 두 줄 바로 뒤</h3>
+<p class="skip">전제 2: 상황이 무엇이든, 그 뒤가 어떻게 이어질 수 있는지는 그 상황만으로 정해집니다. 그 앞이 어땠는지와 그 시각이 언제인지에는 달려 있지 않습니다.</p>
+<div class="chg"><p>전제 2는 카메라를 살펴 얻은 사실도, 다른 것에서 끌어낸 결과도 아닙니다. 이 문서가 두는 가정입니다. 이 가정이 성립하지 않는 운동도 있고, 5절에서 그런 경우를 하나 봅니다.</p></div>
+
+<h3>3절. 두 곳</h3>
+<p class="tag">그림 7 바로 뒤의 문단</p>
+<div class="chg"><p>다른 시각에 관한 명제까지 $\mathcal S$에서 평가된다는 보장은 없습니다. $\mathcal S$의 원소는 그 시각의 state만 말하고, 한 시각의 state가 다른 시각의 state를 정한다는 말은 전제에 없기 때문입니다. 그래서 시각 $t$에 같은 state에 놓인 두 운동이 시각 $t+u$에는 서로 다른 state에 놓일 수 있습니다.</p></div>
+
+<p class="tag">$(S_t)_{t\ge0}$의 Notation 바로 뒤, 그림 10</p>
+<p><span class="lab">Notation.</span> 시각마다 하나씩인 $S_t$들을 한데 묶어 $(S_t)_{t\ge0}$로 적습니다. 이산 시간에서 $S_0,S_1,S_2,\dots$로 적는 random state의 수열을 연속 시간으로 넓힌 것입니다.</p>
+<svg width="100%" viewBox="0 0 680 232" role="img"><title>수열에서 연속 시간으로</title><desc>왼쪽은 이산 시간이고 걸음마다 세운 세로선 S_0, S_1, S_2 위에 점만 있다. 오른쪽은 연속 시간이고 세 운동의 곡선이 세로선 S_0, S_t, S_t+u를 지난다.</desc>
+<text class="th" x="180" y="22" text-anchor="middle">이산 시간</text>
+<text class="th" x="500" y="22" text-anchor="middle">연속 시간</text>
+<line x1="64" y1="54" x2="64" y2="190" stroke="var(--p)" stroke-width="1"/>
+<text class="t" x="40" y="126">𝒮</text>
+<line x1="110" y1="54" x2="110" y2="190" stroke="var(--s)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<line x1="180" y1="54" x2="180" y2="190" stroke="var(--s)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<line x1="250" y1="54" x2="250" y2="190" stroke="var(--s)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<text class="t" x="110" y="44" text-anchor="middle"><tspan font-style="italic">S</tspan><tspan dy="4" font-size="11">0</tspan></text>
+<text class="t" x="180" y="44" text-anchor="middle"><tspan font-style="italic">S</tspan><tspan dy="4" font-size="11">1</tspan></text>
+<text class="t" x="250" y="44" text-anchor="middle"><tspan font-style="italic">S</tspan><tspan dy="4" font-size="11">2</tspan></text>
+<circle cx="110" cy="69" r="4" fill="#378ADD"/><circle cx="180" cy="92" r="4" fill="#378ADD"/><circle cx="250" cy="73" r="4" fill="#378ADD"/>
+<circle cx="110" cy="114" r="4" fill="#378ADD"/><circle cx="180" cy="132" r="4" fill="#378ADD"/><circle cx="250" cy="114" r="4" fill="#378ADD"/>
+<circle cx="110" cy="169" r="4" fill="#378ADD"/><circle cx="180" cy="162" r="4" fill="#378ADD"/><circle cx="250" cy="173" r="4" fill="#378ADD"/>
+<text class="ts" x="264" y="77">운동 1</text>
+<text class="ts" x="264" y="118">운동 2</text>
+<text class="ts" x="264" y="177">운동 3</text>
+<text class="ts" x="110" y="212" text-anchor="middle">시각 0</text>
+<text class="ts" x="180" y="212" text-anchor="middle">시각 1</text>
+<text class="ts" x="250" y="212" text-anchor="middle">시각 2</text>
+<line x1="376" y1="54" x2="376" y2="190" stroke="var(--p)" stroke-width="1"/>
+<text class="t" x="352" y="126">𝒮</text>
+<line x1="420" y1="54" x2="420" y2="190" stroke="var(--s)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<line x1="500" y1="54" x2="500" y2="190" stroke="var(--s)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<line x1="580" y1="54" x2="580" y2="190" stroke="var(--s)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<text class="t" x="420" y="44" text-anchor="middle"><tspan font-style="italic">S</tspan><tspan dy="4" font-size="11">0</tspan></text>
+<text class="t" x="500" y="44" text-anchor="middle"><tspan font-style="italic">S</tspan><tspan dy="4" font-size="11" font-style="italic">t</tspan></text>
+<text class="t" x="580" y="44" text-anchor="middle"><tspan font-style="italic">S</tspan><tspan dy="4" font-size="11"><tspan font-style="italic">t</tspan>+<tspan font-style="italic">u</tspan></tspan></text>
+<path d="M420 69 C453 62,472 99,500 92 C528 84,552 62,580 73" fill="none" stroke="var(--s)" stroke-width="1.5"/>
+<path d="M420 114 C453 129,472 121,500 132 C528 143,552 121,580 114" fill="none" stroke="var(--s)" stroke-width="1.5"/>
+<path d="M420 169 C453 173,472 158,500 162 C528 166,552 177,580 173" fill="none" stroke="var(--s)" stroke-width="1.5"/>
+<circle cx="420" cy="69" r="4" fill="#378ADD"/><circle cx="500" cy="92" r="4" fill="#378ADD"/><circle cx="580" cy="73" r="4" fill="#378ADD"/>
+<circle cx="420" cy="114" r="4" fill="#378ADD"/><circle cx="500" cy="132" r="4" fill="#378ADD"/><circle cx="580" cy="114" r="4" fill="#378ADD"/>
+<circle cx="420" cy="169" r="4" fill="#378ADD"/><circle cx="500" cy="162" r="4" fill="#378ADD"/><circle cx="580" cy="173" r="4" fill="#378ADD"/>
+<text class="ts" x="594" y="77">운동 1</text>
+<text class="ts" x="594" y="118">운동 2</text>
+<text class="ts" x="594" y="177">운동 3</text>
+<text class="ts" x="420" y="212" text-anchor="middle">시각 0</text>
+<text class="ts" x="500" y="212" text-anchor="middle">시각 <tspan font-style="italic">t</tspan></text>
+<text class="ts" x="580" y="212" text-anchor="middle">시각 <tspan font-style="italic">t</tspan>+<tspan font-style="italic">u</tspan></text>
+</svg>
+<div class="chg"><p class="cap">그림 10. 왼쪽 이산 시간에서는 걸음마다 세로선 $S_0$, $S_1$, $S_2$가 하나씩 섭니다. 오른쪽 연속 시간에서는 모든 시각에 세로선이 서고, 그 가운데 $S_0$, $S_t$, $S_{t+u}$ 셋을 그렸습니다.</p></div>
+<p class="skip">3절의 나머지는 그대로입니다. Definition 3 뒤에 "표현"을 들이는 문단을 넣자는 안과 모음 둘째 항목을 고치자는 안은 넣지 않기로 했습니다.</p>
+
+<h3>5. Flow (다시 쓴 판)</h3>
+<p>전제 2를 $(S_t)_{t\ge0}$로 옮겨 적습니다. 전제 2는 세 가지를 말합니다.</p>
+<p>첫째는 "상황이 무엇이든"입니다. 카메라가 처음에 어느 방향을 보는지 주어지지 않았으므로, 어떤 state든 시각 $0$의 state가 될 수 있습니다. 모든 state $s$에서</p>
+$$S_0^{-1}(\{s\})\neq\varnothing$$
+<p>입니다.</p>
+<p>둘째는 "그 앞이 어땠는지에는 달려 있지 않다"입니다.</p>
+<div class="chg"><p><span class="lab">Notation.</span> 시각 $t$까지의 state에 관한 event를 $E$로 적습니다. $r\le t$인 $S_r^{-1}(F)$들에서 여집합과 교집합을 유한 번 써서 얻는 event입니다.</p></div>
+<p>$E$에 속하면서 시각 $t$의 state가 $s$인 운동이 있는 경우를 봅니다.</p>
+$$E\cap S_t^{-1}(\{s\})\neq\varnothing$$
+<p>그러면 그 가운데 $u$초 뒤 $F$ 안에 놓이는 운동이 있는지는 $E$와 상관이 없습니다.</p>
+$$E\cap S_t^{-1}(\{s\})\cap S_{t+u}^{-1}(F)\neq\varnothing\iff S_t^{-1}(\{s\})\cap S_{t+u}^{-1}(F)\neq\varnothing$$
+<p>시각 $t$에 $s$에 놓인 뒤 어디로 갈 수 있는지는, 그 전에 어디를 거쳐 왔는지와 상관이 없다는 뜻입니다.</p>
+<div class="chg">
+<p>현재의 event $S_t^{-1}(\{s\})$가 주어지면, 과거의 event $E$는 미래의 event $S_{t+u}^{-1}(F)$에 더 보탤 것이 없습니다.</p>
+<p>이것은 $S_t$를 시각마다 하나씩 둔 것만으로 따라오지 않습니다. 처음 돌기 시작한 쪽으로만 같은 빠르기로 계속 도는 운동들을 생각합니다. 시각 $t$에 같은 state $s$에 놓인 두 운동 가운데, 오른쪽으로 돌아온 운동은 $u$초 뒤에 오른쪽으로 더 가 있고, 왼쪽으로 돌아온 운동은 왼쪽으로 더 가 있습니다. 그 뒤가 그 앞에 달려 있으므로 위 식이 성립하지 않습니다.</p>
+</div>
+
+<svg width="100%" viewBox="0 0 680 244" role="img"><title>조건 2가 성립하는 경우와 깨지는 경우</title><desc>두 칸 모두 과거가 다른 두 운동이 시각 t에 같은 state s에서 만난다. 왼쪽 칸에서는 어느 과거에서든 그 뒤 위와 아래 두 곳에 모두 놓일 수 있다. 오른쪽 칸에서는 아래에서 온 운동 1은 위로만, 위에서 온 운동 2는 아래로만 간다.</desc>
+<text class="th" x="170" y="22" text-anchor="middle">전제 2가 성립하는 경우</text>
+<text class="th" x="515" y="22" text-anchor="middle">성립하지 않는 경우</text>
+<line x1="60" y1="46" x2="60" y2="200" stroke="var(--p)" stroke-width="1"/>
+<text class="t" x="36" y="128">𝒮</text>
+<line x1="180" y1="46" x2="180" y2="200" stroke="var(--s)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<line x1="270" y1="46" x2="270" y2="200" stroke="var(--s)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<line x1="80" y1="170" x2="180" y2="125" stroke="var(--s)" stroke-width="1.5"/>
+<line x1="80" y1="80" x2="180" y2="125" stroke="var(--s)" stroke-width="1.5"/>
+<line x1="180" y1="125" x2="270" y2="84.5" stroke="#1D9E75" stroke-width="2"/>
+<line x1="180" y1="125" x2="270" y2="165.5" stroke="#1D9E75" stroke-width="2"/>
+<circle cx="180" cy="125" r="4" fill="var(--p)"/>
+<circle cx="270" cy="84.5" r="4" fill="#1D9E75"/><circle cx="270" cy="165.5" r="4" fill="#1D9E75"/>
+<text class="t" x="186" y="102" font-style="italic">s</text>
+<text class="ts" x="282" y="121">어느 과거든</text>
+<text class="ts" x="282" y="137">두 곳 모두</text>
+<text class="ts" x="180" y="222" text-anchor="middle">시각 <tspan font-style="italic">t</tspan></text>
+<text class="ts" x="270" y="222" text-anchor="middle">시각 <tspan font-style="italic">t</tspan>+<tspan font-style="italic">u</tspan></text>
+<line x1="400" y1="46" x2="400" y2="200" stroke="var(--p)" stroke-width="1"/>
+<text class="t" x="376" y="128">𝒮</text>
+<line x1="520" y1="46" x2="520" y2="200" stroke="var(--s)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<line x1="610" y1="46" x2="610" y2="200" stroke="var(--s)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<line x1="420" y1="170" x2="610" y2="84.5" stroke="#7F77DD" stroke-width="2"/>
+<line x1="420" y1="80" x2="610" y2="165.5" stroke="#D85A30" stroke-width="2" stroke-dasharray="6 4"/>
+<circle cx="520" cy="125" r="4" fill="var(--p)"/>
+<circle cx="610" cy="84.5" r="4" fill="#7F77DD"/><circle cx="610" cy="165.5" r="4" fill="#D85A30"/>
+<text class="t" x="526" y="102" font-style="italic">s</text>
+<text class="ts" x="424" y="192">운동 1</text>
+<text class="ts" x="424" y="68">운동 2</text>
+<text class="ts" x="620" y="80">운동 1만</text>
+<text class="ts" x="620" y="178">운동 2만</text>
+<text class="ts" x="520" y="222" text-anchor="middle">시각 <tspan font-style="italic">t</tspan></text>
+<text class="ts" x="610" y="222" text-anchor="middle">시각 <tspan font-style="italic">t</tspan>+<tspan font-style="italic">u</tspan></text>
+</svg>
+<div class="chg">
+<p class="cap">그림 14. 과거가 다른 두 운동이 시각 $t$에 같은 state $s$에 놓였습니다. 왼쪽에서는 어느 과거를 거쳤든 그 뒤에 놓일 수 있는 state가 같습니다. 오른쪽에서는 한쪽으로만 도는 운동 1과 운동 2가 서로 다른 곳으로만 가서, 그 뒤가 과거에 달려 있습니다.</p>
+<p>이 운동들에서도 방향과 도는 쪽을 함께 state로 잡으면, 그 뒤는 state만으로 정해집니다. 그러므로 이 성질은 운동들만으로 정해지지 않고, state에 무엇을 담았는지에 함께 달려 있습니다. 전제 2는 화면에 들어온 공간만으로 그 뒤를 말하기에 충분하다고 두는 가정입니다.</p>
+</div>
+
+<div class="chg">
+<p>셋째는 "그 시각이 언제인지에는 달려 있지 않다"입니다. 위 식의 오른쪽은 시각 $t$에 $s$에 놓인 운동 가운데 $u$초 뒤 $F$ 안에 놓이는 것이 있는지를 말합니다. 이것은 시각 $0$에 $s$에서 출발한 경우와 같습니다. 그래서 오른쪽의 시각 $t$를 $0$으로 바꾸어 적습니다.</p>
+$$E\cap S_t^{-1}(\{s\})\cap S_{t+u}^{-1}(F)\neq\varnothing\iff S_0^{-1}(\{s\})\cap S_u^{-1}(F)\neq\varnothing$$
+<p>오른쪽에는 과거 $E$도 시각 $t$도 남지 않습니다.</p>
+</div>
+
+<div class="chg">
+<p class="lab">Definition 4. Flow</p>
+<p>$(S_t)_{t\ge0}$가 다음 두 조건을 만족하면 $\mathcal S$ 위의 flow라 합니다.</p>
+<ol>
+<li>모든 state $s$에서 $S_0^{-1}(\{s\})\neq\varnothing$입니다.</li>
+<li>시각 $t$까지의 event $E$가 $S_t^{-1}(\{s\})$와 겹치면 다음이 성립합니다.</li>
+</ol>
+$$\boxed{E\cap S_t^{-1}(\{s\})\cap S_{t+u}^{-1}(F)\neq\varnothing\iff S_0^{-1}(\{s\})\cap S_u^{-1}(F)\neq\varnothing}$$
+<p>$S_t$들을 묶은 $(S_t)_{t\ge0}$가 모두 flow인 것은 아닙니다. flow는 그 가운데 $S_t$들의 event가 위의 방식으로 함께 놓인 것입니다. 카메라의 $(S_t)_{t\ge0}$가 flow라는 것은 증명한 것이 아니라 전제 2로 둔 것입니다.</p>
+</div>
+<p class="skip">지금 문서의 조건은 셋입니다. 둘째는 위 "둘째"의 식이고, 셋째는 $S_t^{-1}(\{s\})\cap S_{t+u}^{-1}(F)\neq\varnothing\iff S_0^{-1}(\{s\})\cap S_u^{-1}(F)\neq\varnothing$인데, 시각 $t$에 $s$에 놓이는 운동이 있다는 단서가 식에 빠져 있었습니다. 새 조건 2는 그 둘을 묶은 것이고, $E$가 겹친다는 가정이 그 단서를 대신합니다. 뜻은 단서를 붙인 세 조건과 같습니다.</p>
+
+<div class="chg"><p><span class="lab">Notation.</span> $\mathcal S$의 event $F$를 하나 잡습니다. 지금 $F$ 안에 있을 때 $u$초 뒤에 놓일 수 있는 state들의 집합을 $T_u(F)$로 적습니다. 조건 2에 따라 지금이 언제인지는 상관이 없으므로 시각 $0$으로 적습니다. $T_u(F)$는</p></div>
+$$S_0^{-1}(F)\subseteq S_u^{-1}\big(T_u(F)\big)$$
+<p>를 만족하는 가장 작은 event입니다.</p>
+<p>시각 $u$의 state는 하나씩 있습니다. 그래서 $s'$이 $T_u(F)$에 속하는 것은, 시각 $0$에 $F$ 안에 있고 시각 $u$에 $s'$에 놓이는 운동이 있을 때입니다.</p>
+$$s'\in T_u(F)\iff S_0^{-1}(F)\cap S_u^{-1}(\{s'\})\neq\varnothing$$
+<p class="tag">여기 있던 화살표 $s\xrightarrow{\,u\,}s'$의 Notation과 "화살표가 닿는 state 전체"라는 문장을 뺍니다. 그림 15에서도 화살표를 뺍니다.</p>
+
+<svg width="100%" viewBox="0 0 680 222" role="img"><title>F와 T_u(F)</title><desc>펼친 원통 위에 구역 F와, u초 뒤에 놓일 수 있는 state 전체인 더 넓은 구역 T_u(F)가 있다.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<rect x="120" y="36" width="440" height="150" rx="4" fill="none" stroke="var(--s)" stroke-width="0.5"/>
+<text class="ts" x="340" y="208" text-anchor="middle">yaw</text>
+<text class="ts" x="80" y="115">pitch</text>
+<g class="c-teal"><rect x="170" y="96" width="90" height="60" rx="8" stroke-width="0.5"/><text class="th" x="215" y="126" text-anchor="middle" dominant-baseline="central" font-style="italic">F</text></g>
+<g class="c-purple"><rect x="340" y="60" width="170" height="100" rx="8" stroke-width="0.5"/><text class="th" x="425" y="110" text-anchor="middle" dominant-baseline="central"><tspan font-style="italic">T</tspan><tspan dy="4" font-size="11" font-style="italic">u</tspan><tspan dy="-4">(</tspan><tspan font-style="italic">F</tspan>)</text></g>
+<line x1="268" y1="124" x2="332" y2="114" class="arr" marker-end="url(#arrow)"/>
+<text class="ts" x="298" y="100" text-anchor="middle"><tspan font-style="italic">u</tspan>초 뒤</text>
+</svg>
+<div class="chg"><p class="cap">그림 15. 펼친 원통 위에 그렸습니다. 지금 $F$ 안에 있을 때 $u$초 뒤에 놓일 수 있는 state 전체가 $T_u(F)$입니다.</p></div>
+
+<div class="chg">
+<p>$T_u$는 시각 $0$으로 적었지만 어느 시각에서나 같은 일을 합니다. 조건 2에서 $E$를 $\Omega$ 전체로 잡으면, 시각 $t$에 $F$ 안에 있던 운동은 $u$초 뒤에 모두 $T_u(F)$ 안에 있습니다.</p>
+$$S_t^{-1}(F)\subseteq S_{t+u}^{-1}\big(T_u(F)\big)$$
+<p>조건 2를 $T_u$로 다시 적은 것입니다.</p>
+</div>
+
+<svg width="100%" viewBox="0 0 680 236" role="img"><title>두 문</title><desc>시각 t의 문 F를 지난 세 운동이 시각 t+u에 모두 문 T_u(F)를 지난다. F를 지나지 않은 운동 하나는 옅게 그렸다.</desc>
+<line x1="90" y1="40" x2="90" y2="190" stroke="var(--p)" stroke-width="1"/>
+<text class="t" x="64" y="124">𝒮</text>
+<line x1="260" y1="40" x2="260" y2="190" stroke="var(--s)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<line x1="480" y1="40" x2="480" y2="190" stroke="var(--s)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<path d="M110 84 C180 88,220 98,260 100 C340 100,410 84,480 82 L570 80" fill="none" stroke="var(--p)" stroke-width="1.5"/>
+<path d="M110 110 C180 112,220 115,260 115 C340 114,410 118,480 120 L570 121" fill="none" stroke="var(--p)" stroke-width="1.5"/>
+<path d="M110 136 C180 134,220 131,260 130 C340 130,410 148,480 150 L570 152" fill="none" stroke="var(--p)" stroke-width="1.5"/>
+<path d="M110 176 C180 176,220 172,260 170 C340 168,410 176,480 178 L570 180" fill="none" stroke="var(--s)" stroke-width="1" opacity="0.6"/>
+<line x1="260" y1="90" x2="260" y2="140" stroke="#1D9E75" stroke-width="4" stroke-linecap="round"/>
+<line x1="480" y1="70" x2="480" y2="160" stroke="#7F77DD" stroke-width="4" stroke-linecap="round"/>
+<text class="t" x="268" y="80" font-style="italic">F</text>
+<text class="t" x="490" y="60"><tspan font-style="italic">T</tspan><tspan dy="4" font-size="11" font-style="italic">u</tspan><tspan dy="-4">(</tspan><tspan font-style="italic">F</tspan>)</text>
+<circle cx="260" cy="100" r="3.5" fill="#378ADD"/><circle cx="260" cy="115" r="3.5" fill="#378ADD"/><circle cx="260" cy="130" r="3.5" fill="#378ADD"/>
+<circle cx="480" cy="82" r="3.5" fill="#378ADD"/><circle cx="480" cy="120" r="3.5" fill="#378ADD"/><circle cx="480" cy="150" r="3.5" fill="#378ADD"/>
+<text class="ts" x="260" y="216" text-anchor="middle">시각 <tspan font-style="italic">t</tspan></text>
+<text class="ts" x="480" y="216" text-anchor="middle">시각 <tspan font-style="italic">t</tspan>+<tspan font-style="italic">u</tspan></text>
+</svg>
+<p class="cap">그림 16. 시각 $t$의 문 $F$를 지난 운동은 시각 $t+u$에 모두 문 $T_u(F)$를 지납니다.</p>
+<p class="tag">여기 있던 $T_0(F)=F$를 뺍니다. 조건 1을 다시 적은 것이고 뒤에서 쓰이지 않습니다.</p>
+
+<div class="chg">
+<p>이제 $t$초가 지나고 이어서 $u$초가 지난 경우를 봅니다. $T_t(F)$의 원소 $s'$을 하나 잡습니다. 시각 $0$에 $F$ 안에 있고 시각 $t$에 $s'$에 놓이는 운동이 있다는 것이므로, $S_0^{-1}(F)$는 $S_t^{-1}(\{s'\})$와 겹칩니다. 조건 2에서 과거의 event로 $S_0^{-1}(F)$를, 시각 $t$의 state로 $s'$을, $u$초 뒤의 event로 $\{s''\}$을 잡으면 다음을 얻습니다.</p>
+$$S_0^{-1}(F)\cap S_t^{-1}(\{s'\})\cap S_{t+u}^{-1}(\{s''\})\neq\varnothing\iff S_0^{-1}(\{s'\})\cap S_u^{-1}(\{s''\})\neq\varnothing$$
+<p>왼쪽은 시각 $0$에 $F$ 안에서 출발해 시각 $t$에 $s'$을 거쳐 시각 $t+u$에 $s''$에 놓이는 운동이 있다는 것입니다. 오른쪽은 시각 $0$에 $s'$에서 출발해 시각 $u$에 $s''$에 놓이는 운동이 있다는 것입니다.</p>
+<p>먼저 $s''$이 $T_{t+u}(F)$에 속하는 경우입니다. 시각 $0$에 $F$ 안에 있고 시각 $t+u$에 $s''$에 놓이는 운동이 있습니다. 그 운동이 시각 $t$에 놓인 state를 $s'$이라 하면 $s'$은 $T_t(F)$에 속하고, 위 식의 왼쪽이 참이므로 오른쪽도 참입니다. 오른쪽의 운동은 시각 $0$에 $T_t(F)$ 안에 있으므로, $s''$은 $T_u(T_t(F))$에 속합니다.</p>
+<p>거꾸로 $s''$이 $T_u(T_t(F))$에 속하는 경우입니다. 시각 $0$에 $T_t(F)$ 안에 있고 시각 $u$에 $s''$에 놓이는 운동이 있습니다. 그 운동이 시각 $0$에 놓인 state를 $s'$이라 하면 $s'$은 $T_t(F)$에 속하고, 위 식의 오른쪽이 참이므로 왼쪽도 참입니다. 왼쪽의 운동은 시각 $0$에 $F$ 안에, 시각 $t+u$에 $s''$에 놓이므로, $s''$은 $T_{t+u}(F)$에 속합니다.</p>
+<p>그러므로 모든 event $F$에서 $T_{t+u}(F)=T_u(T_t(F))$입니다.</p>
+</div>
+
+<div class="chg">
+<p><span class="lab">Theorem 2.</span> $(S_t)_{t\ge0}$가 flow이면 다음이 성립합니다.</p>
+$$\boxed{T_{t+u}=T_u\circ T_t}$$
+<p>$t+u$초에 닿는 state는 $t$초에 닿은 state에서 다시 $u$초에 닿는 state입니다. 이 등식은 조건 2에서 나옵니다. 앞에서 본 한쪽으로만 도는 운동들에서는 성립하지 않습니다. 오른쪽으로 $t$초 돈 뒤 왼쪽으로 $u$초 도는 운동은 없는데, $T_u(T_t(F))$는 그런 운동이 닿을 곳까지 담기 때문입니다.</p>
+</div>
+
+<svg width="100%" viewBox="0 0 680 236" role="img"><title>세 문</title><desc>시각 0의 문 F를 지난 운동들이 시각 t에 문 T_t(F)를, 시각 t+u에 문 T_t+u(F)를 지난다.</desc>
+<line x1="90" y1="40" x2="90" y2="190" stroke="var(--p)" stroke-width="1"/>
+<text class="t" x="64" y="124">𝒮</text>
+<line x1="170" y1="40" x2="170" y2="190" stroke="var(--s)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<line x1="340" y1="40" x2="340" y2="190" stroke="var(--s)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<line x1="510" y1="40" x2="510" y2="190" stroke="var(--s)" stroke-width="0.5" stroke-dasharray="3 3"/>
+<path d="M110 104 C140 104,150 106,170 106 C230 106,290 92,340 92 C400 92,460 74,510 74 L590 72" fill="none" stroke="var(--p)" stroke-width="1.5"/>
+<path d="M110 122 C140 122,150 120,170 120 C230 120,290 120,340 120 C400 120,460 122,510 122 L590 123" fill="none" stroke="var(--p)" stroke-width="1.5"/>
+<path d="M110 138 C140 136,150 134,170 134 C230 134,290 148,340 148 C400 148,460 166,510 166 L590 168" fill="none" stroke="var(--p)" stroke-width="1.5"/>
+<line x1="170" y1="98" x2="170" y2="142" stroke="#1D9E75" stroke-width="4" stroke-linecap="round"/>
+<line x1="340" y1="84" x2="340" y2="156" stroke="#7F77DD" stroke-width="4" stroke-linecap="round"/>
+<line x1="510" y1="64" x2="510" y2="176" stroke="#7F77DD" stroke-width="4" stroke-linecap="round"/>
+<circle cx="170" cy="106" r="3.5" fill="#378ADD"/><circle cx="170" cy="120" r="3.5" fill="#378ADD"/><circle cx="170" cy="134" r="3.5" fill="#378ADD"/>
+<circle cx="340" cy="92" r="3.5" fill="#378ADD"/><circle cx="340" cy="120" r="3.5" fill="#378ADD"/><circle cx="340" cy="148" r="3.5" fill="#378ADD"/>
+<circle cx="510" cy="74" r="3.5" fill="#378ADD"/><circle cx="510" cy="122" r="3.5" fill="#378ADD"/><circle cx="510" cy="166" r="3.5" fill="#378ADD"/>
+<text class="t" x="178" y="88" font-style="italic">F</text>
+<text class="t" x="348" y="72"><tspan font-style="italic">T</tspan><tspan dy="4" font-size="11" font-style="italic">t</tspan><tspan dy="-4">(</tspan><tspan font-style="italic">F</tspan>)</text>
+<text class="t" x="518" y="52"><tspan font-style="italic">T</tspan><tspan dy="4" font-size="11"><tspan font-style="italic">t</tspan>+<tspan font-style="italic">u</tspan></tspan><tspan dy="-4">(</tspan><tspan font-style="italic">F</tspan>)</text>
+<text class="ts" x="170" y="216" text-anchor="middle">시각 0</text>
+<text class="ts" x="340" y="216" text-anchor="middle">시각 <tspan font-style="italic">t</tspan></text>
+<text class="ts" x="510" y="216" text-anchor="middle">시각 <tspan font-style="italic">t</tspan>+<tspan font-style="italic">u</tspan></text>
+</svg>
+<div class="chg"><p class="cap">그림 17. 시각 $0$의 문 $F$를 지난 운동은 시각 $t$에 문 $T_t(F)$를, 시각 $t+u$에 문 $T_{t+u}(F)$를 지납니다. 마지막 문은 가운데 문에서 다시 $u$초 뒤에 닿는 곳 전체 $T_u(T_t(F))$와 같습니다.</p></div>
+
+<div class="chg">
+<p><span class="lab">Example 1의 끝.</span> 그래서 두 조건이 성립하고, $T_u$는 $F$의 state마다 yaw에 $cu$를 더합니다.</p>
+$$T_u(F)=\{(s_{\mathrm{yaw}}+cu,\ s_{\mathrm{pitch}}):\ s\in F\}$$
+<p><span class="lab">Example 2의 끝.</span> 그래서 두 조건이 성립하고, $T_u$는 $F$의 state마다 yaw에 $cu$를 더하고 pitch를 $a$ 쪽으로 당깁니다.</p>
+$$T_u(F)=\{(s_{\mathrm{yaw}}+cu,\ a+e^{-ku}(s_{\mathrm{pitch}}-a)):\ s\in F\}$$
+</div>
+<p class="skip">Example 1과 2에서 $\Omega$와 $S_t^{-1}(F)$를 주는 앞부분은 그대로입니다.</p>
+
+<h3>따라 바뀌는 곳</h3>
+<table>
+<tr><th>자리</th><th>지금</th><th>바꿈</th></tr>
+<tr><td>그림 18의 캡션</td><td>state마다 화살표 $s\xrightarrow{\,u\,}s'$를 그렸습니다.</td><td>state마다 $u$초 뒤의 state로 가는 선을 그렸습니다.</td></tr>
+<tr><td>6절 표, 간선</td><td>화살표 $s\xrightarrow{\,u\,}s'$</td><td>$s'\in T_u(\{s\})$</td></tr>
+<tr><td>6절 표, Markov property</td><td>Flow의 둘째 조건</td><td>전제 2로 둔 가정. Flow의 조건 2에서 과거 $E$가 빠지는 것</td></tr>
+<tr><td>6절 표, 시각에 따라 변하지 않는 $\mathcal P$</td><td>Flow의 셋째 조건</td><td>Flow의 조건 2에서 시각 $t$가 빠지는 것</td></tr>
+<tr><td>그림 19의 캡션</td><td>$\mathcal S$의 원소에서 원소로 화살표가 이어집니다.</td><td>$\mathcal S$의 원소 $s$에서 $T_u(\{s\})$의 원소로 선이 이어집니다.</td></tr>
+<tr><td>6절 본문</td><td>Flow의 둘째 조건은 같은 말을 확률이 아니라 "놓일 수 있는가"로 적은 것입니다.</td><td>Flow의 조건 2에서 과거 $E$가 빠지는 것은 같은 말을 확률이 아니라 "놓일 수 있는가"로 적은 것입니다.</td></tr>
+<tr><td>6절 본문</td><td>이 문서의 화살표 $s\xrightarrow{\,u\,}s'$는 그 수를 얹을 자리입니다. $s$에서 나가는 화살표가 하나뿐이면</td><td>이 문서에서 그 수를 얹을 자리는 $T_u(\{s\})$의 원소입니다. $T_u(\{s\})$의 원소가 $s'$ 하나뿐이면</td></tr>
+<tr><td>6절 본문과 그림 20의 캡션</td><td>화살표가 여럿이면</td><td>$T_u(\{s\})$의 원소가 여럿이면</td></tr>
+<tr><td>7절 표</td><td>$T_u(F)$와 $s\xrightarrow{\,u\,}s'$ | Flow의 세 조건</td><td>$T_u(F)$ | Flow의 조건 2</td></tr>
+<tr><td>7절 표</td><td>$T_{t+u}=T_u\circ T_t$ | Flow의 둘째와 셋째 조건</td><td>$T_{t+u}=T_u\circ T_t$ | Flow의 조건 2</td></tr>
+<tr><td>7절 표, 새 줄</td><td>없음</td><td>카메라의 $(S_t)_{t\ge0}$가 flow임 | 전제 2 | 가정</td></tr>
+<tr><td>팀원용 4절, "둘째가 수업의 Markov property에 해당합니다" 뒤</td><td>없음</td><td>$(S_t)_{t\ge0}$라고 해서 모두 flow인 것은 아닙니다. 처음 돌던 쪽으로만 계속 도는 카메라에서는, 지금 방향이 같아도 어느 쪽에서 돌아왔는지에 따라 그 뒤가 달라서 둘째가 깨집니다. 카메라가 이 세 가지를 지킨다는 것은 flow라는 형식에서 나오는 결과도, 카메라의 물리에서 끌어낸 결과도 아닙니다. 이 글이 전제 2로 두는 가정이고, 방향만으로 그 뒤를 말하기에 충분하다고 두는 것입니다.</td></tr>
+<tr><td>팀원용, 수업과의 대응</td><td>flow의 둘째 조건은 같은 말을</td><td>flow의 세 가지 가운데 둘째는 같은 말을</td></tr>
+<tr><td>팀원용, 그림 9와 그림 14의 캡션</td><td>지금의 캡션</td><td>정리본 그림 10, 그림 14의 새 캡션과 같은 문장</td></tr>
+</table>
+
+<h3>열린 항목</h3>
+<ul>
+<li>팀원용 정리본의 화살표를 둘지 뺄지 정해지지 않았습니다. 팀원용은 화살표를 수업의 간선과 맞대는 데 열두 곳쯤 쓰고, 팀원용 안에서 따로 정의합니다.</li>
+<li>조건 2가 깨지는 경우는 $2ct$와 $2cu$가 한 바퀴의 배수가 아닐 때 깨집니다. 본문에는 이 단서를 적지 않았습니다.</li>
+<li>그림 18, 19, 20은 캡션만 고치면 되는지, 그림 안에 화살표 표기가 글자로 들어 있어 다시 그려야 하는지 확인하지 않았습니다.</li>
+<li>조건 둘이 단서를 붙인 세 조건과 같다는 것, 새 증명, 깨지는 경우의 검산은 독립 검토를 거치지 않았습니다.</li>
+<li>"방향과 도는 쪽을 함께 state로 잡으면"은 전제 1이 정한 $\mathcal S$ 밖의 state를 말하는 유일한 문장입니다.</li>
+</ul>
+
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script>renderMathInElement(document.getElementById('c4'),{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});</script>
+</body>
+</html>
